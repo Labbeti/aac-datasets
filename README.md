@@ -24,7 +24,7 @@ These two programs can be download on Ubuntu with `sudo apt install ffmpeg youtu
 
 ```python
 from aac_datasets import Clotho
-clotho = Clotho(root="data", subset="dev")
+clotho = Clotho(root="data", subset="dev", download=True)
 audio, captions, *_ = clotho[0]
 ```
 
