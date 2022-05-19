@@ -42,7 +42,7 @@ class MACS(Dataset):
 
     def __init__(
         self,
-        root: str,
+        root: str = ".",
         download: bool = False,
         transforms: Optional[Dict[str, Optional[nn.Module]]] = None,
         unfold: bool = False,

@@ -87,8 +87,8 @@ class AudioCaps(Dataset):
 
     def __init__(
         self,
-        root: str,
-        subset: str,
+        root: str = ".",
+        subset: str = "train",
         download: bool = False,
         transforms: Optional[Dict[str, Optional[nn.Module]]] = None,
         accept_invalid_fpath: bool = False,

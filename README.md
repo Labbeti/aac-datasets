@@ -15,13 +15,19 @@ Automated Audio Captioning datasets source code on **AudioCaps** [1], **Clotho**
 pip install https://github.com/Labbeti/aac_datasets
 ```
 
-## Requirements
-Python requirements are in requirements.py.
-External requirements needed to download AudioCaps are ffmpeg and youtube-dl.
-These two programs can be download on Ubuntu with `sudo apt install ffmpeg youtube-dl`.
+## Other requirements (AudioCaps only)
+External requirements needed to download **AudioCaps** are **ffmpeg** and **youtube-dl**.
+These two programs can be download on Ubuntu using `sudo apt install ffmpeg youtube-dl`.
+
+You can also override their paths for AudioCaps:
+```python
+from aac_datasets import AudioCaps
+AudioCaps.FFMPEG_PATH = "/my/path/to/ffmpeg"
+AudioCaps.YOUTUBE_DL_PATH = "/my/path/to/youtube_dl"
+_ = AudioCaps(root=".", download=True)
+```
 
 ## Usage
-
 ```python
 from aac_datasets import Clotho
 clotho = Clotho(root=".", subset="dev", download=True)

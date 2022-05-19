@@ -85,8 +85,8 @@ class Clotho(Dataset):
 
     def __init__(
         self,
-        root: str,
-        subset: str,
+        root: str = ".",
+        subset: str = "dev",
         download: bool = False,
         transforms: Optional[Dict[str, Optional[nn.Module]]] = None,
         unfold: bool = False,
