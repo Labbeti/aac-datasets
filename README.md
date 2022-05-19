@@ -20,6 +20,14 @@ Python requirements are in requirements.py.
 External requirements needed to download AudioCaps are ffmpeg and youtube-dl.
 These two programs can be download on Ubuntu with `sudo apt install ffmpeg youtube-dl`.
 
+## Usage
+
+```python
+from aac_datasets import Clotho
+clotho = Clotho(root="data", subset="dev")
+audio, captions, *_ = clotho[0]
+```
+
 ## References
 
 [1] C. D. Kim, B. Kim, H. Lee, and G. Kim, “Audiocaps: Generating captions for audios in the wild,” in NAACL-HLT, 2019. Available: https://aclanthology.org/N19-1011/
