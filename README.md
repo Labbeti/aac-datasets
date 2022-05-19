@@ -37,16 +37,16 @@ Here is the **train** subset statistics for each dataset :
 | Sample rate | 32000 | 44100 | 48000 |
 | Audio source | AudioSet (youtube) | Freesound | TAU Urban Acoustic Scenes 2019 |
 | Nb audios | 49838 | 3840 | 3930 |
-| Total audio duration | 136.6h$^1$ | 24.0h | 10.9h |
+| Total audio duration | 136.6h<sup>1</sup> | 24.0h | 10.9h |
 | Audio duration range | 0.5-10s | 15-30s | 10s |
 | Nb captions per audio | 1 | 5 | 2-5 |
 | Nb captions | 49838 | 19195 | 17275 |
-| Total nb words$^2$ | 402482 | 217362 | 160006 |
-| Nb words range$^2$ | 1-52 | 8-20 | 5-40 |
+| Total nb words<sup>2</sup> | 402482 | 217362 | 160006 |
+| Nb words range<sup>2</sup> | 1-52 | 8-20 | 5-40 |
 
-$^1$ This duration is estimated on the total duration of 46230/49838 files of 126.7h.
+<sup>1</sup> This duration is estimated on the total duration of 46230/49838 files of 126.7h.
 
-$^2$ The sentences are cleaned (lowercase+remove punctuation) and tokenized using the spacy tokenizer to count the words.
+<sup>2</sup> The sentences are cleaned (lowercase+remove punctuation) and tokenized using the spacy tokenizer to count the words.
 
 ## References
 
