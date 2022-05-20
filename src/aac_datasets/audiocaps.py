@@ -194,8 +194,10 @@ class AudioCaps(Dataset):
         :param index: The index of the value in range [0, len(dataset)[.
         :return: The value of the data 'name' at specified index.
         """
-        if not(0 <= index < len(self)):
-            raise IndexError(f"Invalid argument {index=} for {self} (expected in range [0, {len(self)}-1])")
+        if not (0 <= index < len(self)):
+            raise IndexError(
+                f"Invalid argument {index=} for {self} (expected in range [0, {len(self)}-1])"
+            )
 
         if name == "audio":
             fpath = self.get("fpath", index)
@@ -287,9 +289,7 @@ class AudioCaps(Dataset):
                 stderr=subprocess.DEVNULL,
             )
         except (CalledProcessError, PermissionError, FileNotFoundError) as err:
-            logging.error(
-                f"Cannot use ffmpeg path '{self.FFMPEG_PATH}''. ({err})"
-            )
+            logging.error(f"Cannot use ffmpeg path '{self.FFMPEG_PATH}''. ({err})")
             raise err
 
         if self._is_prepared() and not self.FORCE_PREPARE_DATA:

@@ -201,8 +201,10 @@ class Clotho(Dataset):
                 Can be 'audio', 'fpath', 'fname', 'captions', 'keywords', 'sound_id', 'sound_link', 'start_end_samples', 'manufacturer', 'license'.
         :param index: The index of the value in range [0, len(dataset)[.
         """
-        if not(0 <= index < len(self)):
-            raise IndexError(f"Invalid argument {index=} for {self} (expected in range [0, {len(self)}-1])")
+        if not (0 <= index < len(self)):
+            raise IndexError(
+                f"Invalid argument {index=} for {self} (expected in range [0, {len(self)}-1])"
+            )
 
         if name == "audio":
             fpath = self.get("fpath", index)

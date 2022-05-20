@@ -6,7 +6,13 @@ from aac_datasets.clotho import Clotho
 from aac_datasets.macs import MACS
 
 
-def download_audiocaps(root: str = ".", verbose: int = 1, ffmpeg: str = "ffmpeg", youtube_dl: str = "youtube-dl", load_tags: bool = True) -> None:
+def download_audiocaps(
+    root: str = ".",
+    verbose: int = 1,
+    ffmpeg: str = "ffmpeg",
+    youtube_dl: str = "youtube-dl",
+    load_tags: bool = True,
+) -> None:
     AudioCaps.FFMPEG_PATH = ffmpeg
     AudioCaps.YOUTUBE_DL_PATH = youtube_dl
 
