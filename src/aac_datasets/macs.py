@@ -17,6 +17,7 @@ import yaml
 
 from torch import nn, Tensor
 from torch.utils.data.dataset import Dataset
+from torchaudio.backend.common import AudioMetaData
 from torchaudio.datasets.utils import download_url
 
 
@@ -125,6 +126,9 @@ class MACS(Dataset):
             Can be 'audio', 'fpath', 'fname', 'captions', 'tags', 'annotators_ids'.
         :param index: The index of the value in range [0, len(dataset)[.
         """
+        if not(0 <= index < len(self)):
+            raise IndexError(f"Invalid argument {index=} for {self} (expected in range [0, {len(self)}-1])")
+
         if name == "audio":
             fpath = self.get("fpath", index)
             value, sr = torchaudio.load(fpath)  # type: ignore
@@ -144,9 +148,12 @@ class MACS(Dataset):
         elif name == "index":
             value = index
 
-        elif (
-            0 <= index < len(self._all_infos) and name in self._all_infos[index].keys()
-        ):
+        elif name == "sr":
+            fpath = self.get("fpath", index)
+            audio_info: AudioMetaData = torchaudio.info(fpath)  # type: ignore
+            return audio_info.sample_rate
+
+        elif name in self._all_infos[index].keys():
             value = self._all_infos[index][name]
 
         else:

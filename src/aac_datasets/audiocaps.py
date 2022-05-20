@@ -25,7 +25,7 @@ from torchaudio.datasets.utils import download_url
 
 @dataclass
 class AudioCapsItem:
-    audio: Tensor = torch.empty((0,))
+    audio: Tensor = torch.empty((0,), dtype=torch.float)
     captions: List[str] = field(default_factory=list)
     tags: Optional[List[str]] = None
     fname: Optional[str] = None
@@ -81,8 +81,8 @@ class AudioCaps(Dataset):
     DNAME_LOG = "logs"
     FORCE_PREPARE_DATA = False
 
-    YOUTUBE_DL_PATH = "youtube-dl"
-    FFMPEG_PATH = "ffmpeg"
+    FFMPEG_PATH: str = "ffmpeg"
+    YOUTUBE_DL_PATH: str = "youtube-dl"
     ITEM_TYPES = ("tuple", "dict", "dataclass", AudioCapsItem.__name__.lower())
 
     def __init__(
@@ -194,11 +194,14 @@ class AudioCaps(Dataset):
         :param index: The index of the value in range [0, len(dataset)[.
         :return: The value of the data 'name' at specified index.
         """
+        if not(0 <= index < len(self)):
+            raise IndexError(f"Invalid argument {index=} for {self} (expected in range [0, {len(self)}-1])")
+
         if name == "audio":
             fpath = self.get("fpath", index)
 
             if fpath is None and self._accept_invalid_fpath:
-                return torch.zeros(0, dtype=torch.float)
+                return torch.empty((0,), dtype=torch.float)
 
             value, sr = torchaudio.load(fpath)  # type: ignore
             if sr != self.SAMPLE_RATE:
@@ -234,9 +237,7 @@ class AudioCaps(Dataset):
             audio_info: AudioMetaData = torchaudio.info(fpath)  # type: ignore
             return audio_info.sample_rate
 
-        elif (
-            0 <= index < len(self._all_infos) and name in self._all_infos[index].keys()
-        ):
+        elif name in self._all_infos[index].keys():
             # keys : "youtube_id", "fname", "start_time", "captions", "tags"
             value = self._all_infos[index][name]
 
@@ -275,7 +276,7 @@ class AudioCaps(Dataset):
             )
         except (CalledProcessError, PermissionError, FileNotFoundError) as err:
             logging.error(
-                f'Cannot use youtube-dl path "{self.YOUTUBE_DL_PATH}". ({err})'
+                f"Cannot use youtube-dl path '{self.YOUTUBE_DL_PATH}'. ({err})"
             )
             raise err
 
@@ -286,7 +287,9 @@ class AudioCaps(Dataset):
                 stderr=subprocess.DEVNULL,
             )
         except (CalledProcessError, PermissionError, FileNotFoundError) as err:
-            logging.error(f'Cannot use ffmpeg path "{self.FFMPEG_PATH}". ({err})')
+            logging.error(
+                f"Cannot use ffmpeg path '{self.FFMPEG_PATH}''. ({err})"
+            )
             raise err
 
         if self._is_prepared() and not self.FORCE_PREPARE_DATA:

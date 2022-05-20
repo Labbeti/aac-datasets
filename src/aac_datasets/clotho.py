@@ -201,6 +201,9 @@ class Clotho(Dataset):
                 Can be 'audio', 'fpath', 'fname', 'captions', 'keywords', 'sound_id', 'sound_link', 'start_end_samples', 'manufacturer', 'license'.
         :param index: The index of the value in range [0, len(dataset)[.
         """
+        if not(0 <= index < len(self)):
+            raise IndexError(f"Invalid argument {index=} for {self} (expected in range [0, {len(self)}-1])")
+
         if name == "audio":
             fpath = self.get("fpath", index)
             value, sr = torchaudio.load(fpath)  # type: ignore
@@ -210,15 +213,6 @@ class Clotho(Dataset):
                 raise RuntimeError(
                     f"Invalid sample rate {sr}Hz of audio file {fpath} with Clotho {self.SAMPLE_RATE}Hz."
                 )
-
-        elif name == "sr":
-            fpath = self.get("fpath", index)
-
-            if fpath is None and self._accept_invalid_fpath:
-                return -1
-
-            audio_info: AudioMetaData = torchaudio.info(fpath)  # type: ignore
-            return audio_info.sample_rate
 
         elif name == "fpath":
             fname = self.get("fname", index)
@@ -233,9 +227,12 @@ class Clotho(Dataset):
         elif name == "index":
             value = index
 
-        elif (
-            0 <= index < len(self._all_infos) and name in self._all_infos[index].keys()
-        ):
+        elif name == "sr":
+            fpath = self.get("fpath", index)
+            audio_info: AudioMetaData = torchaudio.info(fpath)  # type: ignore
+            return audio_info.sample_rate
+
+        elif name in self._all_infos[index].keys():
             value = self._all_infos[index][name]
 
         else:
