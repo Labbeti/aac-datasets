@@ -11,6 +11,7 @@ Automated Audio Captioning Unofficial datasets source code for **AudioCaps** [1]
 </div>
 
 ## Installation
+
 ```bash
 pip install git+https://github.com/Labbeti/aac_datasets
 ```
@@ -22,7 +23,7 @@ pip install -e aac_datasets
 
 ## Usage example
 
-### Create Clotho dataset
+### Create Clotho dataset
 
 ```python
 from aac_datasets import Clotho
@@ -34,6 +35,7 @@ audio, captions, *_ = dataset[0]
 ```
 
 ### Build Pytorch dataloader with MACS
+
 ```python
 from torch.utils.data.dataloader import DataLoader
 from aac_datasets import MACS
@@ -69,6 +71,7 @@ Here is the **train** subset statistics for each dataset :
 <sup>2</sup> The sentences are cleaned (lowercase+remove punctuation) and tokenized using the spacy tokenizer to count the words.
 
 ## Requirements
+
 The requirements are automatically installed when using pip on this repository.
 ```
 torch >= 1.10.1
@@ -78,6 +81,7 @@ pyyaml >= 6.0
 ```
 
 ## Other requirements (AudioCaps only)
+
 The external requirements needed to download **AudioCaps** are **ffmpeg** and **youtube-dl**.
 These two programs can be download on Ubuntu using `sudo apt install ffmpeg youtube-dl`.
 
