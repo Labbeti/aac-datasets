@@ -49,7 +49,9 @@ class Collate:
         if not all(is_tensor):
             raise TypeError(f"Invalid audio type in Collate. (found {is_tensor=})")
 
-        audio_batch = pad_sequence(audio_batch, batch_first=True, padding_value=self.pad_value)
+        audio_batch = pad_sequence(
+            audio_batch, batch_first=True, padding_value=self.pad_value
+        )
         return audio_batch, captions_batch
 
 
