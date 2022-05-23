@@ -6,20 +6,46 @@
 <a href="https://pytorch.org/get-started/locally/"><img alt="PyTorch" src="https://img.shields.io/badge/-PyTorch 1.10.1-ee4c2c?style=for-the-badge&logo=pytorch&logoColor=white"></a>
 <a href="https://black.readthedocs.io/en/stable/"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-black.svg?style=for-the-badge&labelColor=gray"></a>
 
-Automated Audio Captioning datasets source code on **AudioCaps** [1], **Clotho** [2], and **MACS** [3] datasets.
+Automated Audio Captioning Unofficial datasets source code for **AudioCaps** [1], **Clotho** [2], and **MACS** [3] designed for Pytorch.
 
 </div>
 
 ## Installation
 ```bash
-pip install https://github.com/Labbeti/aac_datasets
+pip install git+https://github.com/Labbeti/aac_datasets
+```
+or clone the repository :
+```bash
+git clone https://github.com/Labbeti/aac_datasets
+pip install -e aac_datasets
 ```
 
 ## Usage example
+
+### Create Clotho dataset
+
 ```python
 from aac_datasets import Clotho
-clotho = Clotho(root=".", subset="dev", download=True)
-audio, captions, *_ = clotho[0]
+
+dataset = Clotho(root=".", subset="dev", download=True)
+audio, captions, *_ = dataset[0]
+# audio: Tensor of shape (n_channels=1, audio_max_size)
+# captions: list of str captions
+```
+
+### Build Pytorch dataloader with MACS
+```python
+from torch.utils.data.dataloader import DataLoader
+from aac_datasets import MACS
+from aac_datasets.utils import Collate
+
+dataset = MACS(root=".", download=True)
+dataloader = DataLoader(dataset, batch_size=4, collate_fn=Collate())
+
+for audio_batch, captions_batch in dataloader:
+    # audio_batch: Tensor of shape (batch_size=4, n_channels=2, audio_max_size)
+    # captions_batch: list of list of str captions
+    ...
 ```
 
 ## Datasets stats
@@ -42,8 +68,17 @@ Here is the **train** subset statistics for each dataset :
 
 <sup>2</sup> The sentences are cleaned (lowercase+remove punctuation) and tokenized using the spacy tokenizer to count the words.
 
+## Requirements
+The requirements are automatically installed when using pip on this repository.
+```
+torch >= 1.10.1
+torchaudio >= 0.10.1
+py7zr >= 0.17.2
+pyyaml >= 6.0
+```
+
 ## Other requirements (AudioCaps only)
-External requirements needed to download **AudioCaps** are **ffmpeg** and **youtube-dl**.
+The external requirements needed to download **AudioCaps** are **ffmpeg** and **youtube-dl**.
 These two programs can be download on Ubuntu using `sudo apt install ffmpeg youtube-dl`.
 
 You can also override their paths for AudioCaps:
