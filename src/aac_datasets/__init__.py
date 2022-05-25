@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from .audiocaps import AudioCaps
-from .clotho import Clotho
-from .macs import MACS
+from .datasets.audiocaps import AudioCaps
+from .datasets.clotho import Clotho
+from .datasets.macs import MACS
 
 
 __author__ = "Etienne Labbé (Labbeti)"
