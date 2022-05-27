@@ -21,6 +21,9 @@ from torchaudio.backend.common import AudioMetaData
 from torchaudio.datasets.utils import download_url
 
 
+logger = logging.getLogger(__name__)
+
+
 @dataclass
 class MACSItem:
     audio: Tensor = torch.empty((0,))
@@ -181,6 +184,9 @@ class MACS(Dataset):
     def idx_to_tag(self, idx: int) -> str:
         return self._idx_to_tag[idx]
 
+    def _is_prepared(self) -> bool:
+        return osp.isdir(self._dpath_audio) and osp.isdir(self._dpath_captions)
+
     def _prepare_data(self) -> None:
         if not osp.isdir(self._root):
             raise RuntimeError(f'Cannot find root directory "{self._root}".')
@@ -192,7 +198,7 @@ class MACS(Dataset):
         fpath = osp.join(self._dpath_captions, fname)
         if not osp.isfile(fpath):
             if self._verbose >= 1:
-                logging.info(f'Downloading captions file "{fname}"...')
+                logger.info(f'Downloading captions file "{fname}"...')
             url = MACS_FILES["captions"]["url"]
             hash_ = MACS_FILES["captions"]["hash"]
             download_url(
@@ -215,7 +221,7 @@ class MACS(Dataset):
 
             if not osp.isfile(fpath):
                 if self._verbose >= 1:
-                    logging.info(f'Downloading audio zip file "{fname}"...')
+                    logger.info(f'Downloading audio zip file "{fname}"...')
                 url = infos["url"]
                 hash_ = infos["hash"]
 
@@ -245,7 +251,7 @@ class MACS(Dataset):
                     if not osp.isfile(osp.join(self._dpath_audio, osp.basename(member)))
                 ]
                 if self._verbose >= 1 and len(fmembers_to_extract) > 0:
-                    logging.info(
+                    logger.info(
                         f"Extracting {len(fmembers_to_extract)}/{len(file.namelist())} audio files from ZIP file..."
                     )
 
@@ -260,14 +266,17 @@ class MACS(Dataset):
         ]
         audio_fpaths = [osp.join(self._dpath_audio, name) for name in audio_fnames]
         if self._verbose >= 1:
-            logging.info(
+            logger.info(
                 f"{len(audio_fpaths)} audio files has been prepared for MACS dataset."
             )
 
     def _load_data(self) -> None:
+        if not self._is_prepared():
+            raise RuntimeError(f"Dataset is not prepared in root={self._root}.")
+
         captions_fpath = osp.join(self._dpath_captions, MACS_FILES["captions"]["fname"])
         if self._verbose >= 1:
-            logging.debug(f'Loading captions file "{captions_fpath}"...')
+            logger.debug(f'Loading captions file "{captions_fpath}"...')
 
         with open(captions_fpath, "r") as file:
             data = yaml.safe_load(file)
@@ -340,9 +349,7 @@ class MACS(Dataset):
             self._all_infos = data_info_unfolded
 
         if self._verbose >= 1:
-            logging.info(
-                f"{self.__class__.__name__} has been loaded. (len={len(self)})"
-            )
+            logger.info(f"{self.__class__.__name__} has been loaded. (len={len(self)})")
 
     @property
     def _dpath_audio(self) -> str:

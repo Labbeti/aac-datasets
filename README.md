@@ -21,7 +21,7 @@ git clone https://github.com/Labbeti/aac_datasets
 pip install -e aac_datasets
 ```
 
-## Usage example
+## Examples
 
 ### Create Clotho dataset
 
@@ -91,6 +91,13 @@ from aac_datasets import AudioCaps
 AudioCaps.FFMPEG_PATH = "/my/path/to/ffmpeg"
 AudioCaps.YOUTUBE_DL_PATH = "/my/path/to/youtube_dl"
 _ = AudioCaps(root=".", download=True)
+```
+
+## Command line download
+To download a dataset, you can use `download=True` argument in dataset construction.
+However, if you want to download datasets separately, you can also use the following command :
+```bash
+python -m aac_datasets.download --root "./data" --version "v2.1" clotho
 ```
 
 ## References

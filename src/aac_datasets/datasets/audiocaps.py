@@ -23,6 +23,9 @@ from torchaudio.backend.common import AudioMetaData
 from torchaudio.datasets.utils import download_url
 
 
+logger = logging.getLogger(__name__)
+
+
 @dataclass
 class AudioCapsItem:
     audio: Tensor = torch.empty((0,), dtype=torch.float)
@@ -80,6 +83,7 @@ class AudioCaps(Dataset):
     DNAME_AUDIO = "audio"
     DNAME_LOG = "logs"
     FORCE_PREPARE_DATA = False
+    VERIFY_FILES = False
 
     FFMPEG_PATH: str = "ffmpeg"
     YOUTUBE_DL_PATH: str = "youtube-dl"
@@ -277,7 +281,7 @@ class AudioCaps(Dataset):
                 stderr=subprocess.DEVNULL,
             )
         except (CalledProcessError, PermissionError, FileNotFoundError) as err:
-            logging.error(
+            logger.error(
                 f"Cannot use youtube-dl path '{self.YOUTUBE_DL_PATH}'. ({err})"
             )
             raise err
@@ -289,7 +293,7 @@ class AudioCaps(Dataset):
                 stderr=subprocess.DEVNULL,
             )
         except (CalledProcessError, PermissionError, FileNotFoundError) as err:
-            logging.error(f"Cannot use ffmpeg path '{self.FFMPEG_PATH}''. ({err})")
+            logger.error(f"Cannot use ffmpeg path '{self.FFMPEG_PATH}''. ({err})")
             raise err
 
         if self._is_prepared() and not self.FORCE_PREPARE_DATA:
@@ -324,7 +328,7 @@ class AudioCaps(Dataset):
                     level=logging.INFO,
                     force=True,
                 )
-            logging.info(f"Start downloading files for {self._subset} AudioCaps split.")
+            logger.info(f"Start downloading files for {self._subset} AudioCaps split.")
 
         with open(meta_fpath, "r") as file:
             # Download audio files
@@ -363,38 +367,44 @@ class AudioCaps(Dataset):
                         valid_file = self._check_file(fpath)
                         if valid_file:
                             if self._verbose >= 2:
-                                logging.debug(
+                                logger.debug(
                                     f'[{audiocap_id:6s}] File "{youtube_id}" has been downloaded and verified.'
                                 )
                             n_download_ok += 1
                         else:
                             if self._verbose >= 1:
-                                logging.warning(
+                                logger.warning(
                                     f'[{audiocap_id:6s}] File "{youtube_id}" has been downloaded but it is not valid and it will be removed.'
                                 )
                             os.remove(fpath)
                             n_download_err += 1
                     else:
-                        logging.error(
+                        logger.error(
                             f'[{audiocap_id:6s}] Cannot extract audio from "{youtube_id}".'
                         )
                         n_download_err += 1
 
-                else:
+                elif self.VERIFY_FILES:
                     valid_file = self._check_file(fpath)
                     if valid_file:
                         if self._verbose >= 2:
-                            logging.debug(
+                            logger.debug(
                                 f'[{audiocap_id:6s}] File "{youtube_id}" is already downloaded and has been verified.'
                             )
                         n_already_ok += 1
                     else:
                         if self._verbose >= 1:
-                            logging.warning(
+                            logger.warning(
                                 f'[{audiocap_id:6s}] File "{youtube_id}" is already downloaded but it is not valid and will be removed.'
                             )
                         os.remove(fpath)
                         n_already_err += 1
+                else:
+                    if self._verbose >= 2:
+                        logger.debug(
+                            f'[{audiocap_id:6s}] File "{youtube_id}" is already downloaded but it is not verified due to {self.VERIFY_FILES=}.'
+                        )
+                    n_already_ok += 1
 
         if self._load_tags:
             for key in ("class_labels_indices", "unbalanced"):
@@ -404,19 +414,19 @@ class AudioCaps(Dataset):
                 fpath = osp.join(root_dpath, fname)
                 if not osp.isfile(fpath):
                     if self._verbose >= 1:
-                        logging.info(f"Downloading file '{fname}'...")
+                        logger.info(f"Downloading file '{fname}'...")
                     download_url(url, root_dpath, fname, progress_bar=self._verbose > 0)
 
         if self._verbose >= 1:
             duration = int(time.perf_counter() - start)
-            logging.info(
+            logger.info(
                 f'Download and preparation of AudioCaps for subset "{self._subset}" done in {duration}s. '
             )
-            logging.info(f"- {n_download_ok} downloads success,")
-            logging.info(f"- {n_download_err} downloads failed,")
-            logging.info(f"- {n_already_ok} already downloaded,")
-            logging.info(f"- {n_already_err} already downloaded errors,")
-            logging.info(f"- {n_samples} total samples.")
+            logger.info(f"- {n_download_ok} downloads success,")
+            logger.info(f"- {n_download_err} downloads failed,")
+            logger.info(f"- {n_already_ok} already downloaded,")
+            logger.info(f"- {n_already_err} already downloaded errors,")
+            logger.info(f"- {n_samples} total samples.")
 
             if self.REDIRECT_LOG:
                 logging.basicConfig(
@@ -430,17 +440,17 @@ class AudioCaps(Dataset):
             audio, sr = torchaudio.load(fpath)  # type: ignore
         except RuntimeError:
             message = f'Found file "{fpath}" already downloaded but it is invalid (cannot load). It will be removed.'
-            logging.error(message)
+            logger.error(message)
             return False
 
         if audio.nelement() == 0:
             message = f'Found file "{fpath}" already downloaded but it is invalid (empty audio). It will be removed.'
-            logging.error(message)
+            logger.error(message)
             return False
 
         if sr != self.SAMPLE_RATE:
             message = f'Found file "{fpath}" already downloaded but it is invalid (invalid sr={sr} != {self.SAMPLE_RATE}). It will be removed.'
-            logging.error(message)
+            logger.error(message)
             return False
 
         return True
@@ -448,7 +458,7 @@ class AudioCaps(Dataset):
     def _load_data(self) -> None:
         if not self._is_prepared():
             raise RuntimeError(
-                f'Dataset is not prepared in data root "{self._root}". Please use download=True in dataset constructor.'
+                f"Dataset is not prepared in data root={self._root}. Please use download=True in dataset constructor."
             )
 
         links = AUDIOCAPS_LINKS[self._subset]
@@ -565,7 +575,7 @@ class AudioCaps(Dataset):
 
         self._all_infos = self._all_infos
         if self._verbose >= 1:
-            logging.info(
+            logger.info(
                 f"{self.__class__.__name__}/{self._subset} has been loaded. (len={len(self)})"
             )
 

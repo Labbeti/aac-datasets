@@ -20,6 +20,9 @@ from torchaudio.backend.common import AudioMetaData
 from torchaudio.datasets.utils import download_url
 
 
+logger = logging.getLogger(__name__)
+
+
 @dataclass
 class ClothoItem:
     audio: Tensor = torch.empty((0,))
@@ -29,6 +32,189 @@ class ClothoItem:
     index: Optional[int] = None
     dataset: str = "clotho"
     subset: Optional[str] = None
+
+
+CLOTHO_LINKS = {
+    "v1": {
+        "dev": {
+            "audio_archive": {
+                "fname": "clotho_audio_development.7z",
+                "url": "https://zenodo.org/record/3490684/files/clotho_audio_development.7z?download=1",
+                "hash": "e3ce88561b317cc3825e8c861cae1ec6",
+            },
+            "captions": {
+                "fname": "clotho_captions_development.csv",
+                "url": "https://zenodo.org/record/3490684/files/clotho_captions_development.csv?download=1",
+                "hash": "dd568352389f413d832add5cf604529f",
+            },
+            "metadata": {
+                "fname": "clotho_metadata_development.csv",
+                "url": "https://zenodo.org/record/3490684/files/clotho_metadata_development.csv?download=1",
+                "hash": "582c18ee47cebdbe33dce1feeab53a56",
+            },
+        },
+        "eval": {
+            "audio_archive": {
+                "fname": "clotho_audio_evaluation.7z",
+                "url": "https://zenodo.org/record/3490684/files/clotho_audio_evaluation.7z?download=1",
+                "hash": "4569624ccadf96223f19cb59fe4f849f",
+            },
+            "captions": {
+                "fname": "clotho_captions_evaluation.csv",
+                "url": "https://zenodo.org/record/3490684/files/clotho_captions_evaluation.csv?download=1",
+                "hash": "1b16b9e57cf7bdb7f13a13802aeb57e2",
+            },
+            "metadata": {
+                "fname": "clotho_metadata_evaluation.csv",
+                "url": "https://zenodo.org/record/3490684/files/clotho_metadata_evaluation.csv?download=1",
+                "hash": "13946f054d4e1bf48079813aac61bf77",
+            },
+        },
+        "test": {
+            "audio_archive": {
+                "fname": "clotho_audio_test.7z",
+                "url": "https://zenodo.org/record/3865658/files/clotho_audio_test.7z?download=1",
+                "hash": "9b3fe72560a621641ff4351ba1154349",
+            },
+            "metadata": {
+                "fname": "clotho_metadata_test.csv",
+                "url": "https://zenodo.org/record/3865658/files/clotho_metadata_test.csv?download=1",
+                "hash": "52f8ad01c229a310a0ff8043df480e21",
+            },
+        },
+    },
+    "v2": {
+        "dev": {
+            "audio_archive": {
+                "fname": "clotho_audio_development.7z",
+                "url": "https://zenodo.org/record/4743815/files/clotho_audio_development.7z?download=1",
+                "hash": "eda144a5e05a60e6d2e37a65fc4720a9",
+            },
+            "captions": {
+                "fname": "clotho_captions_development.csv",
+                "url": "https://zenodo.org/record/4743815/files/clotho_captions_development.csv?download=1",
+                "hash": "800633304e73d3daed364a2ba6069827",
+            },
+            "metadata": {
+                "fname": "clotho_metadata_development.csv",
+                "url": "https://zenodo.org/record/4743815/files/clotho_metadata_development.csv?download=1",
+                "hash": "5fdc51b4c4f3468ff7d251ea563588c9",
+            },
+        },
+        "eval": {
+            "audio_archive": {
+                "fname": "clotho_audio_evaluation.7z",
+                "url": "https://zenodo.org/record/4743815/files/clotho_audio_evaluation.7z?download=1",
+                "hash": "4569624ccadf96223f19cb59fe4f849f",
+            },
+            "captions": {
+                "fname": "clotho_captions_evaluation.csv",
+                "url": "https://zenodo.org/record/4743815/files/clotho_captions_evaluation.csv?download=1",
+                "hash": "1b16b9e57cf7bdb7f13a13802aeb57e2",
+            },
+            "metadata": {
+                "fname": "clotho_metadata_evaluation.csv",
+                "url": "https://zenodo.org/record/4743815/files/clotho_metadata_evaluation.csv?download=1",
+                "hash": "13946f054d4e1bf48079813aac61bf77",
+            },
+        },
+        "val": {
+            "audio_archive": {
+                "fname": "clotho_audio_validation.7z",
+                "url": "https://zenodo.org/record/4743815/files/clotho_audio_validation.7z?download=1",
+                "hash": "0475bfa5793e80f748d32525018ebada",
+            },
+            "captions": {
+                "fname": "clotho_captions_validation.csv",
+                "url": "https://zenodo.org/record/4743815/files/clotho_captions_validation.csv?download=1",
+                "hash": "3109c353138a089c7ba724f27d71595d",
+            },
+            "metadata": {
+                "fname": "clotho_metadata_validation.csv",
+                "url": "https://zenodo.org/record/4743815/files/clotho_metadata_validation.csv?download=1",
+                "hash": "f69cfacebcd47c4d8d30d968f9865475",
+            },
+        },
+        "test": {
+            "audio_archive": {
+                "fname": "clotho_audio_test.7z",
+                "url": "https://zenodo.org/record/3865658/files/clotho_audio_test.7z?download=1",
+                "hash": "9b3fe72560a621641ff4351ba1154349",
+            },
+            "metadata": {
+                "fname": "clotho_metadata_test.csv",
+                "url": "https://zenodo.org/record/3865658/files/clotho_metadata_test.csv?download=1",
+                "hash": "52f8ad01c229a310a0ff8043df480e21",
+            },
+        },
+    },
+    "v2.1": {
+        "dev": {
+            "audio_archive": {
+                "fname": "clotho_audio_development.7z",
+                "url": "https://zenodo.org/record/4783391/files/clotho_audio_development.7z?download=1",
+                "hash": "c8b05bc7acdb13895bb3c6a29608667e",
+            },
+            "captions": {
+                "fname": "clotho_captions_development.csv",
+                "url": "https://zenodo.org/record/4783391/files/clotho_captions_development.csv?download=1",
+                "hash": "d4090b39ce9f2491908eebf4d5b09bae",
+            },
+            "metadata": {
+                "fname": "clotho_metadata_development.csv",
+                "url": "https://zenodo.org/record/4783391/files/clotho_metadata_development.csv?download=1",
+                "hash": "170d20935ecfdf161ce1bb154118cda5",
+            },
+        },
+        "eval": {
+            "audio_archive": {
+                "fname": "clotho_audio_evaluation.7z",
+                "url": "https://zenodo.org/record/4783391/files/clotho_audio_evaluation.7z?download=1",
+                "hash": "4569624ccadf96223f19cb59fe4f849f",
+            },
+            "captions": {
+                "fname": "clotho_captions_evaluation.csv",
+                "url": "https://zenodo.org/record/4783391/files/clotho_captions_evaluation.csv?download=1",
+                "hash": "1b16b9e57cf7bdb7f13a13802aeb57e2",
+            },
+            "metadata": {
+                "fname": "clotho_metadata_evaluation.csv",
+                "url": "https://zenodo.org/record/4783391/files/clotho_metadata_evaluation.csv?download=1",
+                "hash": "13946f054d4e1bf48079813aac61bf77",
+            },
+        },
+        "val": {
+            "audio_archive": {
+                "fname": "clotho_audio_validation.7z",
+                "url": "https://zenodo.org/record/4783391/files/clotho_audio_validation.7z?download=1",
+                "hash": "7dba730be08bada48bd15dc4e668df59",
+            },
+            "captions": {
+                "fname": "clotho_captions_validation.csv",
+                "url": "https://zenodo.org/record/4783391/files/clotho_captions_validation.csv?download=1",
+                "hash": "5879e023032b22a2c930aaa0528bead4",
+            },
+            "metadata": {
+                "fname": "clotho_metadata_validation.csv",
+                "url": "https://zenodo.org/record/4783391/files/clotho_metadata_validation.csv?download=1",
+                "hash": "2e010427c56b1ce6008b0f03f41048ce",
+            },
+        },
+        "test": {
+            "audio_archive": {
+                "fname": "clotho_audio_test.7z",
+                "url": "https://zenodo.org/record/3865658/files/clotho_audio_test.7z?download=1",
+                "hash": "9b3fe72560a621641ff4351ba1154349",
+            },
+            "metadata": {
+                "fname": "clotho_metadata_test.csv",
+                "url": "https://zenodo.org/record/3865658/files/clotho_metadata_test.csv?download=1",
+                "hash": "52f8ad01c229a310a0ff8043df480e21",
+            },
+        },
+    },
+}
+CLOTHO_LAST_VERSION = "v2.1"
 
 
 class Clotho(Dataset):
@@ -75,12 +261,10 @@ class Clotho(Dataset):
     CAPTION_MIN_LENGTH = 8
     CAPTION_MAX_LENGTH = 20
     SUBSETS_DICT = {
-        "v1": ("dev", "eval", "test"),
-        "v2": ("dev", "val", "eval", "test"),
-        "v2.1": ("dev", "val", "eval", "test"),
+        version: tuple(links.keys()) for version, links in CLOTHO_LINKS.items()
     }
-    SUBSETS = ("dev", "val", "eval", "test")
-    VERSIONS = ("v1", "v2", "v2.1")
+    SUBSETS = SUBSETS_DICT[CLOTHO_LAST_VERSION]
+    VERSIONS = tuple(CLOTHO_LINKS.keys())
     ITEM_TYPES = ("tuple", "dict", "dataclass", ClothoItem.__name__.lower())
 
     def __init__(
@@ -281,7 +465,7 @@ class Clotho(Dataset):
         os.makedirs(self._dpath_csv, exist_ok=True)
 
         if self._verbose >= 1:
-            logging.info(
+            logger.info(
                 f'Download files for the dataset "{self.__class__.__name__}", subset "{self._subset}"...'
             )
 
@@ -304,7 +488,7 @@ class Clotho(Dataset):
             fpath = osp.join(dpath, fname)
             if not osp.isfile(fpath):
                 if self._verbose >= 1:
-                    logging.info(f"Download file '{fname}' from {url=}\"...")
+                    logger.info(f"Download file '{fname}' from {url=}\"...")
 
                 try:
                     download_url(
@@ -332,13 +516,13 @@ class Clotho(Dataset):
 
                 if not osp.isdir(extracted_dpath):
                     if self._verbose >= 1:
-                        logging.info(f"Extract archive file {fname=}...")
+                        logger.info(f"Extract archive file {fname=}...")
 
                     with SevenZipFile(fpath) as file:
                         file.extractall(self._dpath_audio)
 
                 elif self._verbose >= 1:
-                    logging.info(
+                    logger.info(
                         f"Archive {fname} already extracted. (directory '{extracted_dpath}' already exists)"
                     )
 
@@ -346,7 +530,7 @@ class Clotho(Dataset):
                 pass
 
             else:
-                logging.error(
+                logger.error(
                     f"Found unexpected {extension=} for downloaded file '{fname}'. Must be one of '7z' or 'csv'."
                 )
 
@@ -446,194 +630,13 @@ class Clotho(Dataset):
 
         self._all_infos = self._all_infos
         if self._verbose >= 1:
-            logging.info(
+            logger.info(
                 f"{self.__class__.__name__}/{self._subset} has been loaded. (len={len(self)})"
             )
 
     def __repr__(self) -> str:
         return f"Clotho(subset={self._subset})"
 
-
-CLOTHO_LINKS = {
-    "v1": {
-        "dev": {
-            "audio_archive": {
-                "fname": "clotho_audio_development.7z",
-                "url": "https://zenodo.org/record/3490684/files/clotho_audio_development.7z?download=1",
-                "hash": "e3ce88561b317cc3825e8c861cae1ec6",
-            },
-            "captions": {
-                "fname": "clotho_captions_development.csv",
-                "url": "https://zenodo.org/record/3490684/files/clotho_captions_development.csv?download=1",
-                "hash": "dd568352389f413d832add5cf604529f",
-            },
-            "metadata": {
-                "fname": "clotho_metadata_development.csv",
-                "url": "https://zenodo.org/record/3490684/files/clotho_metadata_development.csv?download=1",
-                "hash": "582c18ee47cebdbe33dce1feeab53a56",
-            },
-        },
-        "eval": {
-            "audio_archive": {
-                "fname": "clotho_audio_evaluation.7z",
-                "url": "https://zenodo.org/record/3490684/files/clotho_audio_evaluation.7z?download=1",
-                "hash": "4569624ccadf96223f19cb59fe4f849f",
-            },
-            "captions": {
-                "fname": "clotho_captions_evaluation.csv",
-                "url": "https://zenodo.org/record/3490684/files/clotho_captions_evaluation.csv?download=1",
-                "hash": "1b16b9e57cf7bdb7f13a13802aeb57e2",
-            },
-            "metadata": {
-                "fname": "clotho_metadata_evaluation.csv",
-                "url": "https://zenodo.org/record/3490684/files/clotho_metadata_evaluation.csv?download=1",
-                "hash": "13946f054d4e1bf48079813aac61bf77",
-            },
-        },
-        "test": {
-            "audio_archive": {
-                "fname": "clotho_audio_test.7z",
-                "url": "https://zenodo.org/record/3865658/files/clotho_audio_test.7z?download=1",
-                "hash": "9b3fe72560a621641ff4351ba1154349",
-            },
-            "metadata": {
-                "fname": "clotho_metadata_test.csv",
-                "url": "https://zenodo.org/record/3865658/files/clotho_metadata_test.csv?download=1",
-                "hash": "52f8ad01c229a310a0ff8043df480e21",
-            },
-        },
-    },
-    "v2": {
-        "dev": {
-            "audio_archive": {
-                "fname": "clotho_audio_development.7z",
-                "url": "https://zenodo.org/record/4743815/files/clotho_audio_development.7z?download=1",
-                "hash": "eda144a5e05a60e6d2e37a65fc4720a9",
-            },
-            "captions": {
-                "fname": "clotho_captions_development.csv",
-                "url": "https://zenodo.org/record/4743815/files/clotho_captions_development.csv?download=1",
-                "hash": "800633304e73d3daed364a2ba6069827",
-            },
-            "metadata": {
-                "fname": "clotho_metadata_development.csv",
-                "url": "https://zenodo.org/record/4743815/files/clotho_metadata_development.csv?download=1",
-                "hash": "5fdc51b4c4f3468ff7d251ea563588c9",
-            },
-        },
-        "eval": {
-            "audio_archive": {
-                "fname": "clotho_audio_evaluation.7z",
-                "url": "https://zenodo.org/record/4743815/files/clotho_audio_evaluation.7z?download=1",
-                "hash": "4569624ccadf96223f19cb59fe4f849f",
-            },
-            "captions": {
-                "fname": "clotho_captions_evaluation.csv",
-                "url": "https://zenodo.org/record/4743815/files/clotho_captions_evaluation.csv?download=1",
-                "hash": "1b16b9e57cf7bdb7f13a13802aeb57e2",
-            },
-            "metadata": {
-                "fname": "clotho_metadata_evaluation.csv",
-                "url": "https://zenodo.org/record/4743815/files/clotho_metadata_evaluation.csv?download=1",
-                "hash": "13946f054d4e1bf48079813aac61bf77",
-            },
-        },
-        "val": {
-            "audio_archive": {
-                "fname": "clotho_audio_validation.7z",
-                "url": "https://zenodo.org/record/4743815/files/clotho_audio_validation.7z?download=1",
-                "hash": "0475bfa5793e80f748d32525018ebada",
-            },
-            "captions": {
-                "fname": "clotho_captions_validation.csv",
-                "url": "https://zenodo.org/record/4743815/files/clotho_captions_validation.csv?download=1",
-                "hash": "3109c353138a089c7ba724f27d71595d",
-            },
-            "metadata": {
-                "fname": "clotho_metadata_validation.csv",
-                "url": "https://zenodo.org/record/4743815/files/clotho_metadata_validation.csv?download=1",
-                "hash": "f69cfacebcd47c4d8d30d968f9865475",
-            },
-        },
-        "test": {
-            "audio_archive": {
-                "fname": "clotho_audio_test.7z",
-                "url": "https://zenodo.org/record/3865658/files/clotho_audio_test.7z?download=1",
-                "hash": "9b3fe72560a621641ff4351ba1154349",
-            },
-            "metadata": {
-                "fname": "clotho_metadata_test.csv",
-                "url": "https://zenodo.org/record/3865658/files/clotho_metadata_test.csv?download=1",
-                "hash": "52f8ad01c229a310a0ff8043df480e21",
-            },
-        },
-    },
-    "v2.1": {
-        "dev": {
-            "audio_archive": {
-                "fname": "clotho_audio_development.7z",
-                "url": "https://zenodo.org/record/4783391/files/clotho_audio_development.7z?download=1",
-                "hash": "c8b05bc7acdb13895bb3c6a29608667e",
-            },
-            "captions": {
-                "fname": "clotho_captions_development.csv",
-                "url": "https://zenodo.org/record/4783391/files/clotho_captions_development.csv?download=1",
-                "hash": "d4090b39ce9f2491908eebf4d5b09bae",
-            },
-            "metadata": {
-                "fname": "clotho_metadata_development.csv",
-                "url": "https://zenodo.org/record/4783391/files/clotho_metadata_development.csv?download=1",
-                "hash": "170d20935ecfdf161ce1bb154118cda5",
-            },
-        },
-        "eval": {
-            "audio_archive": {
-                "fname": "clotho_audio_evaluation.7z",
-                "url": "https://zenodo.org/record/4783391/files/clotho_audio_evaluation.7z?download=1",
-                "hash": "4569624ccadf96223f19cb59fe4f849f",
-            },
-            "captions": {
-                "fname": "clotho_captions_evaluation.csv",
-                "url": "https://zenodo.org/record/4783391/files/clotho_captions_evaluation.csv?download=1",
-                "hash": "1b16b9e57cf7bdb7f13a13802aeb57e2",
-            },
-            "metadata": {
-                "fname": "clotho_metadata_evaluation.csv",
-                "url": "https://zenodo.org/record/4783391/files/clotho_metadata_evaluation.csv?download=1",
-                "hash": "13946f054d4e1bf48079813aac61bf77",
-            },
-        },
-        "val": {
-            "audio_archive": {
-                "fname": "clotho_audio_validation.7z",
-                "url": "https://zenodo.org/record/4783391/files/clotho_audio_validation.7z?download=1",
-                "hash": "7dba730be08bada48bd15dc4e668df59",
-            },
-            "captions": {
-                "fname": "clotho_captions_validation.csv",
-                "url": "https://zenodo.org/record/4783391/files/clotho_captions_validation.csv?download=1",
-                "hash": "5879e023032b22a2c930aaa0528bead4",
-            },
-            "metadata": {
-                "fname": "clotho_metadata_validation.csv",
-                "url": "https://zenodo.org/record/4783391/files/clotho_metadata_validation.csv?download=1",
-                "hash": "2e010427c56b1ce6008b0f03f41048ce",
-            },
-        },
-        "test": {
-            "audio_archive": {
-                "fname": "clotho_audio_test.7z",
-                "url": "https://zenodo.org/record/3865658/files/clotho_audio_test.7z?download=1",
-                "hash": "9b3fe72560a621641ff4351ba1154349",
-            },
-            "metadata": {
-                "fname": "clotho_metadata_test.csv",
-                "url": "https://zenodo.org/record/3865658/files/clotho_metadata_test.csv?download=1",
-                "hash": "52f8ad01c229a310a0ff8043df480e21",
-            },
-        },
-    },
-}
 
 CLOTHO_AUDIO_DNAMES = {
     "dev": "development",

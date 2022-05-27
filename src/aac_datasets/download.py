@@ -1,11 +1,55 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import logging
+import sys
+
 from argparse import ArgumentParser, Namespace
 
 from aac_datasets.datasets.audiocaps import AudioCaps
 from aac_datasets.datasets.clotho import Clotho
 from aac_datasets.datasets.macs import MACS
+
+
+def to_bool(s: str) -> bool:
+    s = str(s).lower()
+    if s in ("true",):
+        return True
+    elif s in ("false",):
+        return False
+    else:
+        raise ValueError(f"Invalid argument value {s}. (not a boolean)")
+
+
+def get_main_download_args() -> Namespace:
+    parser = ArgumentParser(
+        description="Download a dataset at specified root directory."
+    )
+
+    parser.add_argument("--root", type=str, default=".")
+    parser.add_argument("--verbose", type=int, default=1)
+
+    subparsers = parser.add_subparsers(dest="dataset", required=True)
+
+    audiocaps_sp = subparsers.add_parser("audiocaps")
+    audiocaps_sp.add_argument("--ffmpeg", type=str, default="ffmpeg")
+    audiocaps_sp.add_argument("--youtube_dl", type=str, default="youtube-dl")
+    audiocaps_sp.add_argument(
+        "--load_tags",
+        type=to_bool,
+        default=True,
+        choices=("false", "true"),
+    )
+
+    clotho_sp = subparsers.add_parser("clotho")
+    clotho_sp.add_argument(
+        "--version", type=str, default="v2.1", choices=["v1", "v2", "v2.1"]
+    )
+
+    _ = subparsers.add_parser("macs")
+
+    args = parser.parse_args()
+    return args
 
 
 def download_audiocaps(
@@ -31,38 +75,11 @@ def download_macs(root: str = ".", verbose: int = 1) -> None:
     _ = MACS(root, download=True, verbose=verbose)
 
 
-def get_main_download_args() -> Namespace:
-    parser = ArgumentParser(
-        description="Download a dataset at specified root directory."
-    )
-
-    parser.add_argument("--root", type=str, default=".")
-    parser.add_argument("--verbose", type=int, default=1)
-
-    subparsers = parser.add_subparsers(dest="dataset")
-
-    audiocaps_sp = subparsers.add_parser("audiocaps")
-    audiocaps_sp.add_argument("--ffmpeg", type=str, default="ffmpeg")
-    audiocaps_sp.add_argument("--youtube_dl", type=str, default="youtube-dl")
-    audiocaps_sp.add_argument(
-        "--load_tags",
-        type=lambda s: s == "true",
-        default="true",
-        choices=["false", "true"],
-    )
-
-    clotho_sp = subparsers.add_parser("clotho")
-    clotho_sp.add_argument(
-        "--version", type=str, default="v2.1", choices=["v1", "v2", "v2.1"]
-    )
-
-    _ = subparsers.add_parser("macs")
-
-    args = parser.parse_args()
-    return args
-
-
 def main_download() -> None:
+    logger = logging.getLogger("aac_datasets")
+    logger.setLevel(logging.DEBUG)
+    logger.addHandler(logging.StreamHandler(sys.stdout))
+
     args = get_main_download_args()
 
     if args.dataset == "audiocaps":
