@@ -274,6 +274,9 @@ class AudioCaps(Dataset):
         return osp.isdir(audio_subset_dpath) and osp.isfile(meta_fpath)
 
     def _prepare_data(self) -> None:
+        if not osp.isdir(self._root):
+            raise RuntimeError(f"Cannot find root directory '{self._root}'.")
+
         try:
             subprocess.check_call(
                 [self.YOUTUBE_DL_PATH, "--help"],

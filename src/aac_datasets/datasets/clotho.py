@@ -459,7 +459,7 @@ class Clotho(Dataset):
 
     def _prepare_data(self) -> None:
         if not osp.isdir(self._root):
-            raise RuntimeError(f"Cannot find directory root={self._root}.")
+            raise RuntimeError(f"Cannot find root directory '{self._root}'.")
 
         os.makedirs(self._dpath_audio, exist_ok=True)
         os.makedirs(self._dpath_csv, exist_ok=True)
