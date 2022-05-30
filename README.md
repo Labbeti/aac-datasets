@@ -78,6 +78,7 @@ torch >= 1.10.1
 torchaudio >= 0.10.1
 py7zr >= 0.17.2
 pyyaml >= 6.0
+tqdm >= 4.64.0
 ```
 
 ## Other requirements (AudioCaps only)
