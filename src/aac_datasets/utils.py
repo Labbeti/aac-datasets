@@ -1,11 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import random
+from typing import List, Tuple
 
-from typing import Any, Dict, List, Optional, Tuple
-
-from torch import nn, Tensor
+from torch import Tensor
 from torch.nn.utils.rnn import pad_sequence
 
 
@@ -26,34 +24,3 @@ class Collate:
             audio_batch, batch_first=True, padding_value=self.pad_value
         )
         return audio_batch, captions_batch
-
-
-class RandomSelect(nn.Module):
-    def __init__(self) -> None:
-        super().__init__()
-
-    def forward(self, captions: list[Any]) -> Any:
-        index = random.randint(0, len(captions) - 1)
-        return captions[index]
-
-
-class TransformDict(nn.Module):
-    def __init__(self, transforms: Optional[Dict[str, Optional[nn.Module]]] = None, **kwargs: Optional[nn.Module]) -> None:
-        if transforms is None:
-            transforms = {}
-        transforms |= kwargs
-        super().__init__()
-        self._transforms = transforms
-
-        for name, transform in self._transforms.items():
-            if transform is not None:
-                self.add_module(name, transform)
-
-    def forward(self, dic: Dict[str, Any]) -> Dict[str, Any]:
-        out = {}
-        for key, value in dic.items():
-            transform = self._transforms.get(key, None)
-            if transform is not None:
-                value = transform(value)
-            out[key] = value
-        return dic
