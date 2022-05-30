@@ -5,6 +5,7 @@ import logging
 import sys
 
 from argparse import ArgumentParser, Namespace
+from typing import Dict
 
 import yaml
 
@@ -23,7 +24,7 @@ def get_main_check_args() -> Namespace:
     return args
 
 
-def check_datasets(root: str, verbose: int = 0) -> dict[str, dict[str, int]]:
+def check_datasets(root: str, verbose: int = 0) -> Dict[str, Dict[str, int]]:
     datasets_lens = {"audiocaps": {}, "clotho": {}, "macs": {}}
 
     if verbose >= 0:

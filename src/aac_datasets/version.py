@@ -4,6 +4,8 @@
 import platform
 import sys
 
+from typing import Dict
+
 import torch
 import torchaudio
 import yaml
@@ -11,7 +13,7 @@ import yaml
 import aac_datasets
 
 
-def get_packages_versions() -> dict[str, str]:
+def get_packages_versions() -> Dict[str, str]:
     return {
         "aac_datasets": aac_datasets.__version__,
         "python": f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}",
