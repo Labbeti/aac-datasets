@@ -611,7 +611,7 @@ class Clotho(Dataset):
 
                 if fname in fname_to_idx.keys():
                     idx = fname_to_idx[fname]
-                    self._all_infos[idx] |= row_copy
+                    self._all_infos[idx].update(row_copy)
                 else:
                     raise RuntimeError(
                         f"Found value {fname=} in CSV metadata file '{metadata_fname}' but not the corresponding audio file."
