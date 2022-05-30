@@ -69,25 +69,23 @@ class AudioCaps(Dataset):
     ```
     """
 
-    SAMPLE_RATE = 32000
-    AUDIO_MIN_LENGTH = 0.6501874  # in seconds
+    AUDIO_FILE_EXTENSION = "flac"
+    AUDIO_N_CHANNELS = 1
     AUDIO_MAX_LENGTH = 10.00096876  # in seconds
-    CAPTIONS_PER_AUDIO = {"train": 1, "val": 5, "test": 5}
+    AUDIO_MIN_LENGTH = 0.6501874  # in seconds
     CAPTION_MIN_LENGTH = 1
     CAPTION_MAX_LENGTH = 52
-    SUBSETS = ("train", "val", "test")
-    AUDIO_N_CHANNELS = 1
-
-    REDIRECT_LOG = False
-    AUDIO_FILE_EXTENSION = "flac"
+    CAPTIONS_PER_AUDIO = {"train": 1, "val": 5, "test": 5}
     DNAME_AUDIO = "audio"
     DNAME_LOG = "logs"
-    FORCE_PREPARE_DATA = False
-    VERIFY_FILES = False
-
     FFMPEG_PATH: str = "ffmpeg"
-    YOUTUBE_DL_PATH: str = "youtube-dl"
+    FORCE_PREPARE_DATA = False
     ITEM_TYPES = ("tuple", "dict", "dataclass", AudioCapsItem.__name__.lower())
+    REDIRECT_LOG = False
+    SAMPLE_RATE = 32000
+    SUBSETS = ("train", "val", "test")
+    VERIFY_FILES = False
+    YOUTUBE_DL_PATH: str = "youtube-dl"
 
     def __init__(
         self,

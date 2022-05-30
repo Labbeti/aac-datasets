@@ -8,6 +8,7 @@ import os
 import os.path as osp
 
 from dataclasses import asdict, astuple, dataclass, field, fields
+from functools import cached_property
 from typing import Any, Dict, List, Optional, Tuple, Type, Union
 
 import torch
@@ -253,20 +254,21 @@ class Clotho(Dataset):
     ```
     """
 
-    SAMPLE_RATE = 44100
-    AUDIO_N_CHANNELS = 1
-    AUDIO_MIN_LENGTH = 15.0  # in seconds
     AUDIO_MAX_LENGTH = 30.0  # in seconds
-    CAPTIONS_PER_AUDIO = {"dev": 5, "val": 5, "eval": 5, "test": 0}
-    CAPTION_MIN_LENGTH = 8
+    AUDIO_MIN_LENGTH = 15.0  # in seconds
+    AUDIO_N_CHANNELS = 1
     CAPTION_MAX_LENGTH = 20
+    CAPTION_MIN_LENGTH = 8
+    CAPTIONS_PER_AUDIO = {"dev": 5, "val": 5, "eval": 5, "test": 0}
+    CLEAN_ARCHIVES: bool = True
+    FORCE_PREPARE_DATA = False
+    ITEM_TYPES = ("tuple", "dict", "dataclass", ClothoItem.__name__.lower())
+    SAMPLE_RATE = 44100
     SUBSETS_DICT = {
         version: tuple(links.keys()) for version, links in CLOTHO_LINKS.items()
     }
     SUBSETS = SUBSETS_DICT[CLOTHO_LAST_VERSION]
     VERSIONS = tuple(CLOTHO_LINKS.keys())
-    ITEM_TYPES = ("tuple", "dict", "dataclass", ClothoItem.__name__.lower())
-    CLEAN_ARCHIVES: bool = True
 
     def __init__(
         self,
@@ -441,33 +443,53 @@ class Clotho(Dataset):
             value = transform(value)
         return value
 
-    @property
-    def _dpath_audio(self) -> str:
-        return osp.join(self._root, f"CLOTHO_{self._version}", "clotho_audio_files")
+    @cached_property
+    def _dpath_data(self) -> str:
+        return osp.join(self._root, f"CLOTHO_{self._version}")
 
-    @property
+    @cached_property
+    def _dpath_audio(self) -> str:
+        return osp.join(self._dpath_data, "clotho_audio_files")
+
+    @cached_property
     def _dpath_audio_subset(self) -> str:
         return osp.join(
-            self._root,
-            f"CLOTHO_{self._version}",
+            self._dpath_data,
             "clotho_audio_files",
             CLOTHO_AUDIO_DNAMES[self._subset],
         )
 
-    @property
+    @cached_property
     def _dpath_csv(self) -> str:
-        return osp.join(self._root, f"CLOTHO_{self._version}", "clotho_csv_files")
+        return osp.join(self._dpath_data, "clotho_csv_files")
+
+    def _is_prepared(self) -> bool:
+        if not all(map(osp.isdir, (self._dpath_audio_subset, self._dpath_csv))):
+            return False
+
+        links = CLOTHO_LINKS[self._version][self._subset]
+        captions_fname = links["captions"]["fname"]
+        captions_fpath = osp.join(self._dpath_csv, captions_fname)
+        with open(captions_fpath, "r") as file:
+            reader = csv.DictReader(file)
+            lines = list(reader)
+        return len(lines) == len(os.listdir(self._dpath_audio_subset))
 
     def _prepare_data(self) -> None:
         if not osp.isdir(self._root):
             raise RuntimeError(f"Cannot find root directory '{self._root}'.")
+
+        if self._is_prepared() and not self.FORCE_PREPARE_DATA:
+            if self._verbose >= 0:
+                logger.info("Dataset is already downloaded and prepared.")
+            return None
 
         os.makedirs(self._dpath_audio, exist_ok=True)
         os.makedirs(self._dpath_csv, exist_ok=True)
 
         if self._verbose >= 1:
             logger.info(
-                f'Download files for the dataset "{self.__class__.__name__}", subset "{self._subset}"...'
+                f"Start to download files for the Clotho dataset, subset '{self._subset}'..."
             )
 
         links = copy.deepcopy(CLOTHO_LINKS[self._version][self._subset])
@@ -489,22 +511,17 @@ class Clotho(Dataset):
             fpath = osp.join(dpath, fname)
             if not osp.isfile(fpath):
                 if self._verbose >= 1:
-                    logger.info(f"Download file '{fname}' from {url=}\"...")
+                    logger.info(f"Download file '{fname}' from {url=}...")
 
-                try:
-                    download_url(
-                        url,
-                        dpath,
-                        fname,
-                        hash_value=hash_,
-                        hash_type="md5",
-                        progress_bar=self._verbose >= 1,
-                        resume=True,
-                    )
-                except KeyboardInterrupt as err:
-                    fpath = osp.join(dpath, fname)
-                    os.remove(fpath)
-                    raise err
+                download_url(
+                    url,
+                    dpath,
+                    fname,
+                    hash_value=hash_,
+                    hash_type="md5",
+                    progress_bar=self._verbose >= 1,
+                    resume=True,
+                )
 
         # Extract audio files from archives
         for info in links.values():
@@ -523,6 +540,8 @@ class Clotho(Dataset):
                         file.extractall(self._dpath_audio)
 
                     if self.CLEAN_ARCHIVES:
+                        if self._verbose >= 1:
+                            logger.info(f"Removing archive file {osp.basename(fpath)}...")
                         os.remove(fpath)
 
                 elif self._verbose >= 1:
@@ -539,6 +558,9 @@ class Clotho(Dataset):
                 )
 
     def _load_data(self) -> None:
+        if not self._is_prepared():
+            raise RuntimeError(f"Dataset is not prepared in root={self._root}.")
+
         # Read fpath of .wav audio files
         links = CLOTHO_LINKS[self._version][self._subset]
         dpath_audio_subset = self._dpath_audio_subset
