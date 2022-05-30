@@ -56,16 +56,16 @@ class AudioCaps(Dataset):
     ```
     root/
     └── AUDIOCAPS_32000Hz
-            ├── train.csv
-            ├── val.csv
-            ├── test.csv
-            └── audio
-                    ├── train
-                    │    └── (46231/49838 files, ~42G for 32KHz)
-                    ├── val
-                    │    └── (465/495 files, ~425M for 32KHz)
-                    └── test
-                            └── (913/975 files, ~832M for 32KHz)
+        ├── train.csv
+        ├── val.csv
+        ├── test.csv
+        └── audio
+            ├── train
+            │    └── (46231/49838 files, ~42G for 32KHz)
+            ├── val
+            │    └── (465/495 files, ~425M for 32KHz)
+            └── test
+                └── (913/975 files, ~832M for 32KHz)
     ```
     """
 

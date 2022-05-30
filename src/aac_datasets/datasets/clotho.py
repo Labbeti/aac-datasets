@@ -232,24 +232,24 @@ class Clotho(Dataset):
 
     ```
     {root}
-    └── CLOTHO_{version}
-            ├── clotho_audio_files
-            │    ├── development
-            │    │    └── (3840 files, ~8.5GB)
-            │    ├── evaluation
-            │    │    └── (1045 files, ~2.4GB)
-            │    ├── validation
-            │    │    └── (1046 files, ~2.4GB)
-            │    └── test
-            │        └── (1044 files, ~2.4GB)
-            └── clotho_csv_files
-                    ├── clotho_captions_development.csv
-                    ├── clotho_captions_evaluation.csv
-                    ├── clotho_captions_validation.csv
-                    ├── clotho_metadata_development.csv
-                    ├── clotho_metadata_evaluation.csv
-                    ├── clotho_metadata_test.csv
-                    └── clotho_metadata_validation.csv
+    └── CLOTHO_v2.1
+        ├── clotho_audio_files
+        │   ├── development
+        │   │    └── (3840 files, ~8.5GB)
+        │   ├── evaluation
+        │   │    └── (1045 files, ~2.4GB)
+        │   ├── validation
+        │   │    └── (1046 files, ~2.4GB)
+        │   └── test
+        │        └── (1044 files, ~2.4GB)
+        └── clotho_csv_files
+            ├── clotho_captions_development.csv
+            ├── clotho_captions_evaluation.csv
+            ├── clotho_captions_validation.csv
+            ├── clotho_metadata_development.csv
+            ├── clotho_metadata_evaluation.csv
+            ├── clotho_metadata_test.csv
+            └── clotho_metadata_validation.csv
     ```
     """
 
@@ -266,6 +266,7 @@ class Clotho(Dataset):
     SUBSETS = SUBSETS_DICT[CLOTHO_LAST_VERSION]
     VERSIONS = tuple(CLOTHO_LINKS.keys())
     ITEM_TYPES = ("tuple", "dict", "dataclass", ClothoItem.__name__.lower())
+    CLEAN_ARCHIVES: bool = True
 
     def __init__(
         self,
@@ -520,6 +521,9 @@ class Clotho(Dataset):
 
                     with SevenZipFile(fpath) as file:
                         file.extractall(self._dpath_audio)
+
+                    if self.CLEAN_ARCHIVES:
+                        os.remove(fpath)
 
                 elif self._verbose >= 1:
                     logger.info(

@@ -9,6 +9,7 @@ import shutil
 import zipfile
 
 from dataclasses import asdict, astuple, dataclass, field, fields
+from functools import cached_property
 from typing import Any, Dict, List, Optional, Tuple, Type, Union
 
 import torch
@@ -36,13 +37,31 @@ class MACSItem:
 
 
 class MACS(Dataset):
-    SAMPLE_RATE = 48000  # in Hz
-    MIN_CAPTIONS_PER_AUDIO = {"full": 2}
-    MAX_CAPTIONS_PER_AUDIO = {"full": 5}
+    """
+    Unofficial MACS pytorch dataset.
+
+    Dataset folder tree:
+
+    ```
+    {root}
+    └── MACS
+        ├── audio
+        │    └── (3930 files, ~13GB)
+        ├── LICENCE.txt
+        ├── MACS.yaml
+        └── MACS_competence.csv
+    ```
+    """
+
     AUDIO_MAX_LENGTH = 10.0  # in seconds
     AUDIO_N_CHANNELS = 2
-    SUBSETS = ("full",)
+    CLEAN_ARCHIVES: bool = True
+    FORCE_PREPARE_DATA = False
     ITEM_TYPES = ("tuple", "dict", "dataclass", MACSItem.__name__.lower())
+    MAX_CAPTIONS_PER_AUDIO = {"full": 5}
+    MIN_CAPTIONS_PER_AUDIO = {"full": 2}
+    SAMPLE_RATE = 48000  # in Hz
+    SUBSETS = ("full",)
 
     def __init__(
         self,
@@ -185,86 +204,115 @@ class MACS(Dataset):
         return self._idx_to_tag[idx]
 
     def _is_prepared(self) -> bool:
-        return osp.isdir(self._dpath_audio) and osp.isdir(self._dpath_captions)
+        if not osp.isdir(self._dpath_audio):
+            return False
+        captions_fpath = osp.join(self._dpath_data, MACS_FILES["captions"]["fname"])
+        if not osp.isfile(captions_fpath):
+            return False
+
+        with open(captions_fpath, "r") as file:
+            data = yaml.safe_load(file)
+        data = data["files"]
+        return len(data) == len(os.listdir(self._dpath_audio))
 
     def _prepare_data(self) -> None:
         if not osp.isdir(self._root):
             raise RuntimeError(f"Cannot find root directory '{self._root}'.")
 
+        if self._is_prepared() and not self.FORCE_PREPARE_DATA:
+            if self._verbose >= 0:
+                logger.info("Dataset is already downloaded and prepared.")
+            return None
+
         os.makedirs(self._dpath_audio, exist_ok=True)
-        os.makedirs(self._dpath_captions, exist_ok=True)
+        os.makedirs(self._dpath_archives, exist_ok=True)
 
-        fname = MACS_FILES["captions"]["fname"]
-        fpath = osp.join(self._dpath_captions, fname)
-        if not osp.isfile(fpath):
-            if self._verbose >= 1:
-                logger.info(f'Downloading captions file "{fname}"...')
-            url = MACS_FILES["captions"]["url"]
-            hash_ = MACS_FILES["captions"]["hash"]
-            download_url(
-                url,
-                self._dpath_captions,
-                fname,
-                hash_,
-                "md5",
-                progress_bar=self._verbose >= 1,
-            )
-
-        captions_fpath = osp.join(self._dpath_captions, MACS_FILES["captions"]["fname"])
-        with open(captions_fpath, "r") as file:
-            captions_data = yaml.safe_load(file)
-            captions_data = captions_data["files"]
-
-        for infos in TAU_URBAN_ACOUSTIC_DEV_FILES.values():
-            fname = infos["fname"]
-            fpath = osp.join(self._dpath_audio, fname)
-
+        for file_info in MACS_FILES.values():
+            dpath = self._dpath_data
+            fname = file_info["fname"]
+            fpath = osp.join(dpath, fname)
             if not osp.isfile(fpath):
                 if self._verbose >= 1:
-                    logger.info(f'Downloading audio zip file "{fname}"...')
-                url = infos["url"]
-                hash_ = infos["hash"]
+                    logger.info(f"Downloading captions file '{fname}'...")
 
+                url = MACS_FILES["captions"]["url"]
+                hash_ = MACS_FILES["captions"]["hash"]
                 download_url(
                     url,
-                    self._dpath_audio,
+                    dpath,
                     fname,
                     hash_,
                     "md5",
                     progress_bar=self._verbose >= 1,
+                    resume=True,
                 )
 
-        for infos in TAU_URBAN_ACOUSTIC_DEV_FILES.values():
-            fname = infos["fname"]
-            fpath = osp.join(self._dpath_audio, fname)
+        captions_fpath = osp.join(self._dpath_data, MACS_FILES["captions"]["fname"])
+        with open(captions_fpath, "r") as file:
+            captions_data = yaml.safe_load(file)
+        captions_data = captions_data["files"]
 
-            macs_fnames = [data["filename"] for data in captions_data]
-            with zipfile.ZipFile(fpath, "r") as file:
-                fmembers_to_extract = [
-                    fpath
-                    for fpath in file.namelist()
-                    if osp.basename(fpath) in macs_fnames
-                ]
-                fmembers_to_extract = [
-                    member
-                    for member in fmembers_to_extract
-                    if not osp.isfile(osp.join(self._dpath_audio, osp.basename(member)))
-                ]
-                if self._verbose >= 1 and len(fmembers_to_extract) > 0:
+        for i, infos in enumerate(TAU_URBAN_ACOUSTIC_DEV_FILES.values()):
+            dpath = self._dpath_archives
+            zip_fname = infos["fname"]
+            zip_fpath = osp.join(dpath, zip_fname)
+
+            if not osp.isfile(zip_fpath):
+                if self._verbose >= 1:
                     logger.info(
-                        f"Extracting {len(fmembers_to_extract)}/{len(file.namelist())} audio files from ZIP file..."
+                        f"Downloading audio zip file '{zip_fpath}'... ({i+1}/{len(TAU_URBAN_ACOUSTIC_DEV_FILES)})"
                     )
 
-                file.extractall(self._dpath_audio, fmembers_to_extract)
-                for fname in fmembers_to_extract:
-                    full_fpath = osp.join(self._dpath_audio, fname)
-                    tgt_fpath = osp.join(self._dpath_audio, osp.basename(fname))
-                    shutil.move(full_fpath, tgt_fpath)
+                url = infos["url"]
+                hash_ = infos["hash"]
+                download_url(
+                    url,
+                    dpath,
+                    zip_fname,
+                    hash_,
+                    "md5",
+                    progress_bar=self._verbose >= 1,
+                    resume=True,
+                )
+
+        macs_fnames = dict.fromkeys(data["filename"] for data in captions_data)
+        for i, infos in enumerate(TAU_URBAN_ACOUSTIC_DEV_FILES.values()):
+            zip_fname = infos["fname"]
+            zip_fpath = osp.join(self._dpath_archives, zip_fname)
+
+            with zipfile.ZipFile(zip_fpath, "r") as file:
+                members_to_extract = [
+                    member
+                    for member in file.namelist()
+                    if osp.basename(member) in macs_fnames
+                    and not osp.isfile(
+                        osp.join(self._dpath_audio, osp.basename(member))
+                    )
+                ]
+
+                if len(members_to_extract) > 0:
+                    if self._verbose >= 1:
+                        logger.info(
+                            f"Extracting {len(members_to_extract)}/{len(file.namelist())} audio files from ZIP file '{zip_fname}'... ({i+1}/{len(TAU_URBAN_ACOUSTIC_DEV_FILES)})"
+                        )
+
+                    file.extractall(self._dpath_archives, members_to_extract)
+                    for member in members_to_extract:
+                        extracted_fpath = osp.join(self._dpath_archives, member)
+                        target_fpath = osp.join(self._dpath_audio, osp.basename(member))
+                        shutil.move(extracted_fpath, target_fpath)
+
+        if self.CLEAN_ARCHIVES:
+            if self._verbose >= 1:
+                logger.info(f"Removing archives files in {self._dpath_archives}...")
+            shutil.rmtree(self._dpath_archives, ignore_errors=True)
 
         audio_fnames = [
             name for name in os.listdir(self._dpath_audio) if name.endswith(".wav")
         ]
         audio_fpaths = [osp.join(self._dpath_audio, name) for name in audio_fnames]
+        assert len(audio_fpaths) == len(macs_fnames)
+
         if self._verbose >= 1:
             logger.info(
                 f"{len(audio_fpaths)} audio files has been prepared for MACS dataset."
@@ -274,25 +322,23 @@ class MACS(Dataset):
         if not self._is_prepared():
             raise RuntimeError(f"Dataset is not prepared in root={self._root}.")
 
-        captions_fpath = osp.join(self._dpath_captions, MACS_FILES["captions"]["fname"])
+        captions_fpath = osp.join(self._dpath_data, MACS_FILES["captions"]["fname"])
         if self._verbose >= 1:
             logger.debug(f'Loading captions file "{captions_fpath}"...')
 
         with open(captions_fpath, "r") as file:
             data = yaml.safe_load(file)
-            self._all_infos = [
-                {
-                    "fname": item["filename"],
-                    "captions": [
-                        subitem["sentence"] for subitem in item["annotations"]
-                    ],
-                    "tags": [subitem["tags"] for subitem in item["annotations"]],
-                    "annotators_ids": [
-                        subitem["annotator_id"] for subitem in item["annotations"]
-                    ],
-                }
-                for item in data["files"]
-            ]
+        self._all_infos = [
+            {
+                "fname": item["filename"],
+                "captions": [subitem["sentence"] for subitem in item["annotations"]],
+                "tags": [subitem["tags"] for subitem in item["annotations"]],
+                "annotators_ids": [
+                    subitem["annotator_id"] for subitem in item["annotations"]
+                ],
+            }
+            for item in data["files"]
+        ]
 
         all_tags = [item["tags"] for item in self._all_infos]
         all_tags_flat = (
@@ -351,13 +397,17 @@ class MACS(Dataset):
         if self._verbose >= 1:
             logger.info(f"{self.__class__.__name__} has been loaded. (len={len(self)})")
 
-    @property
-    def _dpath_audio(self) -> str:
-        return osp.join(self._root, "MACS", "audio")
+    @cached_property
+    def _dpath_data(self) -> str:
+        return osp.join(self._root, "MACS")
 
-    @property
-    def _dpath_captions(self) -> str:
-        return osp.join(self._root, "MACS", "captions")
+    @cached_property
+    def _dpath_audio(self) -> str:
+        return osp.join(self._dpath_data, "audio")
+
+    @cached_property
+    def _dpath_archives(self) -> str:
+        return osp.join(self._dpath_data, "archives")
 
     def __repr__(self) -> str:
         return "MACS()"

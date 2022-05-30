@@ -51,13 +51,19 @@ for audio_batch, captions_batch in dataloader:
 ```
 
 ## Datasets stats
-Here is the **train** subset statistics for each dataset :
+Here is the statistics for each dataset :
 
 | | AudioCaps | Clotho | MACS |
 |:---:|:---:|:---:|:---:|
 | Subset(s) | train, val, test | dev, val, eval, test | full |
 | Sample rate | 32000 | 44100 | 48000 |
+| Downloaded size | 43GB | 16GB | 13GB |
 | Audio source | AudioSet (youtube) | Freesound | TAU Urban Acoustic Scenes 2019 |
+
+Here is the **train** subset statistics for each dataset :
+
+| | AudioCaps/train | Clotho/dev | MACS/full |
+|:---:|:---:|:---:|:---:|
 | Nb audios | 49838 | 3840 | 3930 |
 | Total audio duration | 136.6h<sup>1</sup> | 24.0h | 10.9h |
 | Audio duration range | 0.5-10s | 15-30s | 10s |
@@ -69,6 +75,7 @@ Here is the **train** subset statistics for each dataset :
 <sup>1</sup> This duration is estimated on the total duration of 46230/49838 files of 126.7h.
 
 <sup>2</sup> The sentences are cleaned (lowercase+remove punctuation) and tokenized using the spacy tokenizer to count the words.
+
 
 ## Requirements
 
