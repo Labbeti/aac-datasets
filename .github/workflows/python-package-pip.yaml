@@ -1,0 +1,42 @@
+# Template: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
+
+name: Python package using Pip
+
+on:
+  push:
+    branches: [ dev ]
+  pull_request:
+    branches: [ dev ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    # Checkout repository and submodules
+    - name: Checkout repository and submodules
+      uses: actions/checkout@v2
+    # Set up Python
+    - name: Set up Python 3.8
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+    # Load cache of pip dependencies
+    - uses: actions/cache@master
+      id: cache_requirements
+      with:
+        path: ${{ env.pythonLocation }}/lib/python3.8/site-packages/*
+        key: ${{ runner.os }}-pip-${{ hashFiles('setup.cfg') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+          ${{ runner.os }}-
+    # Install pip dependencies if needed
+    - name: Install pip dependencies
+      if: steps.cache_requirements.outputs.cache-hit != 'true'
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install -e .[tests]
+    # Run flake8
+    - name: Lint with flake8
+      run: |
+        python -m flake8 --config .flake8 --exit-zero src
