@@ -57,7 +57,7 @@ Here is the statistics for each dataset :
 |:---:|:---:|:---:|:---:|
 | Subset(s) | train, val, test | dev, val, eval, test | full |
 | Sample rate | 32000 | 44100 | 48000 |
-| Downloaded size | 43GB | 16GB | 13GB |
+| Estimated  size | 43GB | 16GB | 13GB |
 | Audio source | AudioSet (youtube) | Freesound | TAU Urban Acoustic Scenes 2019 |
 
 Here is the **train** subset statistics for each dataset :
@@ -75,7 +75,6 @@ Here is the **train** subset statistics for each dataset :
 <sup>1</sup> This duration is estimated on the total duration of 46230/49838 files of 126.7h.
 
 <sup>2</sup> The sentences are cleaned (lowercase+remove punctuation) and tokenized using the spacy tokenizer to count the words.
-
 
 ## Requirements
 
