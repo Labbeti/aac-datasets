@@ -541,7 +541,9 @@ class Clotho(Dataset):
 
                     if self.CLEAN_ARCHIVES:
                         if self._verbose >= 1:
-                            logger.info(f"Removing archive file {osp.basename(fpath)}...")
+                            logger.info(
+                                f"Removing archive file {osp.basename(fpath)}..."
+                            )
                         os.remove(fpath)
 
                 elif self._verbose >= 1:
