@@ -1,3 +1,5 @@
+<!-- # -*- coding: utf-8 -*- -->
+
 <div align="center">
 
 # Automated Audio Captioning datasets for Pytorch
@@ -5,57 +7,11 @@
 <a href="https://www.python.org/"><img alt="Python" src="https://img.shields.io/badge/-Python 3.8+-blue?style=for-the-badge&logo=python&logoColor=white"></a>
 <a href="https://pytorch.org/get-started/locally/"><img alt="PyTorch" src="https://img.shields.io/badge/-PyTorch 1.10.1-ee4c2c?style=for-the-badge&logo=pytorch&logoColor=white"></a>
 <a href="https://black.readthedocs.io/en/stable/"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-black.svg?style=for-the-badge&labelColor=gray"></a>
+<a href="https://github.com/Labbeti/aac_datasets/actions"><img alt="test" src="https://img.shields.io/github/workflow/status/Labbeti/aac_datasets/Python%20package%20using%20Pip/master?style=for-the-badge&logo=github"></a>
 
 Automated Audio Captioning Unofficial datasets source code for **AudioCaps** [1], **Clotho** [2], and **MACS** [3] designed for Pytorch.
 
 </div>
-
-<img alt="Build Status" src="https://github.com/Labbeti/aac_datasets/actions/workflows/python-package-pip.yaml/badge.svg">
-
-<a href="https://github.com/Labbeti/aac_datasets/actions"><img alt="Build" src="https://img.shields.io/github/workflow/status/Labbeti/aac_datasets/python-package-pip.yaml?style=for-the-badge&logo=github"></a>
-
-tests
-
-![TEST](https://img.shields.io/github/workflow/status/Labbeti/aac_datasets/python-package-pip.yaml?style=flat&logo=github)
-
-![TEST](https://img.shields.io/github/workflow/status/Labbeti/aac_datasets/python-package-pip.yaml?style=for-the-badge&logo=github)
-
-![TEST](https://img.shields.io/github/workflow/status/Labbeti/aac_datasets/python-package-pip.yaml/badge.svg?style=for-the-badge&logo=github)
-
-![TEST](https://img.shields.io/github/workflow/status/Labbeti/aac_datasets/Python%20package%20using%20Pip?style=for-the-badge&logo=github)
-
-![TEST](https://img.shields.io/github/workflow/status/Labbeti/aac_datasets/Python%20package%20using%20Pip?style=for-the-badge&logo=github)
-
-![TEST](https://img.shields.io/github/workflow/status/Labbeti/aac_datasets/Python%20package%20using%20Pip)
-
-![TEST](https://img.shields.io/github/workflow/status/Labbeti/aac_datasets/python-package-pip)
-
-![TEST](https://img.shields.io/github/workflow/status/Labbeti/aac_datasets/python-package-pip.yaml)
-
-<!-- <img alt="test" src="https://github.com/Labbeti/aac_datasets/actions/workflows/python-package-pip.yaml/badge.svg"> -->
-
-<img alt="test" src="https://img.shields.io/github/Labbeti/aac_datasets/actions/workflows/python-package-pip.yaml/badge.svg">
-
-<img alt="test" src="https://img.shields.io/github/workflow/status/Labbeti/aac_datasets/python-package-pip.yaml/badge.svg">
-
-<img alt="test" src="https://img.shields.io/github/workflow/status/Labbeti/aac_datasets/Python%20package%20using%20Pip/badge.svg">
-
-<img alt="test" src="https://img.shields.io/github/workflow/status/Labbeti/aac_datasets/Python%20package%20using%20Pip">
-
-test again
-
-<img alt="test" src="https://img.shields.io/github/workflow/status/Labbeti/aac_datasets/python-package-pip/dev">
-
-<img alt="test" src="https://img.shields.io/github/workflow/status/Labbeti/aac_datasets/python-package-pip/master">
-
-<img alt="test" src="https://img.shields.io/github/workflow/status/Labbeti/aac_datasets/python-package-pip.yaml/dev">
-
-<img alt="test" src="https://img.shields.io/github/workflow/status/Labbeti/aac_datasets/python-package-pip.yaml/master">
-
-<img alt="test" src="https://img.shields.io/github/workflow/status/Labbeti/aac_datasets/Python%20package%20using%20Pip/dev">
-
-<img alt="test" src="https://img.shields.io/github/workflow/status/Labbeti/aac_datasets/Python%20package%20using%20Pip/master">
-
 
 ## Installation
 
@@ -104,7 +60,7 @@ Here is the statistics for each dataset :
 |:---:|:---:|:---:|:---:|
 | Subset(s) | train, val, test | dev, val, eval, test | full |
 | Sample rate | 32000 | 44100 | 48000 |
-| Estimated  size | 43GB | 16GB | 13GB |
+| Estimated size | 43GB | 16GB | 13GB |
 | Audio source | AudioSet (youtube) | Freesound | TAU Urban Acoustic Scenes 2019 |
 
 Here is the **train** subset statistics for each dataset :
@@ -123,7 +79,8 @@ Here is the **train** subset statistics for each dataset :
 
 <sup>2</sup> The sentences are cleaned (lowercase+remove punctuation) and tokenized using the spacy tokenizer to count the words.
 
-## Packages required
+## Requirements
+### Python packages
 
 The requirements are automatically installed when using pip on this repository.
 ```
@@ -134,7 +91,7 @@ pyyaml >= 6.0
 tqdm >= 4.64.0
 ```
 
-## Other requirements (AudioCaps only)
+### External requirements (AudioCaps only)
 
 The external requirements needed to download **AudioCaps** are **ffmpeg** and **youtube-dl**.
 These two programs can be download on Ubuntu using `sudo apt install ffmpeg youtube-dl`.
