@@ -10,7 +10,7 @@ import zipfile
 
 from dataclasses import asdict, astuple, dataclass, field, fields
 from functools import cached_property
-from typing import Any, Dict, List, Optional, Tuple, Type, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import torch
 import torchaudio
@@ -70,7 +70,7 @@ class MACS(Dataset):
         download: bool = False,
         transforms: Optional[Dict[str, Optional[nn.Module]]] = None,
         unfold: bool = False,
-        item_type: Union[str, Type] = "tuple",
+        item_type: str = "tuple",
         multihot_tags: bool = False,
         verbose: int = 0,
     ) -> None:
@@ -97,11 +97,13 @@ class MACS(Dataset):
 
         if transforms is None:
             transforms = {}
-        transforms = {
-            name: transform
-            for name, transform in transforms.items()
-            if transform is not None
-        }
+
+        accepted_keys = [field_.name for field_ in fields(MACSItem)]
+        for key in transforms.keys():
+            if key not in accepted_keys:
+                raise ValueError(
+                    f"Invalid transform {key=}. (expected one of {accepted_keys})"
+                )
 
         super().__init__()
         self._root = root

@@ -291,7 +291,7 @@ class AudioCaps(Dataset):
                 stderr=subprocess.DEVNULL,
             )
         except (CalledProcessError, PermissionError, FileNotFoundError) as err:
-            logger.error(f"Cannot use ffmpeg path '{self.FFMPEG_PATH}''. ({err})")
+            logger.error(f"Cannot use ffmpeg path '{self.FFMPEG_PATH}'. ({err})")
             raise err
 
         if self._is_prepared() and not self.FORCE_PREPARE_DATA:
