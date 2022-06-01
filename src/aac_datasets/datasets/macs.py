@@ -32,8 +32,9 @@ class MACSItem:
     tags: List[List[str]] = field(default_factory=list)
     annotators_ids: List[str] = field(default_factory=list)
     fname: Optional[str] = None
-    index: Optional[int] = None
+    index: int = -1
     dataset: str = "macs"
+    sr: int = -1
 
 
 class MACS(Dataset):
@@ -57,7 +58,7 @@ class MACS(Dataset):
     AUDIO_N_CHANNELS = 2
     CLEAN_ARCHIVES: bool = True
     FORCE_PREPARE_DATA = False
-    ITEM_TYPES = ("tuple", "dict", "dataclass", MACSItem.__name__.lower())
+    ITEM_TYPES = ("tuple", "dict", "dataclass")
     MAX_CAPTIONS_PER_AUDIO = {"full": 5}
     MIN_CAPTIONS_PER_AUDIO = {"full": 2}
     SAMPLE_RATE = 48000  # in Hz
@@ -89,13 +90,9 @@ class MACS(Dataset):
         :param verbose: Verbose level to use. Can be 0 or 1.
             defaults to 0.
         """
-        if isinstance(item_type, type):
-            item_type = item_type.__name__
-        item_type = item_type.lower()
-
         if item_type not in self.ITEM_TYPES:
             raise ValueError(
-                f"Invalid argument {item_type=} for {self.__class__.__name__}. (expected one of {self.ITEM_TYPES})"
+                f"Invalid argument {item_type=} for MACS. (expected one of {self.ITEM_TYPES})"
             )
 
         if transforms is None:
@@ -134,11 +131,11 @@ class MACS(Dataset):
             return astuple(item)
         elif self._item_type == "dict":
             return asdict(item)
-        elif self._item_type in ("dataclass", MACSItem.__name__.lower()):
+        elif self._item_type == "dataclass":
             return item
         else:
             raise ValueError(
-                f"Invalid item_type={self._item_type} for {self.__class__.__name__}. (expected one of {self.ITEM_TYPES})"
+                f"Invalid item_type={self._item_type} for MACS. (expected one of {self.ITEM_TYPES})"
             )
 
     def get_raw(self, name: str, index: int) -> Any:

@@ -12,7 +12,7 @@ import tqdm
 
 from dataclasses import asdict, astuple, dataclass, field, fields
 from subprocess import CalledProcessError
-from typing import Any, Dict, List, Optional, Tuple, Type, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import torch
 import torchaudio
@@ -32,9 +32,10 @@ class AudioCapsItem:
     captions: List[str] = field(default_factory=list)
     tags: Optional[List[str]] = None
     fname: Optional[str] = None
-    index: Optional[int] = None
+    index: int = -1
     dataset: str = "audiocaps"
     subset: Optional[str] = None
+    sr: int = -1
 
 
 class AudioCaps(Dataset):
@@ -80,7 +81,7 @@ class AudioCaps(Dataset):
     DNAME_LOG = "logs"
     FFMPEG_PATH: str = "ffmpeg"
     FORCE_PREPARE_DATA = False
-    ITEM_TYPES = ("tuple", "dict", "dataclass", AudioCapsItem.__name__.lower())
+    ITEM_TYPES = ("tuple", "dict", "dataclass")
     REDIRECT_LOG = False
     SAMPLE_RATE = 32000
     SUBSETS = ("train", "val", "test")
@@ -95,7 +96,7 @@ class AudioCaps(Dataset):
         transforms: Optional[Dict[str, Optional[nn.Module]]] = None,
         accept_invalid_fpath: bool = False,
         unfold: bool = False,
-        item_type: Union[str, Type] = "tuple",
+        item_type: str = "tuple",
         load_tags: bool = True,
         verbose: int = 0,
     ) -> None:
@@ -114,7 +115,7 @@ class AudioCaps(Dataset):
         :param unfold: If True, map captions to audio instead of audio to caption.
             defaults to True.
         :param item_type: The type of the value returned by __getitem__.
-            Can be 'tuple', 'dict' 'dataclass', or 'AudioCapsItem'. Case insensitive.
+            Can be 'tuple', 'dict' 'dataclass', or 'AudioCapsItem'.
             defaults to 'tuple'.
         :param verbose: Verbose level.
             defaults to 0.
@@ -124,13 +125,9 @@ class AudioCaps(Dataset):
                 f"Invalid argument {subset=} for AudioCaps. (expected one of {self.SUBSETS})"
             )
 
-        if isinstance(item_type, Type):
-            item_type = item_type.__name__
-        item_type = item_type.lower()
-
         if item_type not in self.ITEM_TYPES:
             raise ValueError(
-                f"Invalid argument {item_type=} for {self.__class__.__name__}. (expected one of {self.ITEM_TYPES})"
+                f"Invalid argument {item_type=} for AudioCaps. (expected one of {self.ITEM_TYPES})"
             )
 
         if transforms is None:
@@ -181,11 +178,11 @@ class AudioCaps(Dataset):
             return astuple(item)
         elif self._item_type == "dict":
             return asdict(item)
-        elif self._item_type in ("dataclass", AudioCapsItem.__name__.lower()):
+        elif self._item_type == "dataclass":
             return item
         else:
             raise ValueError(
-                f"Invalid item_type={self._item_type} for {self.__class__.__name__}_{self._subset}. (expected one of {self.ITEM_TYPES})"
+                f"Invalid item_type={self._item_type} for AudioCaps_{self._subset}. (expected one of {self.ITEM_TYPES})"
             )
 
     def get_raw(self, name: str, index: int) -> Any:

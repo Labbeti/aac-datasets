@@ -42,10 +42,10 @@ audio, captions, *_ = dataset[0]
 ```python
 from torch.utils.data.dataloader import DataLoader
 from aac_datasets import MACS
-from aac_datasets.utils import Collate
+from aac_datasets.utils import BasicCollate
 
 dataset = MACS(root=".", download=True)
-dataloader = DataLoader(dataset, batch_size=4, collate_fn=Collate())
+dataloader = DataLoader(dataset, batch_size=4, collate_fn=BasicCollate())
 
 for audio_batch, captions_batch in dataloader:
     # audio_batch: Tensor of shape (batch_size=4, n_channels=2, audio_max_size)

@@ -9,7 +9,7 @@ import os.path as osp
 
 from dataclasses import asdict, astuple, dataclass, field, fields
 from functools import cached_property
-from typing import Any, Dict, List, Optional, Tuple, Type, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import torch
 import torchaudio
@@ -33,6 +33,7 @@ class ClothoItem:
     index: Optional[int] = None
     dataset: str = "clotho"
     subset: Optional[str] = None
+    sr: int = -1
 
 
 CLOTHO_LINKS = {
@@ -262,7 +263,7 @@ class Clotho(Dataset):
     CAPTIONS_PER_AUDIO = {"dev": 5, "val": 5, "eval": 5, "test": 0}
     CLEAN_ARCHIVES: bool = True
     FORCE_PREPARE_DATA = False
-    ITEM_TYPES = ("tuple", "dict", "dataclass", ClothoItem.__name__.lower())
+    ITEM_TYPES = ("tuple", "dict", "dataclass")
     SAMPLE_RATE = 44100
     SUBSETS_DICT = {
         version: tuple(links.keys()) for version, links in CLOTHO_LINKS.items()
@@ -277,7 +278,7 @@ class Clotho(Dataset):
         download: bool = False,
         transforms: Optional[Dict[str, Optional[nn.Module]]] = None,
         unfold: bool = False,
-        item_type: Union[str, Type] = "tuple",
+        item_type: str = "tuple",
         version: str = "v2.1",
         verbose: int = 0,
     ) -> None:
@@ -294,7 +295,7 @@ class Clotho(Dataset):
         :param unfold: If True, map captions to audio instead of audio to caption.
             defaults to True.
         :param item_type: The type of the value returned by __getitem__.
-            Can be 'tuple', 'dict' 'dataclass', or 'ClothoItem'. Case insensitive.
+            Can be 'tuple', 'dict' 'dataclass', or 'ClothoItem'.
             defaults to 'tuple'.
         :param version: The version of the dataset. Can be 'v1', 'v2' or 'v2.1'.
             defaults to 'v2.1'.
@@ -311,13 +312,9 @@ class Clotho(Dataset):
                 f"Invalid Clotho argument {subset=} for {version=}. Must be one of {tuple(CLOTHO_LINKS[version].keys())}."
             )
 
-        if isinstance(item_type, Type):
-            item_type = item_type.__name__
-        item_type = item_type.lower()
-
         if item_type not in self.ITEM_TYPES:
             raise ValueError(
-                f"Invalid argument {item_type=} for {self.__class__.__name__}. (expected one of {self.ITEM_TYPES})"
+                f"Invalid argument {item_type=} for Clotho. (expected one of {self.ITEM_TYPES})"
             )
 
         if transforms is None:
@@ -363,11 +360,11 @@ class Clotho(Dataset):
             return astuple(item)
         elif self._item_type == "dict":
             return asdict(item)
-        elif self._item_type in ("dataclass", ClothoItem.__name__.lower()):
+        elif self._item_type == "dataclass":
             return item
         else:
             raise ValueError(
-                f"Invalid item_type={self._item_type} for {self.__class__.__name__}_{self._subset}. (expected one of {self.ITEM_TYPES})"
+                f"Invalid item_type={self._item_type} for Clotho_{self._subset}. (expected one of {self.ITEM_TYPES})"
             )
 
     def __len__(self) -> int:
