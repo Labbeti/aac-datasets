@@ -24,6 +24,24 @@ tests
 
 ![TEST](https://img.shields.io/github/workflow/status/Labbeti/aac_datasets/Python%20package%20using%20Pip?style=for-the-badge&logo=github)
 
+![TEST](https://img.shields.io/github/workflow/status/Labbeti/aac_datasets/Python%20package%20using%20Pip?style=for-the-badge&logo=github)
+
+![TEST](https://img.shields.io/github/workflow/status/Labbeti/aac_datasets/Python%20package%20using%20Pip)
+
+![TEST](https://img.shields.io/github/workflow/status/Labbeti/aac_datasets/python-package-pip)
+
+![TEST](https://img.shields.io/github/workflow/status/Labbeti/aac_datasets/python-package-pip.yaml)
+
+<img alt="test" src="https://github.com/Labbeti/aac_datasets/actions/workflows/python-package-pip.yaml/badge.svg">
+
+<img alt="test" src="https://img.shields.io/github/Labbeti/aac_datasets/actions/workflows/python-package-pip.yaml/badge.svg">
+
+<img alt="test" src="https://img.shields.io/github/workflow/status/Labbeti/aac_datasets/python-package-pip.yaml/badge.svg">
+
+<img alt="test" src="https://img.shields.io/github/workflow/status/Labbeti/aac_datasets/Python%20package%20using%20Pip/badge.svg">
+
+<img alt="test" src="https://img.shields.io/github/workflow/status/Labbeti/aac_datasets/Python%20package%20using%20Pip">
+
 
 ## Installation
 
@@ -91,7 +109,7 @@ Here is the **train** subset statistics for each dataset :
 
 <sup>2</sup> The sentences are cleaned (lowercase+remove punctuation) and tokenized using the spacy tokenizer to count the words.
 
-## Requirements
+## Packages required
 
 The requirements are automatically installed when using pip on this repository.
 ```
