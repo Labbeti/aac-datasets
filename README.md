@@ -16,9 +16,11 @@ Automated Audio Captioning Unofficial datasets source code for **AudioCaps** [1]
 
 ![TEST](https://img.shields.io/github/workflow/status/Labbeti/aac_datasets/python-package-pip.yaml?style=flat&logo=github)
 
-![TEST](https://img.shields.io/github/workflow/status/Labbeti/aac_datasets/python-package-pip.yaml?logo=github)
+![TEST](https://img.shields.io/github/workflow/status/Labbeti/aac_datasets/python-package-pip.yaml?style=for-the-badge&logo=github)
 
-![TEST](https://img.shields.io/github/workflow/status/Labbeti/aac_datasets/python-package-pip.yaml)
+![TEST](https://img.shields.io/github/workflow/status/Labbeti/aac_datasets/python-package-pip.yaml/badge.svg?style=for-the-badge&logo=github)
+
+![TEST](https://img.shields.io/github/workflow/status/Labbeti/aac_datasets/python-package-pip.yaml/badge.png?style=for-the-badge&logo=github)
 
 ## Installation
 
