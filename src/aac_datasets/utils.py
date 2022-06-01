@@ -21,11 +21,18 @@ class BasicCollate:
 
         are_tensors = [isinstance(audio, Tensor) for audio in audio_batch]
         if not all(are_tensors):
-            raise TypeError(f"Invalid audio type in {self.__class__.__name__}. (found {are_tensors=})")
+            raise TypeError(
+                f"Invalid audio type in {self.__class__.__name__}. (found {are_tensors=})"
+            )
 
-        are_paddable = [audio.ndim > 0 and audio.shape[1:] == audio_batch[0].shape[1:] for audio in audio_batch]
+        are_paddable = [
+            audio.ndim > 0 and audio.shape[1:] == audio_batch[0].shape[1:]
+            for audio in audio_batch
+        ]
         if not all(are_paddable):
-            raise TypeError(f"Invalid audio shapes in {self.__class__.__name__}. (found {are_paddable=})")
+            raise TypeError(
+                f"Invalid audio shapes in {self.__class__.__name__}. (found {are_paddable=})"
+            )
 
         audio_batch = pad_sequence(
             audio_batch,
