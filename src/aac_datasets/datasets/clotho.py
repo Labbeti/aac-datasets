@@ -493,9 +493,7 @@ class Clotho(Dataset):
         os.makedirs(self._dpath_csv, exist_ok=True)
 
         if self._verbose >= 1:
-            logger.info(
-                f"Start to download files for clotho_{self._subset}..."
-            )
+            logger.info(f"Start to download files for clotho_{self._subset}...")
 
         links = copy.deepcopy(CLOTHO_LINKS[self._version][self._subset])
         extensions = ("7z", "csv", "zip")
@@ -544,15 +542,23 @@ class Clotho(Dataset):
 
                 if extension == "7z":
                     archive_file = SevenZipFile(fpath)
-                    compressed_fnames = [osp.basename(fname) for fname in archive_file.getnames()]
+                    compressed_fnames = [
+                        osp.basename(fname) for fname in archive_file.getnames()
+                    ]
                 elif extension == "zip":
                     archive_file = ZipFile(fpath)
-                    compressed_fnames = [osp.basename(file.filename) for file in archive_file.filelist]
+                    compressed_fnames = [
+                        osp.basename(file.filename) for file in archive_file.filelist
+                    ]
                 else:
                     raise RuntimeError
 
                 # Ignore dir name from archive file
-                compressed_fnames = [fname for fname in compressed_fnames if fname not in ("", CLOTHO_AUDIO_DNAMES[self._subset])]
+                compressed_fnames = [
+                    fname
+                    for fname in compressed_fnames
+                    if fname not in ("", CLOTHO_AUDIO_DNAMES[self._subset])
+                ]
                 extracted_fnames = os.listdir(self._dpath_audio_subset)
 
                 if set(extracted_fnames) != set(compressed_fnames):
@@ -561,7 +567,9 @@ class Clotho(Dataset):
                     # Check if files is good now
                     extracted_fnames = os.listdir(self._dpath_audio_subset)
                     if set(extracted_fnames) != set(compressed_fnames):
-                        raise RuntimeError(f"Invalid number of audios extracted. (found {len(extracted_fnames)} files but expected the same {len(compressed_fnames)} files)")
+                        raise RuntimeError(
+                            f"Invalid number of audios extracted. (found {len(extracted_fnames)} files but expected the same {len(compressed_fnames)} files)"
+                        )
 
                 archive_file.close()
 
@@ -581,9 +589,7 @@ class Clotho(Dataset):
                 if extension in ("7z", "zip"):
                     fpath = osp.join(self._dpath_audio, fname)
                     if self._verbose >= 1:
-                        logger.info(
-                            f"Removing archive file {osp.basename(fpath)}..."
-                        )
+                        logger.info(f"Removing archive file {osp.basename(fpath)}...")
                     os.remove(fpath)
 
     def _load_data(self) -> None:
@@ -686,9 +692,7 @@ class Clotho(Dataset):
 
         self._all_infos = self._all_infos
         if self._verbose >= 1:
-            logger.info(
-                f"clotho_{self._subset} has been loaded. (len={len(self)})"
-            )
+            logger.info(f"clotho_{self._subset} has been loaded. (len={len(self)})")
 
     def __repr__(self) -> str:
         return f"Clotho(subset={self._subset})"

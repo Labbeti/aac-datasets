@@ -29,24 +29,15 @@ def get_main_download_args() -> Namespace:
         description="Download a dataset at specified root directory."
     )
 
-    parser.add_argument(
-        "--root", type=str, default="."
-    )
-    parser.add_argument(
-        "--verbose", type=int, default=1
-    )
-    parser.add_argument(
-        "--force", type=to_bool, default=False, choices=(False, True)
-    )
+    parser.add_argument("--root", type=str, default=".")
+    parser.add_argument("--verbose", type=int, default=1)
+    parser.add_argument("--force", type=to_bool, default=False, choices=(False, True))
 
     subparsers = parser.add_subparsers(dest="dataset", required=True)
 
     audiocaps_subparser = subparsers.add_parser("audiocaps")
-    audiocaps_subparser.add_argument(
-        "--ffmpeg", type=str, default="ffmpeg"
-    )
-    audiocaps_subparser.add_argument(
-        "--youtube_dl", type=str, default="youtube-dl")
+    audiocaps_subparser.add_argument("--ffmpeg", type=str, default="ffmpeg")
+    audiocaps_subparser.add_argument("--youtube_dl", type=str, default="youtube-dl")
     audiocaps_subparser.add_argument(
         "--load_tags",
         type=to_bool,
@@ -54,7 +45,11 @@ def get_main_download_args() -> Namespace:
         choices=(False, True),
     )
     audiocaps_subparser.add_argument(
-        "--subsets", type=str, default=AudioCaps.SUBSETS, nargs="+", choices=AudioCaps.SUBSETS,
+        "--subsets",
+        type=str,
+        default=AudioCaps.SUBSETS,
+        nargs="+",
+        choices=AudioCaps.SUBSETS,
     )
 
     clotho_subparser = subparsers.add_parser("clotho")
@@ -65,7 +60,11 @@ def get_main_download_args() -> Namespace:
         "--clean_archives", type=to_bool, default=False, choices=(False, True)
     )
     clotho_subparser.add_argument(
-        "--subsets", type=str, default=Clotho.SUBSETS, nargs="+", choices=Clotho.SUBSETS,
+        "--subsets",
+        type=str,
+        default=Clotho.SUBSETS,
+        nargs="+",
+        choices=Clotho.SUBSETS,
     )
 
     macs_subparser = subparsers.add_parser("macs")
@@ -162,7 +161,7 @@ def main_download() -> None:
         )
 
     else:
-        DATASETS = ('audiocaps', 'clotho' or 'macs')
+        DATASETS = ("audiocaps", "clotho" or "macs")
         raise ValueError(
             f"Invalid argument {args.dataset}. (expected one of {DATASETS})"
         )
