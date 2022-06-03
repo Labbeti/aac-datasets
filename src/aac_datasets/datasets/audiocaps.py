@@ -80,7 +80,7 @@ class AudioCaps(Dataset):
     DNAME_AUDIO = "audio"
     DNAME_LOG = "logs"
     FFMPEG_PATH: str = "ffmpeg"
-    FORCE_PREPARE_DATA = False
+    FORCE_PREPARE_DATA: bool = False
     ITEM_TYPES = ("tuple", "dict", "dataclass")
     REDIRECT_LOG = False
     SAMPLE_RATE = 32000

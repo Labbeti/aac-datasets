@@ -10,6 +10,7 @@ import os.path as osp
 from dataclasses import asdict, astuple, dataclass, field, fields
 from functools import cached_property
 from typing import Any, Dict, List, Optional, Tuple, Union
+from zipfile import ZipFile
 
 import torch
 import torchaudio
@@ -42,46 +43,46 @@ CLOTHO_LINKS = {
             "audio_archive": {
                 "fname": "clotho_audio_development.7z",
                 "url": "https://zenodo.org/record/3490684/files/clotho_audio_development.7z?download=1",
-                "hash": "e3ce88561b317cc3825e8c861cae1ec6",
+                "hash_value": "e3ce88561b317cc3825e8c861cae1ec6",
             },
             "captions": {
                 "fname": "clotho_captions_development.csv",
                 "url": "https://zenodo.org/record/3490684/files/clotho_captions_development.csv?download=1",
-                "hash": "dd568352389f413d832add5cf604529f",
+                "hash_value": "dd568352389f413d832add5cf604529f",
             },
             "metadata": {
                 "fname": "clotho_metadata_development.csv",
                 "url": "https://zenodo.org/record/3490684/files/clotho_metadata_development.csv?download=1",
-                "hash": "582c18ee47cebdbe33dce1feeab53a56",
+                "hash_value": "582c18ee47cebdbe33dce1feeab53a56",
             },
         },
         "eval": {
             "audio_archive": {
                 "fname": "clotho_audio_evaluation.7z",
                 "url": "https://zenodo.org/record/3490684/files/clotho_audio_evaluation.7z?download=1",
-                "hash": "4569624ccadf96223f19cb59fe4f849f",
+                "hash_value": "4569624ccadf96223f19cb59fe4f849f",
             },
             "captions": {
                 "fname": "clotho_captions_evaluation.csv",
                 "url": "https://zenodo.org/record/3490684/files/clotho_captions_evaluation.csv?download=1",
-                "hash": "1b16b9e57cf7bdb7f13a13802aeb57e2",
+                "hash_value": "1b16b9e57cf7bdb7f13a13802aeb57e2",
             },
             "metadata": {
                 "fname": "clotho_metadata_evaluation.csv",
                 "url": "https://zenodo.org/record/3490684/files/clotho_metadata_evaluation.csv?download=1",
-                "hash": "13946f054d4e1bf48079813aac61bf77",
+                "hash_value": "13946f054d4e1bf48079813aac61bf77",
             },
         },
         "test": {
             "audio_archive": {
                 "fname": "clotho_audio_test.7z",
                 "url": "https://zenodo.org/record/3865658/files/clotho_audio_test.7z?download=1",
-                "hash": "9b3fe72560a621641ff4351ba1154349",
+                "hash_value": "9b3fe72560a621641ff4351ba1154349",
             },
             "metadata": {
                 "fname": "clotho_metadata_test.csv",
                 "url": "https://zenodo.org/record/3865658/files/clotho_metadata_test.csv?download=1",
-                "hash": "52f8ad01c229a310a0ff8043df480e21",
+                "hash_value": "52f8ad01c229a310a0ff8043df480e21",
             },
         },
     },
@@ -90,63 +91,63 @@ CLOTHO_LINKS = {
             "audio_archive": {
                 "fname": "clotho_audio_development.7z",
                 "url": "https://zenodo.org/record/4743815/files/clotho_audio_development.7z?download=1",
-                "hash": "eda144a5e05a60e6d2e37a65fc4720a9",
+                "hash_value": "eda144a5e05a60e6d2e37a65fc4720a9",
             },
             "captions": {
                 "fname": "clotho_captions_development.csv",
                 "url": "https://zenodo.org/record/4743815/files/clotho_captions_development.csv?download=1",
-                "hash": "800633304e73d3daed364a2ba6069827",
+                "hash_value": "800633304e73d3daed364a2ba6069827",
             },
             "metadata": {
                 "fname": "clotho_metadata_development.csv",
                 "url": "https://zenodo.org/record/4743815/files/clotho_metadata_development.csv?download=1",
-                "hash": "5fdc51b4c4f3468ff7d251ea563588c9",
+                "hash_value": "5fdc51b4c4f3468ff7d251ea563588c9",
             },
         },
         "eval": {
             "audio_archive": {
                 "fname": "clotho_audio_evaluation.7z",
                 "url": "https://zenodo.org/record/4743815/files/clotho_audio_evaluation.7z?download=1",
-                "hash": "4569624ccadf96223f19cb59fe4f849f",
+                "hash_value": "4569624ccadf96223f19cb59fe4f849f",
             },
             "captions": {
                 "fname": "clotho_captions_evaluation.csv",
                 "url": "https://zenodo.org/record/4743815/files/clotho_captions_evaluation.csv?download=1",
-                "hash": "1b16b9e57cf7bdb7f13a13802aeb57e2",
+                "hash_value": "1b16b9e57cf7bdb7f13a13802aeb57e2",
             },
             "metadata": {
                 "fname": "clotho_metadata_evaluation.csv",
                 "url": "https://zenodo.org/record/4743815/files/clotho_metadata_evaluation.csv?download=1",
-                "hash": "13946f054d4e1bf48079813aac61bf77",
+                "hash_value": "13946f054d4e1bf48079813aac61bf77",
             },
         },
         "val": {
             "audio_archive": {
                 "fname": "clotho_audio_validation.7z",
                 "url": "https://zenodo.org/record/4743815/files/clotho_audio_validation.7z?download=1",
-                "hash": "0475bfa5793e80f748d32525018ebada",
+                "hash_value": "0475bfa5793e80f748d32525018ebada",
             },
             "captions": {
                 "fname": "clotho_captions_validation.csv",
                 "url": "https://zenodo.org/record/4743815/files/clotho_captions_validation.csv?download=1",
-                "hash": "3109c353138a089c7ba724f27d71595d",
+                "hash_value": "3109c353138a089c7ba724f27d71595d",
             },
             "metadata": {
                 "fname": "clotho_metadata_validation.csv",
                 "url": "https://zenodo.org/record/4743815/files/clotho_metadata_validation.csv?download=1",
-                "hash": "f69cfacebcd47c4d8d30d968f9865475",
+                "hash_value": "f69cfacebcd47c4d8d30d968f9865475",
             },
         },
         "test": {
             "audio_archive": {
                 "fname": "clotho_audio_test.7z",
                 "url": "https://zenodo.org/record/3865658/files/clotho_audio_test.7z?download=1",
-                "hash": "9b3fe72560a621641ff4351ba1154349",
+                "hash_value": "9b3fe72560a621641ff4351ba1154349",
             },
             "metadata": {
                 "fname": "clotho_metadata_test.csv",
                 "url": "https://zenodo.org/record/3865658/files/clotho_metadata_test.csv?download=1",
-                "hash": "52f8ad01c229a310a0ff8043df480e21",
+                "hash_value": "52f8ad01c229a310a0ff8043df480e21",
             },
         },
     },
@@ -155,63 +156,70 @@ CLOTHO_LINKS = {
             "audio_archive": {
                 "fname": "clotho_audio_development.7z",
                 "url": "https://zenodo.org/record/4783391/files/clotho_audio_development.7z?download=1",
-                "hash": "c8b05bc7acdb13895bb3c6a29608667e",
+                "hash_value": "c8b05bc7acdb13895bb3c6a29608667e",
             },
             "captions": {
                 "fname": "clotho_captions_development.csv",
                 "url": "https://zenodo.org/record/4783391/files/clotho_captions_development.csv?download=1",
-                "hash": "d4090b39ce9f2491908eebf4d5b09bae",
+                "hash_value": "d4090b39ce9f2491908eebf4d5b09bae",
             },
             "metadata": {
                 "fname": "clotho_metadata_development.csv",
                 "url": "https://zenodo.org/record/4783391/files/clotho_metadata_development.csv?download=1",
-                "hash": "170d20935ecfdf161ce1bb154118cda5",
+                "hash_value": "170d20935ecfdf161ce1bb154118cda5",
             },
         },
         "eval": {
             "audio_archive": {
                 "fname": "clotho_audio_evaluation.7z",
                 "url": "https://zenodo.org/record/4783391/files/clotho_audio_evaluation.7z?download=1",
-                "hash": "4569624ccadf96223f19cb59fe4f849f",
+                "hash_value": "4569624ccadf96223f19cb59fe4f849f",
             },
             "captions": {
                 "fname": "clotho_captions_evaluation.csv",
                 "url": "https://zenodo.org/record/4783391/files/clotho_captions_evaluation.csv?download=1",
-                "hash": "1b16b9e57cf7bdb7f13a13802aeb57e2",
+                "hash_value": "1b16b9e57cf7bdb7f13a13802aeb57e2",
             },
             "metadata": {
                 "fname": "clotho_metadata_evaluation.csv",
                 "url": "https://zenodo.org/record/4783391/files/clotho_metadata_evaluation.csv?download=1",
-                "hash": "13946f054d4e1bf48079813aac61bf77",
+                "hash_value": "13946f054d4e1bf48079813aac61bf77",
             },
         },
         "val": {
             "audio_archive": {
                 "fname": "clotho_audio_validation.7z",
                 "url": "https://zenodo.org/record/4783391/files/clotho_audio_validation.7z?download=1",
-                "hash": "7dba730be08bada48bd15dc4e668df59",
+                "hash_value": "7dba730be08bada48bd15dc4e668df59",
             },
             "captions": {
                 "fname": "clotho_captions_validation.csv",
                 "url": "https://zenodo.org/record/4783391/files/clotho_captions_validation.csv?download=1",
-                "hash": "5879e023032b22a2c930aaa0528bead4",
+                "hash_value": "5879e023032b22a2c930aaa0528bead4",
             },
             "metadata": {
                 "fname": "clotho_metadata_validation.csv",
                 "url": "https://zenodo.org/record/4783391/files/clotho_metadata_validation.csv?download=1",
-                "hash": "2e010427c56b1ce6008b0f03f41048ce",
+                "hash_value": "2e010427c56b1ce6008b0f03f41048ce",
             },
         },
         "test": {
             "audio_archive": {
                 "fname": "clotho_audio_test.7z",
                 "url": "https://zenodo.org/record/3865658/files/clotho_audio_test.7z?download=1",
-                "hash": "9b3fe72560a621641ff4351ba1154349",
+                "hash_value": "9b3fe72560a621641ff4351ba1154349",
             },
             "metadata": {
                 "fname": "clotho_metadata_test.csv",
                 "url": "https://zenodo.org/record/3865658/files/clotho_metadata_test.csv?download=1",
-                "hash": "52f8ad01c229a310a0ff8043df480e21",
+                "hash_value": "52f8ad01c229a310a0ff8043df480e21",
+            },
+        },
+        "analysis": {
+            "audio_archive": {
+                "fname": "clotho_analysis_2022.zip",
+                "url": "https://zenodo.org/record/6610709/files/clotho_analysis_2022.zip?download=1",
+                "hash_value": "7e8fa4762cc3a7c5546606680b958d08",
             },
         },
     },
@@ -236,14 +244,16 @@ class Clotho(Dataset):
     {root}
     └── CLOTHO_v2.1
         ├── clotho_audio_files
+        │   ├── clotho_analysis
+        │   │    └── (6017 files, ~12GB)
         │   ├── development
-        │   │    └── (3840 files, ~8.5GB)
+        │   │    └── (3840 files, ~7.1GB)
         │   ├── evaluation
-        │   │    └── (1045 files, ~2.4GB)
+        │   │    └── (1045 files, ~2.0GB)
         │   ├── validation
-        │   │    └── (1046 files, ~2.4GB)
+        │   │    └── (1046 files, ~2.0GB)
         │   └── test
-        │        └── (1044 files, ~2.4GB)
+        │        └── (1044 files, ~2.0GB)
         └── clotho_csv_files
             ├── clotho_captions_development.csv
             ├── clotho_captions_evaluation.csv
@@ -262,7 +272,7 @@ class Clotho(Dataset):
     CAPTION_MIN_LENGTH = 8
     CAPTIONS_PER_AUDIO = {"dev": 5, "val": 5, "eval": 5, "test": 0}
     CLEAN_ARCHIVES: bool = True
-    FORCE_PREPARE_DATA = False
+    FORCE_PREPARE_DATA: bool = False
     ITEM_TYPES = ("tuple", "dict", "dataclass")
     SAMPLE_RATE = 44100
     SUBSETS_DICT = {
@@ -464,6 +474,9 @@ class Clotho(Dataset):
         if not all(map(osp.isdir, (self._dpath_audio_subset, self._dpath_csv))):
             return False
 
+        if self._subset in ("test", "analysis"):
+            return True
+
         links = CLOTHO_LINKS[self._version][self._subset]
         captions_fname = links["captions"]["fname"]
         captions_fpath = osp.join(self._dpath_csv, captions_fname)
@@ -476,85 +489,102 @@ class Clotho(Dataset):
         if not osp.isdir(self._root):
             raise RuntimeError(f"Cannot find root directory '{self._root}'.")
 
-        if self._is_prepared() and not self.FORCE_PREPARE_DATA:
-            if self._verbose >= 0:
-                logger.info("Dataset is already downloaded and prepared.")
-            return None
-
         os.makedirs(self._dpath_audio, exist_ok=True)
         os.makedirs(self._dpath_csv, exist_ok=True)
 
         if self._verbose >= 1:
             logger.info(
-                f"Start to download files for the Clotho dataset, subset '{self._subset}'..."
+                f"Start to download files for clotho_{self._subset}..."
             )
 
         links = copy.deepcopy(CLOTHO_LINKS[self._version][self._subset])
+        extensions = ("7z", "csv", "zip")
 
         # Download csv and 7z files
         for info in links.values():
-            fname, url, hash_ = info["fname"], info["url"], info["hash"]
+            fname, url, hash_value = info["fname"], info["url"], info["hash_value"]
             extension = fname.split(".")[-1]
 
-            if extension == "7z":
+            if extension in ("7z", "zip"):
                 dpath = self._dpath_audio
             elif extension == "csv":
                 dpath = self._dpath_csv
             else:
                 raise RuntimeError(
-                    f"Found invalid {extension=}. Must be one of '7z' or 'csv'."
+                    f"Found invalid {extension=}. Must be one of {extensions}."
                 )
 
             fpath = osp.join(dpath, fname)
-            if not osp.isfile(fpath):
+            if not osp.isfile(fpath) or self.FORCE_PREPARE_DATA:
                 if self._verbose >= 1:
-                    logger.info(f"Download file '{fname}' from {url=}...")
+                    logger.info(f"Download and check file '{fname}' from {url=}...")
 
                 download_url(
                     url,
                     dpath,
                     fname,
-                    hash_value=hash_,
+                    hash_value=hash_value,
                     hash_type="md5",
                     progress_bar=self._verbose >= 1,
-                    resume=True,
                 )
+
+            elif self._verbose >= 1:
+                logger.info(f"File {fname=} is already extracted.")
 
         # Extract audio files from archives
         for info in links.values():
             fname = info["fname"]
             extension = fname.split(".")[-1]
 
-            if extension == "7z":
+            if extension in ("7z", "zip"):
                 fpath = osp.join(self._dpath_audio, fname)
-                extracted_dpath = self._dpath_audio_subset
 
-                if not osp.isdir(extracted_dpath):
-                    if self._verbose >= 1:
-                        logger.info(f"Extract archive file {fname=}...")
+                if self._verbose >= 1:
+                    logger.info(f"Extract archive file {fname=}...")
 
-                    with SevenZipFile(fpath) as file:
-                        file.extractall(self._dpath_audio)
+                if extension == "7z":
+                    archive_file = SevenZipFile(fpath)
+                    compressed_fnames = [osp.basename(fname) for fname in archive_file.getnames()]
+                elif extension == "zip":
+                    archive_file = ZipFile(fpath)
+                    compressed_fnames = [osp.basename(file.filename) for file in archive_file.filelist]
+                else:
+                    raise RuntimeError
 
-                    if self.CLEAN_ARCHIVES:
-                        if self._verbose >= 1:
-                            logger.info(
-                                f"Removing archive file {osp.basename(fpath)}..."
-                            )
-                        os.remove(fpath)
+                # Ignore dir name from archive file
+                compressed_fnames = [fname for fname in compressed_fnames if fname not in ("", CLOTHO_AUDIO_DNAMES[self._subset])]
+                extracted_fnames = os.listdir(self._dpath_audio_subset)
 
-                elif self._verbose >= 1:
-                    logger.info(
-                        f"Archive {fname} already extracted. (directory '{extracted_dpath}' already exists)"
-                    )
+                if set(extracted_fnames) != set(compressed_fnames):
+                    archive_file.extractall(self._dpath_audio)
+
+                    # Check if files is good now
+                    extracted_fnames = os.listdir(self._dpath_audio_subset)
+                    if set(extracted_fnames) != set(compressed_fnames):
+                        raise RuntimeError(f"Invalid number of audios extracted. (found {len(extracted_fnames)} files but expected the same {len(compressed_fnames)} files)")
+
+                archive_file.close()
 
             elif extension == "csv":
                 pass
 
             else:
                 logger.error(
-                    f"Found unexpected {extension=} for downloaded file '{fname}'. Must be one of '7z' or 'csv'."
+                    f"Found unexpected {extension=} for downloaded file '{fname}'. Expected one of {extensions}."
                 )
+
+        if self.CLEAN_ARCHIVES:
+            for info in links.values():
+                fname = info["fname"]
+                extension = fname.split(".")[-1]
+
+                if extension in ("7z", "zip"):
+                    fpath = osp.join(self._dpath_audio, fname)
+                    if self._verbose >= 1:
+                        logger.info(
+                            f"Removing archive file {osp.basename(fpath)}..."
+                        )
+                    os.remove(fpath)
 
     def _load_data(self) -> None:
         if not self._is_prepared():
@@ -607,40 +637,41 @@ class Clotho(Dataset):
                         )
 
         # --- Read metadata info
-        metadata_fname = links["metadata"]["fname"]
-        metadata_fpath = osp.join(self._dpath_csv, metadata_fname)
+        if "metadata" in links.keys():
+            metadata_fname = links["metadata"]["fname"]
+            metadata_fpath = osp.join(self._dpath_csv, metadata_fname)
 
-        # Keys: file_name, keywords, sound_id, sound_link, start_end_samples, manufacturer, license
-        if self._version in ("v2", "v2.1"):
-            encoding = "ISO-8859-1"
-        else:
-            encoding = None
+            # Keys: file_name, keywords, sound_id, sound_link, start_end_samples, manufacturer, license
+            if self._version in ("v2", "v2.1"):
+                encoding = "ISO-8859-1"
+            else:
+                encoding = None
 
-        with open(metadata_fpath, "r", encoding=encoding) as file:
-            delimiter = ";" if self._subset == "test" else ","
-            reader = csv.DictReader(file, delimiter=delimiter)
-            self._metadata_keys = (
-                reader.fieldnames if reader.fieldnames is not None else ()
-            )
+            with open(metadata_fpath, "r", encoding=encoding) as file:
+                delimiter = ";" if self._subset == "test" else ","
+                reader = csv.DictReader(file, delimiter=delimiter)
+                self._metadata_keys = (
+                    reader.fieldnames if reader.fieldnames is not None else ()
+                )
 
-            for row in reader:
-                # file_name,keywords,sound_id,sound_link,start_end_samples,manufacturer,license
-                fname = row["file_name"]
-                row_copy: Any = copy.deepcopy(row)
-                row_copy.pop("file_name")
+                for row in reader:
+                    # file_name,keywords,sound_id,sound_link,start_end_samples,manufacturer,license
+                    fname = row["file_name"]
+                    row_copy: Any = copy.deepcopy(row)
+                    row_copy.pop("file_name")
 
-                if "keywords" in row_copy.keys():
-                    row_copy["keywords"] = row_copy["keywords"].split(";")
-                else:
-                    row_copy["keywords"] = []
+                    if "keywords" in row_copy.keys():
+                        row_copy["keywords"] = row_copy["keywords"].split(";")
+                    else:
+                        row_copy["keywords"] = []
 
-                if fname in fname_to_idx.keys():
-                    idx = fname_to_idx[fname]
-                    self._all_infos[idx].update(row_copy)
-                else:
-                    raise RuntimeError(
-                        f"Found value {fname=} in CSV metadata file '{metadata_fname}' but not the corresponding audio file."
-                    )
+                    if fname in fname_to_idx.keys():
+                        idx = fname_to_idx[fname]
+                        self._all_infos[idx].update(row_copy)
+                    else:
+                        raise RuntimeError(
+                            f"Found value {fname=} in CSV metadata file '{metadata_fname}' but not the corresponding audio file."
+                        )
 
         if self._unfold and self.CAPTIONS_PER_AUDIO[self._subset] > 1:
             data_info_unfolded = []
@@ -656,7 +687,7 @@ class Clotho(Dataset):
         self._all_infos = self._all_infos
         if self._verbose >= 1:
             logger.info(
-                f"{self.__class__.__name__}/{self._subset} has been loaded. (len={len(self)})"
+                f"clotho_{self._subset} has been loaded. (len={len(self)})"
             )
 
     def __repr__(self) -> str:
@@ -668,4 +699,5 @@ CLOTHO_AUDIO_DNAMES = {
     "eval": "evaluation",
     "test": "test",
     "val": "validation",
+    "analysis": "clotho_analysis",
 }

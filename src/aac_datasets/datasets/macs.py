@@ -57,7 +57,7 @@ class MACS(Dataset):
     AUDIO_MAX_LENGTH = 10.0  # in seconds
     AUDIO_N_CHANNELS = 2
     CLEAN_ARCHIVES: bool = True
-    FORCE_PREPARE_DATA = False
+    FORCE_PREPARE_DATA: bool = False
     ITEM_TYPES = ("tuple", "dict", "dataclass")
     MAX_CAPTIONS_PER_AUDIO = {"full": 5}
     MIN_CAPTIONS_PER_AUDIO = {"full": 2}
@@ -218,11 +218,6 @@ class MACS(Dataset):
         if not osp.isdir(self._root):
             raise RuntimeError(f"Cannot find root directory '{self._root}'.")
 
-        if self._is_prepared() and not self.FORCE_PREPARE_DATA:
-            if self._verbose >= 0:
-                logger.info("Dataset is already downloaded and prepared.")
-            return None
-
         os.makedirs(self._dpath_audio, exist_ok=True)
         os.makedirs(self._dpath_archives, exist_ok=True)
 
@@ -235,12 +230,12 @@ class MACS(Dataset):
                     logger.info(f"Downloading captions file '{fname}'...")
 
                 url = MACS_FILES["captions"]["url"]
-                hash_ = MACS_FILES["captions"]["hash"]
+                hash_value = MACS_FILES["captions"]["hash"]
                 download_url(
                     url,
                     dpath,
                     fname,
-                    hash_,
+                    hash_value,
                     "md5",
                     progress_bar=self._verbose >= 1,
                     resume=True,
@@ -256,22 +251,21 @@ class MACS(Dataset):
             zip_fname = infos["fname"]
             zip_fpath = osp.join(dpath, zip_fname)
 
-            if not osp.isfile(zip_fpath):
+            if not osp.isfile(zip_fpath) or self.FORCE_PREPARE_DATA:
                 if self._verbose >= 1:
                     logger.info(
                         f"Downloading audio zip file '{zip_fpath}'... ({i+1}/{len(TAU_URBAN_ACOUSTIC_DEV_FILES)})"
                     )
 
                 url = infos["url"]
-                hash_ = infos["hash"]
+                hash_value = infos["hash"]
                 download_url(
                     url,
                     dpath,
                     zip_fname,
-                    hash_,
+                    hash_value,
                     "md5",
                     progress_bar=self._verbose >= 1,
-                    resume=True,
                 )
 
         macs_fnames = dict.fromkeys(data["filename"] for data in captions_data)
