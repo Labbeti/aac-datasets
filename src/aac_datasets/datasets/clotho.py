@@ -271,7 +271,7 @@ class Clotho(Dataset):
     CAPTION_MAX_LENGTH = 20
     CAPTION_MIN_LENGTH = 8
     CAPTIONS_PER_AUDIO = {"dev": 5, "val": 5, "eval": 5, "test": 0}
-    CLEAN_ARCHIVES: bool = True
+    CLEAN_ARCHIVES: bool = False
     FORCE_PREPARE_DATA: bool = False
     ITEM_TYPES = ("tuple", "dict", "dataclass")
     SAMPLE_RATE = 44100
@@ -559,7 +559,7 @@ class Clotho(Dataset):
                     for fname in compressed_fnames
                     if fname not in ("", CLOTHO_AUDIO_DNAMES[self._subset])
                 ]
-                extracted_fnames = os.listdir(self._dpath_audio_subset)
+                extracted_fnames = os.listdir(self._dpath_audio_subset) if osp.isdir(self._dpath_audio_subset) else []
 
                 if set(extracted_fnames) != set(compressed_fnames):
                     archive_file.extractall(self._dpath_audio)

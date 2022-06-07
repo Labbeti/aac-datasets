@@ -56,7 +56,7 @@ class MACS(Dataset):
 
     AUDIO_MAX_LENGTH = 10.0  # in seconds
     AUDIO_N_CHANNELS = 2
-    CLEAN_ARCHIVES: bool = True
+    CLEAN_ARCHIVES: bool = False
     FORCE_PREPARE_DATA: bool = False
     ITEM_TYPES = ("tuple", "dict", "dataclass")
     MAX_CAPTIONS_PER_AUDIO = {"full": 5}
