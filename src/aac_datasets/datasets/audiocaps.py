@@ -456,7 +456,7 @@ class AudioCaps(Dataset):
     def _load_data(self) -> None:
         if not self._is_prepared():
             raise RuntimeError(
-                f"Dataset is not prepared in data root={self._root}. Please use download=True in dataset constructor."
+                f"Cannot load data: audiocaps_{self._subset} is not prepared in data root={self._root}. Please use download=True in dataset constructor."
             )
 
         links = AUDIOCAPS_LINKS[self._subset]

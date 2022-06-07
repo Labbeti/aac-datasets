@@ -594,7 +594,9 @@ class Clotho(Dataset):
 
     def _load_data(self) -> None:
         if not self._is_prepared():
-            raise RuntimeError(f"Dataset is not prepared in root={self._root}.")
+            raise RuntimeError(
+                f"Cannot load data: clotho_{self._subset} is not prepared in data root={self._root}. Please use download=True in dataset constructor."
+            )
 
         # Read fpath of .wav audio files
         links = CLOTHO_LINKS[self._version][self._subset]

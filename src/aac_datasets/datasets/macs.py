@@ -313,7 +313,9 @@ class MACS(Dataset):
 
     def _load_data(self) -> None:
         if not self._is_prepared():
-            raise RuntimeError(f"Dataset is not prepared in root={self._root}.")
+            raise RuntimeError(
+                f"Cannot load data: macs is not prepared in data root={self._root}. Please use download=True in dataset constructor."
+            )
 
         captions_fpath = osp.join(self._dpath_data, MACS_FILES["captions"]["fname"])
         if self._verbose >= 1:
