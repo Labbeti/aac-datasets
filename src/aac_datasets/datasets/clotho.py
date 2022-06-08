@@ -559,7 +559,11 @@ class Clotho(Dataset):
                     for fname in compressed_fnames
                     if fname not in ("", CLOTHO_AUDIO_DNAMES[self._subset])
                 ]
-                extracted_fnames = os.listdir(self._dpath_audio_subset) if osp.isdir(self._dpath_audio_subset) else []
+                extracted_fnames = (
+                    os.listdir(self._dpath_audio_subset)
+                    if osp.isdir(self._dpath_audio_subset)
+                    else []
+                )
 
                 if set(extracted_fnames) != set(compressed_fnames):
                     archive_file.extractall(self._dpath_audio)

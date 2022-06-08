@@ -31,26 +31,35 @@ def check_datasets(root: str, verbose: int = 0) -> Dict[str, Dict[str, int]]:
     datasets_lens = {"audiocaps": {}, "clotho": {}, "macs": {}}
 
     if verbose >= 1:
-        logger.info(f"Searching datasets in root='{root}'...")
+        logger.info(f"Searching for audiocaps in root='{root}'...")
 
     for subset in AudioCaps.SUBSETS:
         try:
-            dataset = AudioCaps(root, subset, verbose=verbose)
+            dataset = AudioCaps(root, subset, verbose=0)
+            _ = dataset[0]
             datasets_lens["audiocaps"][subset] = len(dataset)
         except RuntimeError:
             if verbose >= 2:
                 logger.info(f"Cannot find audiocaps_{subset}.")
 
+    if verbose >= 1:
+        logger.info(f"Searching for clotho in root='{root}'...")
+
     for subset in Clotho.SUBSETS:
         try:
-            dataset = Clotho(root, subset, verbose=verbose)
+            dataset = Clotho(root, subset, verbose=0)
+            _ = dataset[0]
             datasets_lens["clotho"][subset] = len(dataset)
         except RuntimeError:
             if verbose >= 2:
                 logger.info(f"Cannot find clotho_{subset}.")
 
+    if verbose >= 1:
+        logger.info(f"Searching for macs in root='{root}'...")
+
     try:
-        dataset = MACS(root, verbose=verbose)
+        dataset = MACS(root, verbose=0)
+        _ = dataset[0]
         datasets_lens["macs"]["full"] = len(dataset)
     except RuntimeError:
         if verbose >= 2:
