@@ -4,7 +4,7 @@
 
 def print_usage() -> None:
     print(
-        "Usage :\n"
+        "Command line usage :\n"
         "- Download a dataset             : python -m aac_datasets.download [--root ROOT] [--verbose VERBOSE] (clotho|audiocaps|macs) [ARGS...]\n"
         "- Check a installation directory : python -m aac_datasets.check [--root ROOT] [--verbose VERBOSE]\n"
         "- Print package version          : python -m aac_datasets.version\n"
