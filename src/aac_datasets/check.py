@@ -20,8 +20,18 @@ logger = logging.getLogger(__name__)
 def get_main_check_args() -> Namespace:
     parser = ArgumentParser(description="Check datasets in specified directory.")
 
-    parser.add_argument("--root", type=str, default=".")
-    parser.add_argument("--verbose", type=int, default=1)
+    parser.add_argument(
+        "--root",
+        type=str,
+        default=".",
+        help="The path to the parent directory of the datasets.",
+    )
+    parser.add_argument(
+        "--verbose",
+        type=int,
+        default=1,
+        help="Verbose level of the script. 0 means silent mode, 1 is default mode and 2 add additional debugging outputs.",
+    )
 
     args = parser.parse_args()
     return args

@@ -29,20 +29,47 @@ def get_main_download_args() -> Namespace:
         description="Download a dataset at specified root directory."
     )
 
-    parser.add_argument("--root", type=str, default=".")
-    parser.add_argument("--verbose", type=int, default=1)
-    parser.add_argument("--force", type=to_bool, default=False, choices=(False, True))
+    parser.add_argument(
+        "--root",
+        type=str,
+        default=".",
+        help="The path to the parent directory of the datasets.",
+    )
+    parser.add_argument(
+        "--verbose",
+        type=int,
+        default=1,
+        help="Verbose level of the script. 0 means silent mode, 1 is default mode and 2 add additional debugging outputs.",
+    )
+    parser.add_argument(
+        "--force",
+        type=to_bool,
+        default=False,
+        choices=(False, True),
+        help="Force download of files, even if already downloaded.",
+    )
 
     subparsers = parser.add_subparsers(dest="dataset", required=True)
 
     audiocaps_subparser = subparsers.add_parser("audiocaps")
-    audiocaps_subparser.add_argument("--ffmpeg", type=str, default="ffmpeg")
-    audiocaps_subparser.add_argument("--youtube_dl", type=str, default="youtube-dl")
+    audiocaps_subparser.add_argument(
+        "--ffmpeg",
+        type=str,
+        default="ffmpeg",
+        help="Path to ffmpeg used to download audio from youtube.",
+    )
+    audiocaps_subparser.add_argument(
+        "--youtube_dl",
+        type=str,
+        default="youtube-dl",
+        help="Path to youtube-dl used to extract metadata from a youtube video.",
+    )
     audiocaps_subparser.add_argument(
         "--load_tags",
         type=to_bool,
         default=True,
         choices=(False, True),
+        help="Download additional audioset tags corresponding to audiocaps audio.",
     )
     audiocaps_subparser.add_argument(
         "--subsets",
@@ -50,14 +77,23 @@ def get_main_download_args() -> Namespace:
         default=AudioCaps.SUBSETS,
         nargs="+",
         choices=AudioCaps.SUBSETS,
+        help="AudioCaps subsets to download.",
     )
 
     clotho_subparser = subparsers.add_parser("clotho")
     clotho_subparser.add_argument(
-        "--version", type=str, default=CLOTHO_LAST_VERSION, choices=Clotho.VERSIONS
+        "--version",
+        type=str,
+        default=CLOTHO_LAST_VERSION,
+        choices=Clotho.VERSIONS,
+        help="The version of the Clotho dataset.",
     )
     clotho_subparser.add_argument(
-        "--clean_archives", type=to_bool, default=False, choices=(False, True)
+        "--clean_archives",
+        type=to_bool,
+        default=False,
+        choices=(False, True),
+        help="Remove archives files after extraction.",
     )
     clotho_subparser.add_argument(
         "--subsets",
@@ -65,11 +101,16 @@ def get_main_download_args() -> Namespace:
         default=Clotho.SUBSETS,
         nargs="+",
         choices=Clotho.SUBSETS,
+        help="Clotho subsets to download.",
     )
 
     macs_subparser = subparsers.add_parser("macs")
     macs_subparser.add_argument(
-        "--clean_archives", type=to_bool, default=False, choices=(False, True)
+        "--clean_archives",
+        type=to_bool,
+        default=False,
+        choices=(False, True),
+        help="Remove archives files after extraction.",
     )
 
     args = parser.parse_args()
