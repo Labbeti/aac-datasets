@@ -553,13 +553,13 @@ TAU_URBAN_ACOUSTIC_DEV_FILES = {
 MACS_ARCHIVES_FILES = {
     name: TAU_URBAN_ACOUSTIC_DEV_FILES[name]
     for name in (
-        "TAU-urban-acoustic-scenes-2019-development.audio.1.zip",
-        "TAU-urban-acoustic-scenes-2019-development.audio.10.zip",
-        "TAU-urban-acoustic-scenes-2019-development.audio.11.zip",
-        "TAU-urban-acoustic-scenes-2019-development.audio.12.zip",
-        "TAU-urban-acoustic-scenes-2019-development.audio.13.zip",
-        "TAU-urban-acoustic-scenes-2019-development.audio.2.zip",
-        "TAU-urban-acoustic-scenes-2019-development.audio.3.zip",
-        "TAU-urban-acoustic-scenes-2019-development.audio.9.zip",
+        "audio.1",
+        "audio.10",
+        "audio.11",
+        "audio.12",
+        "audio.13",
+        "audio.2",
+        "audio.3",
+        "audio.9",
     )
 }
