@@ -245,7 +245,7 @@ class Clotho(Dataset):
     └── CLOTHO_v2.1
         ├── clotho_audio_files
         │   ├── clotho_analysis
-        │   │    └── (6017 files, ~12GB)
+        │   │    └── (8360 files, ~19GB)
         │   ├── development
         │   │    └── (3840 files, ~7.1GB)
         │   ├── evaluation
@@ -295,8 +295,9 @@ class Clotho(Dataset):
         """
         :param root: The parent of the dataset root directory.
             Note: The data is stored in the 'CLOTHO_{version}' subdirectory.
+            defaults to ".".
         :param subset: The subset of Clotho to use.
-            Can be 'dev', 'val', 'eval' or 'test'.
+            Can be 'dev', 'val', 'eval', 'test' or 'analysis' for clotho v2.1.
         :param download: Download the dataset if download=True and if the dataset is not already downloaded.
             default to False.
         :param transforms: The transform to apply values (Tensor).
@@ -305,7 +306,7 @@ class Clotho(Dataset):
         :param unfold: If True, map captions to audio instead of audio to caption.
             defaults to True.
         :param item_type: The type of the value returned by __getitem__.
-            Can be 'tuple', 'dict' 'dataclass', or 'ClothoItem'.
+            Can be 'tuple', 'dict' or 'dataclass'.
             defaults to 'tuple'.
         :param version: The version of the dataset. Can be 'v1', 'v2' or 'v2.1'.
             defaults to 'v2.1'.

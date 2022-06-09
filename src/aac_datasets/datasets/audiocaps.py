@@ -103,6 +103,7 @@ class AudioCaps(Dataset):
         """
         :param root: Dataset root directory.
             The data will be stored in the 'AUDIOCAPS_{SAMPLE_RATE}' subdirectory.
+            defaults to ".".
         :param subset: The AudioCaps subset.
             Can be 'train', 'val' or 'test'.
         :param download: If True, starts to download the dataset from Youtube. Can requires a lot of time depending of your machine.
@@ -115,8 +116,11 @@ class AudioCaps(Dataset):
         :param unfold: If True, map captions to audio instead of audio to caption.
             defaults to True.
         :param item_type: The type of the value returned by __getitem__.
-            Can be 'tuple', 'dict' 'dataclass', or 'AudioCapsItem'.
+            Can be 'tuple', 'dict' or 'dataclass'.
             defaults to 'tuple'.
+        :param load_tags: If True, load the tags from AudioSet dataset.
+            Note: tags needs to be downloaded with download=True & load_tags=True before being used.
+            defaults to False.
         :param verbose: Verbose level.
             defaults to 0.
         """

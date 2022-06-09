@@ -77,6 +77,7 @@ class MACS(Dataset):
         """
         :param root: The parent of the dataset root directory.
             The data will be stored in the 'MACS' subdirectory.
+            defaults to ".".
         :param download: Download the dataset if download=True and if the dataset is not already downloaded.
             defaults to False.
         :param transforms: The transform to apply to values.
@@ -85,8 +86,11 @@ class MACS(Dataset):
         :param unfold: If True, map captions to audio instead of audio to caption.
             defaults to True.
         :param item_type: The type of the value returned by __getitem__.
-            Can be 'tuple', 'dict' 'dataclass', or 'MACSItem'. Case insensitive.
+            Can be 'tuple', 'dict' or 'dataclass'.
             defaults to 'tuple'.
+        :param multihot_tags: If True, tags are loaded as multihot tensors of 10 classes.
+            Otherwise the tags names are returns as a list of str.
+            defaults to False.
         :param verbose: Verbose level to use. Can be 0 or 1.
             defaults to 0.
         """
@@ -324,6 +328,7 @@ class MACS(Dataset):
 
         with open(captions_fpath, "r") as file:
             data = yaml.safe_load(file)
+
         self._all_infos = [
             {
                 "fname": item["filename"],
