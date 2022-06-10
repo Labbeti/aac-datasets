@@ -4,7 +4,7 @@ name: Python package using Pip
 
 on:
   push:
-    branches: [ master, dev ]
+    branches: [ main, dev ]
   pull_request:
     branches: [ dev ]
 
