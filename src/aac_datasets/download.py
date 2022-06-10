@@ -126,7 +126,7 @@ def download_audiocaps(
     load_tags: bool = False,
     subsets: Iterable[str] = AudioCaps.SUBSETS,
 ) -> None:
-    """Download AudioCaps dataset subsets. """
+    """Download AudioCaps dataset subsets."""
     AudioCaps.FORCE_PREPARE_DATA = force
     AudioCaps.FFMPEG_PATH = ffmpeg
     AudioCaps.YOUTUBE_DL_PATH = youtube_dl
@@ -143,7 +143,7 @@ def download_clotho(
     clean_archives: bool = False,
     subsets: Iterable[str] = Clotho.SUBSETS,
 ) -> None:
-    """Download Clotho dataset subsets. """
+    """Download Clotho dataset subsets."""
     Clotho.FORCE_PREPARE_DATA = force
     Clotho.CLEAN_ARCHIVES = clean_archives
 
@@ -157,7 +157,7 @@ def download_macs(
     force: bool = False,
     clean_archives: bool = False,
 ) -> None:
-    """Download MACS dataset. """
+    """Download MACS dataset."""
     MACS.FORCE_PREPARE_DATA = force
     MACS.CLEAN_ARCHIVES = clean_archives
 
