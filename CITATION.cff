@@ -1,0 +1,21 @@
+# -*- coding: utf-8 -*-
+
+cff-version: 1.2.0
+title: aac_datasets
+message: 'If you use this software, please cite it as below.'
+type: software
+authors:
+  - given-names: Etienne
+    family-names: Labbé
+    affiliation: IRIT
+    orcid: 'https://orcid.org/0000-0002-7219-5463'
+repository-code: 'https://github.com/Labbeti/aac_datasets/'
+abstract: Automated Audio Captioning datasets for Pytorch.
+keywords:
+  - pytorch
+  - datasets
+  - audio
+  - caption
+license: MIT
+version: 0.1.1
+date-released: '2022-06-10'

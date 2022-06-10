@@ -56,7 +56,7 @@ class MACS(Dataset):
 
     AUDIO_MAX_LENGTH = 10.0  # in seconds
     AUDIO_N_CHANNELS = 2
-    CLEAN_ARCHIVES: bool = True
+    CLEAN_ARCHIVES: bool = False
     FORCE_PREPARE_DATA: bool = False
     ITEM_TYPES = ("tuple", "dict", "dataclass")
     MAX_CAPTIONS_PER_AUDIO = {"full": 5}
@@ -77,6 +77,7 @@ class MACS(Dataset):
         """
         :param root: The parent of the dataset root directory.
             The data will be stored in the 'MACS' subdirectory.
+            defaults to ".".
         :param download: Download the dataset if download=True and if the dataset is not already downloaded.
             defaults to False.
         :param transforms: The transform to apply to values.
@@ -85,8 +86,11 @@ class MACS(Dataset):
         :param unfold: If True, map captions to audio instead of audio to caption.
             defaults to True.
         :param item_type: The type of the value returned by __getitem__.
-            Can be 'tuple', 'dict' 'dataclass', or 'MACSItem'. Case insensitive.
+            Can be 'tuple', 'dict' or 'dataclass'.
             defaults to 'tuple'.
+        :param multihot_tags: If True, tags are loaded as multihot tensors of 10 classes.
+            Otherwise the tags names are returns as a list of str.
+            defaults to False.
         :param verbose: Verbose level to use. Can be 0 or 1.
             defaults to 0.
         """
@@ -212,7 +216,8 @@ class MACS(Dataset):
         with open(captions_fpath, "r") as file:
             data = yaml.safe_load(file)
         data = data["files"]
-        return len(data) == len(os.listdir(self._dpath_audio))
+        fnames = os.listdir(self._dpath_audio)
+        return len(data) == len(fnames)
 
     def _prepare_data(self) -> None:
         if not osp.isdir(self._root):
@@ -225,7 +230,7 @@ class MACS(Dataset):
             dpath = self._dpath_data
             fname = file_info["fname"]
             fpath = osp.join(dpath, fname)
-            if not osp.isfile(fpath):
+            if not osp.isfile(fpath) or self.FORCE_PREPARE_DATA:
                 if self._verbose >= 1:
                     logger.info(f"Downloading captions file '{fname}'...")
 
@@ -246,7 +251,7 @@ class MACS(Dataset):
             captions_data = yaml.safe_load(file)
         captions_data = captions_data["files"]
 
-        for i, infos in enumerate(TAU_URBAN_ACOUSTIC_DEV_FILES.values()):
+        for i, infos in enumerate(MACS_ARCHIVES_FILES.values()):
             dpath = self._dpath_archives
             zip_fname = infos["fname"]
             zip_fpath = osp.join(dpath, zip_fname)
@@ -254,7 +259,7 @@ class MACS(Dataset):
             if not osp.isfile(zip_fpath) or self.FORCE_PREPARE_DATA:
                 if self._verbose >= 1:
                     logger.info(
-                        f"Downloading audio zip file '{zip_fpath}'... ({i+1}/{len(TAU_URBAN_ACOUSTIC_DEV_FILES)})"
+                        f"Downloading audio zip file '{zip_fpath}'... ({i+1}/{len(MACS_ARCHIVES_FILES)})"
                     )
 
                 url = infos["url"]
@@ -269,7 +274,7 @@ class MACS(Dataset):
                 )
 
         macs_fnames = dict.fromkeys(data["filename"] for data in captions_data)
-        for i, infos in enumerate(TAU_URBAN_ACOUSTIC_DEV_FILES.values()):
+        for i, infos in enumerate(MACS_ARCHIVES_FILES.values()):
             zip_fname = infos["fname"]
             zip_fpath = osp.join(self._dpath_archives, zip_fname)
 
@@ -283,12 +288,12 @@ class MACS(Dataset):
                     )
                 ]
 
-                if len(members_to_extract) > 0:
-                    if self._verbose >= 1:
-                        logger.info(
-                            f"Extracting {len(members_to_extract)}/{len(file.namelist())} audio files from ZIP file '{zip_fname}'... ({i+1}/{len(TAU_URBAN_ACOUSTIC_DEV_FILES)})"
-                        )
+                if self._verbose >= 1:
+                    logger.info(
+                        f"Extracting {len(members_to_extract)}/{len(file.namelist())} audio files from ZIP file '{zip_fname}'... ({i+1}/{len(MACS_ARCHIVES_FILES)})"
+                    )
 
+                if len(members_to_extract) > 0:
                     file.extractall(self._dpath_archives, members_to_extract)
                     for member in members_to_extract:
                         extracted_fpath = osp.join(self._dpath_archives, member)
@@ -313,7 +318,9 @@ class MACS(Dataset):
 
     def _load_data(self) -> None:
         if not self._is_prepared():
-            raise RuntimeError(f"Dataset is not prepared in root={self._root}.")
+            raise RuntimeError(
+                f"Cannot load data: macs is not prepared in data root={self._root}. Please use download=True in dataset constructor."
+            )
 
         captions_fpath = osp.join(self._dpath_data, MACS_FILES["captions"]["fname"])
         if self._verbose >= 1:
@@ -321,6 +328,7 @@ class MACS(Dataset):
 
         with open(captions_fpath, "r") as file:
             data = yaml.safe_load(file)
+
         self._all_infos = [
             {
                 "fname": item["filename"],
@@ -540,4 +548,18 @@ TAU_URBAN_ACOUSTIC_DEV_FILES = {
         "url": "https://zenodo.org/record/2589280/files/TAU-urban-acoustic-scenes-2019-development.meta.zip?download=1",
         "hash": "09782f2097e4735687af73c44919329c",
     },
+}
+
+MACS_ARCHIVES_FILES = {
+    name: TAU_URBAN_ACOUSTIC_DEV_FILES[name]
+    for name in (
+        "audio.1",
+        "audio.10",
+        "audio.11",
+        "audio.12",
+        "audio.13",
+        "audio.2",
+        "audio.3",
+        "audio.9",
+    )
 }

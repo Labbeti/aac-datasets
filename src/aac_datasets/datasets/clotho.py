@@ -245,7 +245,7 @@ class Clotho(Dataset):
     └── CLOTHO_v2.1
         ├── clotho_audio_files
         │   ├── clotho_analysis
-        │   │    └── (6017 files, ~12GB)
+        │   │    └── (8360 files, ~19GB)
         │   ├── development
         │   │    └── (3840 files, ~7.1GB)
         │   ├── evaluation
@@ -271,7 +271,7 @@ class Clotho(Dataset):
     CAPTION_MAX_LENGTH = 20
     CAPTION_MIN_LENGTH = 8
     CAPTIONS_PER_AUDIO = {"dev": 5, "val": 5, "eval": 5, "test": 0}
-    CLEAN_ARCHIVES: bool = True
+    CLEAN_ARCHIVES: bool = False
     FORCE_PREPARE_DATA: bool = False
     ITEM_TYPES = ("tuple", "dict", "dataclass")
     SAMPLE_RATE = 44100
@@ -295,8 +295,9 @@ class Clotho(Dataset):
         """
         :param root: The parent of the dataset root directory.
             Note: The data is stored in the 'CLOTHO_{version}' subdirectory.
+            defaults to ".".
         :param subset: The subset of Clotho to use.
-            Can be 'dev', 'val', 'eval' or 'test'.
+            Can be 'dev', 'val', 'eval', 'test' or 'analysis' for clotho v2.1.
         :param download: Download the dataset if download=True and if the dataset is not already downloaded.
             default to False.
         :param transforms: The transform to apply values (Tensor).
@@ -305,7 +306,7 @@ class Clotho(Dataset):
         :param unfold: If True, map captions to audio instead of audio to caption.
             defaults to True.
         :param item_type: The type of the value returned by __getitem__.
-            Can be 'tuple', 'dict' 'dataclass', or 'ClothoItem'.
+            Can be 'tuple', 'dict' or 'dataclass'.
             defaults to 'tuple'.
         :param version: The version of the dataset. Can be 'v1', 'v2' or 'v2.1'.
             defaults to 'v2.1'.
@@ -559,7 +560,11 @@ class Clotho(Dataset):
                     for fname in compressed_fnames
                     if fname not in ("", CLOTHO_AUDIO_DNAMES[self._subset])
                 ]
-                extracted_fnames = os.listdir(self._dpath_audio_subset)
+                extracted_fnames = (
+                    os.listdir(self._dpath_audio_subset)
+                    if osp.isdir(self._dpath_audio_subset)
+                    else []
+                )
 
                 if set(extracted_fnames) != set(compressed_fnames):
                     archive_file.extractall(self._dpath_audio)
@@ -594,7 +599,9 @@ class Clotho(Dataset):
 
     def _load_data(self) -> None:
         if not self._is_prepared():
-            raise RuntimeError(f"Dataset is not prepared in root={self._root}.")
+            raise RuntimeError(
+                f"Cannot load data: clotho_{self._subset} is not prepared in data root={self._root}. Please use download=True in dataset constructor."
+            )
 
         # Read fpath of .wav audio files
         links = CLOTHO_LINKS[self._version][self._subset]
