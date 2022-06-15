@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 cff-version: 1.2.0
-title: aac_datasets
+title: aac-datasets
 message: 'If you use this software, please cite it as below.'
 type: software
 authors:
