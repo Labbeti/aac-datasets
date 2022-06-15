@@ -49,7 +49,7 @@ def get_main_download_args() -> Namespace:
         help="Force download of files, even if already downloaded.",
     )
 
-    subparsers = parser.add_subparsers(dest="dataset", required=True)
+    subparsers = parser.add_subparsers(dest="dataset", required=True, description="The dataset to download.")
 
     audiocaps_subparser = subparsers.add_parser("audiocaps")
     audiocaps_subparser.add_argument(
