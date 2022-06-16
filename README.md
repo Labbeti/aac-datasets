@@ -14,11 +14,15 @@ Automated Audio Captioning Unofficial datasets source code for **AudioCaps** [1]
 </div>
 
 ## Installation
-
+From PyPI :
+```bash
+pip install aac-datasets
+```
+From Github :
 ```bash
 pip install git+https://github.com/Labbeti/aac_datasets
 ```
-or clone the repository :
+Or in editable mode :
 ```bash
 git clone https://github.com/Labbeti/aac_datasets
 pip install -e aac_datasets
@@ -118,3 +122,19 @@ python -m aac_datasets.download --root "./data" clotho --version "v2.1"
 [2] K. Drossos, S. Lipping, and T. Virtanen, “Clotho: An Audio Captioning Dataset,” arXiv:1910.09387 [cs, eess], Oct. 2019, Available: http://arxiv.org/abs/1910.09387
 
 [3] F. Font, A. Mesaros, D. P. W. Ellis, E. Fonseca, M. Fuentes, and B. Elizalde, Proceedings of the 6th Workshop on Detection and Classication of Acoustic Scenes and Events (DCASE 2021). Barcelona, Spain: Music Technology Group - Universitat Pompeu Fabra, Nov. 2021. Available: https://doi.org/10.5281/zenodo.5770113
+
+## Cite the aac-datasets package
+If you use this software, please consider cite it as below :
+
+```
+@software{
+    Labbe_aac_datasets_2022,
+    author = {Labbé, Etienne},
+    license = {MIT},
+    month = {6},
+    title = {{aac-datasets}},
+    url = {https://github.com/Labbeti/aac_datasets/},
+    version = {0.1.1},
+    year = {2022},
+}
+```
