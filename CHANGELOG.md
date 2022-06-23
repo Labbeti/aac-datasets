@@ -6,6 +6,9 @@ All notable changes to this project will be documented in this file.
 ### Added
 - CHANGELOG file
 
+### Changed
+- Update README with PyPI install and software citation.
+
 ## [0.1.1] 2022-06-10
 ### Added
 - CITATION file
@@ -15,7 +18,7 @@ All notable changes to this project will be documented in this file.
 - Documentation for arguments in dataset constructors
 
 ### Fixed
-- Clotho analysis downloading and preparation has been fixed
+- Clotho analysis subset download and preparation
 
 ## [0.1.0] 2022-06-07
 ### Added
