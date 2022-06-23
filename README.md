@@ -14,18 +14,8 @@ Automated Audio Captioning Unofficial datasets source code for **AudioCaps** [1]
 </div>
 
 ## Installation
-From PyPI :
 ```bash
 pip install aac-datasets
-```
-From Github :
-```bash
-pip install git+https://github.com/Labbeti/aac_datasets
-```
-Or in editable mode :
-```bash
-git clone https://github.com/Labbeti/aac_datasets
-pip install -e aac_datasets
 ```
 
 ## Examples
@@ -52,8 +42,8 @@ dataset = MACS(root=".", download=True)
 dataloader = DataLoader(dataset, batch_size=4, collate_fn=BasicCollate())
 
 for audio_batch, captions_batch in dataloader:
-    # audio_batch: Tensor of shape (batch_size=4, n_channels=2, audio_max_size)
-    # captions_batch: list of list of str captions
+    # audio_batch: Tensor of shape (batch_size, n_channels, audio_max_size)
+    # captions_batch: list of list of str
     ...
 ```
 
