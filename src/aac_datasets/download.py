@@ -136,7 +136,9 @@ def download_audiocaps(
 
     datasets = {}
     for subset in subsets:
-        datasets[subset] = AudioCaps(root, subset, download=True, verbose=verbose, load_tags=load_tags)
+        datasets[subset] = AudioCaps(
+            root, subset, download=True, verbose=verbose, load_tags=load_tags
+        )
     return datasets
 
 
@@ -154,7 +156,9 @@ def download_clotho(
 
     datasets = {}
     for subset in subsets:
-        datasets[subset] = Clotho(root, subset, download=True, verbose=verbose, version=version)
+        datasets[subset] = Clotho(
+            root, subset, download=True, verbose=verbose, version=version
+        )
     return datasets
 
 
