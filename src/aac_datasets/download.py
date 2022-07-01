@@ -5,7 +5,7 @@ import logging
 import sys
 
 from argparse import ArgumentParser, Namespace
-from typing import Dict, Iterable
+from typing import Dict, Iterable, Optional
 
 import yaml
 
@@ -26,7 +26,7 @@ def to_bool(s: str) -> bool:
 
 def get_main_download_args() -> Namespace:
     parser = ArgumentParser(
-        description="Download a dataset at specified root directory."
+        description="Download a dataset at specified root directory.",
     )
 
     parser.add_argument(
@@ -148,9 +148,11 @@ def download_clotho(
     force: bool = False,
     version: str = "v2.1",
     clean_archives: bool = False,
-    subsets: Iterable[str] = Clotho.SUBSETS,
+    subsets: Optional[Iterable[str]] = None,
 ) -> Dict[str, Clotho]:
     """Download Clotho dataset subsets."""
+    if subsets is None:
+        subsets = Clotho.SUBSETS_DICT[version]
     Clotho.FORCE_PREPARE_DATA = force
     Clotho.CLEAN_ARCHIVES = clean_archives
 
