@@ -8,6 +8,11 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 - Update README with PyPI install and software citation.
+- Download functions now returns the datasets downloaded.
+- MACS now have a subset parameter.
+
+### Fixed
+- LICENCE.txt and MACS_competence.yaml download for MACS dataset.
 
 ## [0.1.1] 2022-06-10
 ### Added
