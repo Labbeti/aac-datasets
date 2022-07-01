@@ -67,6 +67,7 @@ class MACS(Dataset):
     def __init__(
         self,
         root: str = ".",
+        subset: str = "full",
         download: bool = False,
         transforms: Optional[Dict[str, Optional[nn.Module]]] = None,
         unfold: bool = False,
@@ -78,6 +79,9 @@ class MACS(Dataset):
         :param root: The parent of the dataset root directory.
             The data will be stored in the 'MACS' subdirectory.
             defaults to ".".
+        :param subset: The subset of the dataset. This parameter is here only to accept the same interface than the other datasets.
+            The only valid subset is "full" and other values will raise a ValueError.
+            defaults to "full".
         :param download: Download the dataset if download=True and if the dataset is not already downloaded.
             defaults to False.
         :param transforms: The transform to apply to values.
@@ -94,6 +98,10 @@ class MACS(Dataset):
         :param verbose: Verbose level to use. Can be 0 or 1.
             defaults to 0.
         """
+        if subset not in self.SUBSETS:
+            raise ValueError(
+                f"Invalid argument {subset=} for MACS. (expected one of {self.SUBSETS})"
+            )
         if item_type not in self.ITEM_TYPES:
             raise ValueError(
                 f"Invalid argument {item_type=} for MACS. (expected one of {self.ITEM_TYPES})"
@@ -111,6 +119,7 @@ class MACS(Dataset):
 
         super().__init__()
         self._root = root
+        self._subset = subset
         self._download = download
         self._transforms = transforms
         self._unfold = unfold
@@ -230,12 +239,13 @@ class MACS(Dataset):
             dpath = self._dpath_data
             fname = file_info["fname"]
             fpath = osp.join(dpath, fname)
+
             if not osp.isfile(fpath) or self.FORCE_PREPARE_DATA:
                 if self._verbose >= 1:
                     logger.info(f"Downloading captions file '{fname}'...")
 
-                url = MACS_FILES["captions"]["url"]
-                hash_value = MACS_FILES["captions"]["hash"]
+                url = file_info["url"]
+                hash_value = file_info["hash"]
                 download_url(
                     url,
                     dpath,
