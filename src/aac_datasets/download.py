@@ -50,7 +50,9 @@ def get_main_download_args() -> Namespace:
     )
 
     subparsers = parser.add_subparsers(
-        dest="dataset", required=True, description="The dataset to download."
+        dest="dataset",
+        required=True,
+        description="The dataset to download.",
     )
 
     audiocaps_subparser = subparsers.add_parser("audiocaps")
@@ -124,6 +126,7 @@ def download_audiocaps(
     root: str = ".",
     verbose: int = 1,
     force: bool = False,
+    download: bool = True,
     ffmpeg: str = "ffmpeg",
     youtube_dl: str = "youtube-dl",
     load_tags: bool = False,
@@ -137,7 +140,7 @@ def download_audiocaps(
     datasets = {}
     for subset in subsets:
         datasets[subset] = AudioCaps(
-            root, subset, download=True, verbose=verbose, load_tags=load_tags
+            root, subset, download=download, verbose=verbose, load_tags=load_tags
         )
     return datasets
 
@@ -146,6 +149,7 @@ def download_clotho(
     root: str = ".",
     verbose: int = 1,
     force: bool = False,
+    download: bool = True,
     version: str = "v2.1",
     clean_archives: bool = False,
     subsets: Optional[Iterable[str]] = None,
@@ -159,7 +163,7 @@ def download_clotho(
     datasets = {}
     for subset in subsets:
         datasets[subset] = Clotho(
-            root, subset, download=True, verbose=verbose, version=version
+            root, subset, download=download, verbose=verbose, version=version
         )
     return datasets
 
@@ -168,6 +172,7 @@ def download_macs(
     root: str = ".",
     verbose: int = 1,
     force: bool = False,
+    download: bool = True,
     clean_archives: bool = False,
 ) -> Dict[str, MACS]:
     """Download MACS dataset."""
@@ -176,7 +181,7 @@ def download_macs(
 
     datasets = {}
     for subset in MACS.SUBSETS:
-        datasets[subset] = MACS(root, download=True, verbose=verbose)
+        datasets[subset] = MACS(root, download=download, verbose=verbose)
     return datasets
 
 
@@ -198,6 +203,7 @@ def main_download() -> None:
             root=args.root,
             verbose=args.verbose,
             force=args.force,
+            download=True,
             ffmpeg=args.ffmpeg,
             youtube_dl=args.youtube_dl,
             load_tags=args.load_tags,
@@ -209,6 +215,7 @@ def main_download() -> None:
             root=args.root,
             verbose=args.verbose,
             force=args.force,
+            download=True,
             version=args.version,
             clean_archives=args.clean_archives,
             subsets=args.subsets,
@@ -219,6 +226,7 @@ def main_download() -> None:
             root=args.root,
             verbose=args.verbose,
             force=args.force,
+            download=True,
             clean_archives=args.clean_archives,
         )
 
