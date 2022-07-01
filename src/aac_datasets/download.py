@@ -5,7 +5,7 @@ import logging
 import sys
 
 from argparse import ArgumentParser, Namespace
-from typing import Iterable
+from typing import Dict, Iterable
 
 import yaml
 
@@ -114,6 +114,7 @@ def get_main_download_args() -> Namespace:
         choices=(False, True),
         help="Remove archives files after extraction.",
     )
+    # Note : MACS only have 1 subset, so we do not add MACS subsets arg
 
     args = parser.parse_args()
     return args
@@ -127,14 +128,16 @@ def download_audiocaps(
     youtube_dl: str = "youtube-dl",
     load_tags: bool = False,
     subsets: Iterable[str] = AudioCaps.SUBSETS,
-) -> None:
+) -> Dict[str, AudioCaps]:
     """Download AudioCaps dataset subsets."""
     AudioCaps.FORCE_PREPARE_DATA = force
     AudioCaps.FFMPEG_PATH = ffmpeg
     AudioCaps.YOUTUBE_DL_PATH = youtube_dl
 
+    datasets = {}
     for subset in subsets:
-        _ = AudioCaps(root, subset, download=True, verbose=verbose, load_tags=load_tags)
+        datasets[subset] = AudioCaps(root, subset, download=True, verbose=verbose, load_tags=load_tags)
+    return datasets
 
 
 def download_clotho(
@@ -144,13 +147,15 @@ def download_clotho(
     version: str = "v2.1",
     clean_archives: bool = False,
     subsets: Iterable[str] = Clotho.SUBSETS,
-) -> None:
+) -> Dict[str, Clotho]:
     """Download Clotho dataset subsets."""
     Clotho.FORCE_PREPARE_DATA = force
     Clotho.CLEAN_ARCHIVES = clean_archives
 
+    datasets = {}
     for subset in subsets:
-        _ = Clotho(root, subset, download=True, verbose=verbose, version=version)
+        datasets[subset] = Clotho(root, subset, download=True, verbose=verbose, version=version)
+    return datasets
 
 
 def download_macs(
@@ -158,12 +163,15 @@ def download_macs(
     verbose: int = 1,
     force: bool = False,
     clean_archives: bool = False,
-) -> None:
+) -> Dict[str, MACS]:
     """Download MACS dataset."""
     MACS.FORCE_PREPARE_DATA = force
     MACS.CLEAN_ARCHIVES = clean_archives
 
-    _ = MACS(root, download=True, verbose=verbose)
+    datasets = {}
+    for subset in MACS.SUBSETS:
+        datasets[subset] = MACS(root, download=True, verbose=verbose)
+    return datasets
 
 
 def main_download() -> None:
