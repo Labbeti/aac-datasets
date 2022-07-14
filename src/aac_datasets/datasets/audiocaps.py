@@ -36,6 +36,8 @@ class AudioCapsItem:
     dataset: str = "audiocaps"
     subset: Optional[str] = None
     sr: int = -1
+    youtube_id: str = "unknown"
+    start_time: float = -1.0
 
 
 class AudioCaps(Dataset):
@@ -199,7 +201,7 @@ class AudioCaps(Dataset):
         """
         if not (0 <= index < len(self)):
             raise IndexError(
-                f"Invalid argument {index=} for {self} (expected in range [0, {len(self)}-1])"
+                f"Invalid argument {index=} for {self} (expected in range [0, {len(self)-1}])"
             )
 
         if name == "audio":
@@ -484,6 +486,9 @@ class AudioCaps(Dataset):
                 start_time = line_dict["start_time"]
                 caption = line_dict["caption"]
 
+                assert start_time.isdigit()
+                start_time = int(start_time)
+
                 fname = f"{youtube_id}_{start_time}.{self.AUDIO_FILE_EXTENSION}"
                 fpath = osp.join(audio_subset_dpath, fname)
                 isfile = osp.isfile(fpath)
@@ -497,6 +502,7 @@ class AudioCaps(Dataset):
                         captions = self._all_infos[index]["captions"]
                         assert fname == self._all_infos[index]["fname"]
                         assert start_time == self._all_infos[index]["start_time"]
+                        assert youtube_id == self._all_infos[index]["youtube_id"]
                         self._all_infos[index]["captions"].append(caption)
 
                     else:
@@ -521,6 +527,9 @@ class AudioCaps(Dataset):
 
             mid_to_tag_name = {}
             tag_name_to_index = {}
+
+            if not osp.isfile(class_labels_indices_fpath) or not osp.isfile(unbalanced_tags_fpath):
+                raise FileNotFoundError(f"Cannot load tags without tags files '{osp.basename(class_labels_indices_fpath)}' and '{osp.basename(unbalanced_tags_fpath)}'. Please use download=True and load_tags=True in dataset constructor.")
 
             with open(class_labels_indices_fpath, "r") as file:
                 reader = csv.DictReader(file)
@@ -570,7 +579,7 @@ class AudioCaps(Dataset):
                 captions = links["captions"]
                 for caption in captions:
                     new_infos = dict(links)
-                    new_infos["captions"] = (caption,)
+                    new_infos["captions"] = [caption]
                     data_info_unfolded.append(new_infos)
 
             self._all_infos = data_info_unfolded
