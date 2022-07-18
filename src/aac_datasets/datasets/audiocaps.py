@@ -528,8 +528,12 @@ class AudioCaps(Dataset):
             mid_to_tag_name = {}
             tag_name_to_index = {}
 
-            if not osp.isfile(class_labels_indices_fpath) or not osp.isfile(unbalanced_tags_fpath):
-                raise FileNotFoundError(f"Cannot load tags without tags files '{osp.basename(class_labels_indices_fpath)}' and '{osp.basename(unbalanced_tags_fpath)}'. Please use download=True and load_tags=True in dataset constructor.")
+            if not osp.isfile(class_labels_indices_fpath) or not osp.isfile(
+                unbalanced_tags_fpath
+            ):
+                raise FileNotFoundError(
+                    f"Cannot load tags without tags files '{osp.basename(class_labels_indices_fpath)}' and '{osp.basename(unbalanced_tags_fpath)}'. Please use download=True and load_tags=True in dataset constructor."
+                )
 
             with open(class_labels_indices_fpath, "r") as file:
                 reader = csv.DictReader(file)
