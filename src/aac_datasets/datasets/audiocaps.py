@@ -28,6 +28,8 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class AudioCapsItem:
+    """A single AudioCaps item. Can be returned by AudioCaps if item_type="dataclass"."""
+
     audio: Tensor = torch.empty((0,), dtype=torch.float)
     captions: List[str] = field(default_factory=list)
     tags: Optional[List[str]] = None
@@ -41,8 +43,8 @@ class AudioCapsItem:
 
 
 class AudioCaps(Dataset):
-    """
-    Unofficial AudioCaps pytorch dataset.
+    """Unofficial AudioCaps pytorch dataset.
+
     Subsets available are 'train', 'val' and 'test'.
 
     Audio is a waveform tensor of shape (1, n_times) of 10 seconds max, sampled at 16 KHz.

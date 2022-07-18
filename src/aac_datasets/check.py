@@ -38,6 +38,7 @@ def get_main_check_args() -> Namespace:
 
 
 def check_datasets(root: str, verbose: int = 0) -> Dict[str, Dict[str, int]]:
+    """Check which datasets are installed in root."""
     datasets_lens = {"audiocaps": {}, "clotho": {}, "macs": {}}
 
     if verbose >= 1:
