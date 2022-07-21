@@ -37,7 +37,7 @@ def _get_main_check_args() -> Namespace:
     return args
 
 
-def _check_datasets(root: str, verbose: int = 0) -> Dict[str, Dict[str, int]]:
+def check_directory(root: str, verbose: int = 0) -> Dict[str, Dict[str, int]]:
     """Check which datasets are installed in root.
 
     :returns: A dictionary with datasets name as keys containing subdics of subsets names as keys and datasets sizes as values.
@@ -100,7 +100,7 @@ def _main_check() -> None:
     if args.verbose >= 2:
         print(yaml.dump({"Arguments": args.__dict__}, sort_keys=False))
 
-    datasets_lens = _check_datasets(args.root, args.verbose)
+    datasets_lens = check_directory(args.root, args.verbose)
 
     if args.verbose >= 1:
         print(f"Found {len(datasets_lens)} dataset(s) in root='{args.root}'.")

@@ -20,9 +20,9 @@ import aac_datasets
 
 # -- Project information -----------------------------------------------------
 
-project = "aac-datasets"
-copyright = "2022, Etienne Labbé (Labbeti)"
-author = "Etienne Labbé (Labbeti)"
+project = aac_datasets.__name__
+copyright = "MIT"
+author = aac_datasets.__author__
 
 # The short X.Y version
 version = aac_datasets.__version__
@@ -80,6 +80,8 @@ html_static_path = ["_static"]
 
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = True
+
+add_module_names = False
 
 intersphinx_mapping = {
     "python": ("https://docs.python.org/", None),
