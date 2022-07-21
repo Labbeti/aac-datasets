@@ -47,7 +47,7 @@ class MACS(Dataset):
         {root}
         └── MACS
             ├── audio
-            │    └── (3930 files, ~13GB)
+            │    └── (3930 wav files, ~13GB)
             ├── LICENCE.txt
             ├── MACS.yaml
             └── MACS_competence.csv

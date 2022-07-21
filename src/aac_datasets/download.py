@@ -105,7 +105,7 @@ def _get_main_download_args() -> Namespace:
         default=Clotho.SUBSETS,
         nargs="+",
         choices=Clotho.SUBSETS,
-        help="Clotho subsets to download.",
+        help="Clotho subsets to download. Available subsets depends of the Clotho version used.",
     )
 
     macs_subparser = subparsers.add_parser("macs")

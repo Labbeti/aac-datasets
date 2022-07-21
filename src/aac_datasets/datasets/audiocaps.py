@@ -56,8 +56,6 @@ class AudioCaps(Dataset):
 
     AudioCaps paper : https://www.aclweb.org/anthology/N19-1011.pdf
 
-    Dataset folder tree :
-
     .. code-block:: text
         :caption:  Dataset folder tree
 
@@ -68,11 +66,11 @@ class AudioCaps(Dataset):
             ├── test.csv
             └── audio
                 ├── train
-                │    └── (46231/49838 files, ~42G for 32KHz)
+                │    └── (46231/49838 flac files, ~42G for 32KHz)
                 ├── val
-                │    └── (465/495 files, ~425M for 32KHz)
+                │    └── (465/495 flac files, ~425M for 32KHz)
                 └── test
-                    └── (913/975 files, ~832M for 32KHz)
+                    └── (913/975 flac files, ~832M for 32KHz)
 
     """
 

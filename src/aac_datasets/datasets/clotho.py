@@ -245,15 +245,15 @@ class Clotho(Dataset):
         └── CLOTHO_v2.1
             ├── clotho_audio_files
             │   ├── clotho_analysis
-            │   │    └── (8360 files, ~19GB)
+            │   │    └── (8360 wav files, ~19GB)
             │   ├── development
-            │   │    └── (3840 files, ~7.1GB)
+            │   │    └── (3840 wav files, ~7.1GB)
             │   ├── evaluation
-            │   │    └── (1045 files, ~2.0GB)
+            │   │    └── (1045 wav files, ~2.0GB)
             │   ├── validation
-            │   │    └── (1046 files, ~2.0GB)
+            │   │    └── (1046 wav files, ~2.0GB)
             │   └── test
-            │        └── (1044 files, ~2.0GB)
+            │        └── (1044 wav files, ~2.0GB)
             └── clotho_csv_files
                 ├── clotho_captions_development.csv
                 ├── clotho_captions_evaluation.csv
