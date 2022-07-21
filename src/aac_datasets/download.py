@@ -14,7 +14,7 @@ from aac_datasets.datasets.clotho import Clotho, CLOTHO_LAST_VERSION
 from aac_datasets.datasets.macs import MACS
 
 
-def to_bool(s: str) -> bool:
+def _to_bool(s: str) -> bool:
     s = s.lower()
     if s in ("true",):
         return True
@@ -24,7 +24,7 @@ def to_bool(s: str) -> bool:
         raise ValueError(f"Invalid argument value {s}. (not a boolean)")
 
 
-def get_main_download_args() -> Namespace:
+def _get_main_download_args() -> Namespace:
     parser = ArgumentParser(
         description="Download a dataset at specified root directory.",
     )
@@ -43,7 +43,7 @@ def get_main_download_args() -> Namespace:
     )
     parser.add_argument(
         "--force",
-        type=to_bool,
+        type=_to_bool,
         default=False,
         choices=(False, True),
         help="Force download of files, even if already downloaded.",
@@ -70,7 +70,7 @@ def get_main_download_args() -> Namespace:
     )
     audiocaps_subparser.add_argument(
         "--load_tags",
-        type=to_bool,
+        type=_to_bool,
         default=True,
         choices=(False, True),
         help="Download additional audioset tags corresponding to audiocaps audio.",
@@ -94,7 +94,7 @@ def get_main_download_args() -> Namespace:
     )
     clotho_subparser.add_argument(
         "--clean_archives",
-        type=to_bool,
+        type=_to_bool,
         default=False,
         choices=(False, True),
         help="Remove archives files after extraction.",
@@ -111,7 +111,7 @@ def get_main_download_args() -> Namespace:
     macs_subparser = subparsers.add_parser("macs")
     macs_subparser.add_argument(
         "--clean_archives",
-        type=to_bool,
+        type=_to_bool,
         default=False,
         choices=(False, True),
         help="Remove archives files after extraction.",
@@ -185,7 +185,7 @@ def download_macs(
     return datasets
 
 
-def main_download() -> None:
+def _main_download() -> None:
     format_ = "[%(asctime)s][%(name)s][%(levelname)s] - %(message)s"
     handler = logging.StreamHandler(sys.stdout)
     handler.setFormatter(logging.Formatter(format_))
@@ -193,7 +193,7 @@ def main_download() -> None:
     logger.setLevel(logging.DEBUG)
     logger.addHandler(handler)
 
-    args = get_main_download_args()
+    args = _get_main_download_args()
 
     if args.verbose >= 2:
         print(yaml.dump({"Arguments": args.__dict__}, sort_keys=False))
@@ -238,4 +238,4 @@ def main_download() -> None:
 
 
 if __name__ == "__main__":
-    main_download()
+    _main_download()

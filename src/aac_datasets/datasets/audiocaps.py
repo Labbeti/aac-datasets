@@ -8,7 +8,6 @@ import os.path as osp
 import subprocess
 import sys
 import time
-import tqdm
 
 from dataclasses import asdict, astuple, dataclass, field, fields
 from subprocess import CalledProcessError
@@ -16,6 +15,7 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 import torch
 import torchaudio
+import tqdm
 
 from torch import nn, Tensor
 from torch.utils.data.dataset import Dataset

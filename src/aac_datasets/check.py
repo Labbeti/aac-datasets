@@ -17,7 +17,7 @@ from aac_datasets.datasets.macs import MACS
 logger = logging.getLogger(__name__)
 
 
-def get_main_check_args() -> Namespace:
+def _get_main_check_args() -> Namespace:
     parser = ArgumentParser(description="Check datasets in specified directory.")
 
     parser.add_argument(
@@ -37,7 +37,7 @@ def get_main_check_args() -> Namespace:
     return args
 
 
-def check_datasets(root: str, verbose: int = 0) -> Dict[str, Dict[str, int]]:
+def _check_datasets(root: str, verbose: int = 0) -> Dict[str, Dict[str, int]]:
     """Check which datasets are installed in root."""
     datasets_lens = {"audiocaps": {}, "clotho": {}, "macs": {}}
 
@@ -84,7 +84,7 @@ def check_datasets(root: str, verbose: int = 0) -> Dict[str, Dict[str, int]]:
     return datasets_lens
 
 
-def main_check() -> None:
+def _main_check() -> None:
     format_ = "[%(asctime)s][%(name)s][%(levelname)s] - %(message)s"
     handler = logging.StreamHandler(sys.stdout)
     handler.setFormatter(logging.Formatter(format_))
@@ -92,12 +92,12 @@ def main_check() -> None:
     logger.setLevel(logging.DEBUG)
     logger.addHandler(handler)
 
-    args = get_main_check_args()
+    args = _get_main_check_args()
 
     if args.verbose >= 2:
         print(yaml.dump({"Arguments": args.__dict__}, sort_keys=False))
 
-    datasets_lens = check_datasets(args.root, args.verbose)
+    datasets_lens = _check_datasets(args.root, args.verbose)
 
     if args.verbose >= 1:
         print(f"Found {len(datasets_lens)} dataset(s) in root='{args.root}'.")
@@ -106,4 +106,4 @@ def main_check() -> None:
 
 
 if __name__ == "__main__":
-    main_check()
+    _main_check()
