@@ -19,3 +19,10 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
+
+
+External links
+=========================================================
+
+* `Github link <https://github.com/Labbeti/aac_datasets>`_
+* `PyPI link <https://pypi.org/project/aac-datasets/>`_
