@@ -229,7 +229,7 @@ CLOTHO_LAST_VERSION = "v2.1"
 
 class Clotho(Dataset):
     """
-    Unofficial Clotho pytorch dataset for DCASE 2021 Task 6.
+    Unofficial Clotho pytorch dataset.
     Subsets available are 'train', 'val', 'eval' and 'test' (for v2 and v2.1).
 
     Audio are waveform sounds of 15 to 30 seconds, sampled at 44100 Hz.
@@ -238,31 +238,31 @@ class Clotho(Dataset):
 
     Clotho V1 Paper : https://arxiv.org/pdf/1910.09387.pdf
 
-    Dataset folder tree for version 'v2.1':
+    .. code-block:: text
+        :caption:  Dataset folder tree for version 'v2.1'
 
-    ```
-    {root}
-    └── CLOTHO_v2.1
-        ├── clotho_audio_files
-        │   ├── clotho_analysis
-        │   │    └── (8360 files, ~19GB)
-        │   ├── development
-        │   │    └── (3840 files, ~7.1GB)
-        │   ├── evaluation
-        │   │    └── (1045 files, ~2.0GB)
-        │   ├── validation
-        │   │    └── (1046 files, ~2.0GB)
-        │   └── test
-        │        └── (1044 files, ~2.0GB)
-        └── clotho_csv_files
-            ├── clotho_captions_development.csv
-            ├── clotho_captions_evaluation.csv
-            ├── clotho_captions_validation.csv
-            ├── clotho_metadata_development.csv
-            ├── clotho_metadata_evaluation.csv
-            ├── clotho_metadata_test.csv
-            └── clotho_metadata_validation.csv
-    ```
+        {root}
+        └── CLOTHO_v2.1
+            ├── clotho_audio_files
+            │   ├── clotho_analysis
+            │   │    └── (8360 files, ~19GB)
+            │   ├── development
+            │   │    └── (3840 files, ~7.1GB)
+            │   ├── evaluation
+            │   │    └── (1045 files, ~2.0GB)
+            │   ├── validation
+            │   │    └── (1046 files, ~2.0GB)
+            │   └── test
+            │        └── (1044 files, ~2.0GB)
+            └── clotho_csv_files
+                ├── clotho_captions_development.csv
+                ├── clotho_captions_evaluation.csv
+                ├── clotho_captions_validation.csv
+                ├── clotho_metadata_development.csv
+                ├── clotho_metadata_evaluation.csv
+                ├── clotho_metadata_test.csv
+                └── clotho_metadata_validation.csv
+
     """
 
     AUDIO_MAX_LENGTH = 30.0  # in seconds

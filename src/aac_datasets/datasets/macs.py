@@ -38,20 +38,20 @@ class MACSItem:
 
 
 class MACS(Dataset):
-    """
+    r"""
     Unofficial MACS pytorch dataset.
 
-    Dataset folder tree:
+    .. code-block:: text
+        :caption: Dataset folder tree
 
-    ```
-    {root}
-    └── MACS
-        ├── audio
-        │    └── (3930 files, ~13GB)
-        ├── LICENCE.txt
-        ├── MACS.yaml
-        └── MACS_competence.csv
-    ```
+        {root}
+        └── MACS
+            ├── audio
+            │    └── (3930 files, ~13GB)
+            ├── LICENCE.txt
+            ├── MACS.yaml
+            └── MACS_competence.csv
+
     """
 
     AUDIO_MAX_LENGTH = 10.0  # in seconds
@@ -154,7 +154,7 @@ class MACS(Dataset):
             )
 
     def get_raw(self, name: str, index: int) -> Any:
-        """Read the processed raw data. (without transform)
+        """Get a specific data field. (before transform)
 
         :param name: The name of the value.
             Can be 'audio', 'fpath', 'fname', 'captions', 'tags', 'annotators_ids'.
@@ -197,7 +197,7 @@ class MACS(Dataset):
         return value
 
     def get(self, name: str, index: int) -> Any:
-        """Read the processed raw data. (with transform)
+        """Get a specific data field. (after transform)
 
         :param name: The name of the value.
                 Can be 'audio', 'fpath', 'fname', 'captions', 'tags', 'annotators_ids'.

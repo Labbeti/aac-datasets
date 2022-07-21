@@ -132,7 +132,7 @@ def download_audiocaps(
     load_tags: bool = False,
     subsets: Iterable[str] = AudioCaps.SUBSETS,
 ) -> Dict[str, AudioCaps]:
-    """Download AudioCaps dataset subsets."""
+    """Download :class:`~aac_datasets.datasets.audiocaps.AudioCaps` dataset subsets."""
     AudioCaps.FORCE_PREPARE_DATA = force
     AudioCaps.FFMPEG_PATH = ffmpeg
     AudioCaps.YOUTUBE_DL_PATH = youtube_dl
@@ -154,7 +154,7 @@ def download_clotho(
     clean_archives: bool = False,
     subsets: Optional[Iterable[str]] = None,
 ) -> Dict[str, Clotho]:
-    """Download Clotho dataset subsets."""
+    """Download :class:`~aac_datasets.datasets.clotho.Clotho` dataset subsets."""
     if subsets is None:
         subsets = Clotho.SUBSETS_DICT[version]
     Clotho.FORCE_PREPARE_DATA = force
@@ -175,7 +175,7 @@ def download_macs(
     download: bool = True,
     clean_archives: bool = False,
 ) -> Dict[str, MACS]:
-    """Download MACS dataset."""
+    """Download :class:`~aac_datasets.datasets.macs.MACS` dataset."""
     MACS.FORCE_PREPARE_DATA = force
     MACS.CLEAN_ARCHIVES = clean_archives
 

@@ -52,26 +52,28 @@ class AudioCaps(Dataset):
     The 'train' subset has only 1 caption per sample and 'val' and 'test' have 5 captions.
 
     Download requires 'youtube-dl' and 'ffmpeg' commands.
-    You can change the default path with 'AudioCaps.YOUTUBE_DL_PATH' or 'AudioCaps.FFMPEG_PATH' global variables.
+    You can change the default path with :attr:`~AudioCaps.YOUTUBE_DL_PATH` or :attr:`~AudioCaps.FFMPEG_PATH` global variables.
 
     AudioCaps paper : https://www.aclweb.org/anthology/N19-1011.pdf
 
     Dataset folder tree :
 
-    ```
-    root/
-    └── AUDIOCAPS_32000Hz
-        ├── train.csv
-        ├── val.csv
-        ├── test.csv
-        └── audio
-            ├── train
-            │    └── (46231/49838 files, ~42G for 32KHz)
-            ├── val
-            │    └── (465/495 files, ~425M for 32KHz)
-            └── test
-                └── (913/975 files, ~832M for 32KHz)
-    ```
+    .. code-block:: text
+        :caption:  Dataset folder tree
+
+        {root}
+        └── AUDIOCAPS_32000Hz
+            ├── train.csv
+            ├── val.csv
+            ├── test.csv
+            └── audio
+                ├── train
+                │    └── (46231/49838 files, ~42G for 32KHz)
+                ├── val
+                │    └── (465/495 files, ~425M for 32KHz)
+                └── test
+                    └── (913/975 files, ~832M for 32KHz)
+
     """
 
     AUDIO_FILE_EXTENSION = "flac"
@@ -359,7 +361,7 @@ class AudioCaps(Dataset):
                 start_time = int(start_time)
 
                 if not osp.isfile(fpath):
-                    success = download_and_extract_from_youtube(
+                    success = _download_and_extract_from_youtube(
                         youtube_id,
                         fpath,
                         start_time,
@@ -600,7 +602,7 @@ class AudioCaps(Dataset):
         return f"AudioCaps(subset={self._subset})"
 
 
-def download_and_extract_from_youtube(
+def _download_and_extract_from_youtube(
     youtube_id: str,
     fpath_out: str,
     start_time: int,
