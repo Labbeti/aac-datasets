@@ -5,7 +5,7 @@ import logging
 import sys
 
 from argparse import ArgumentParser, Namespace
-from typing import Dict
+from typing import Iterable, List
 
 import yaml
 
@@ -15,6 +15,64 @@ from aac_datasets.datasets.macs import MACS
 
 
 logger = logging.getLogger(__name__)
+
+
+def check_directory(
+    root: str,
+    verbose: int = 0,
+    datasets: Iterable[str] = ("audiocaps", "clotho", "macs"),
+) -> List[str]:
+    """Check which datasets are installed in root.
+
+    :param root: The directory to check.
+    :param verbose: The verbose level. defaults to 0.
+    :param datasets: The datasets to search in root. defaults to ("audiocaps", "clotho", "macs").
+    :returns: A list of dataset and subsets names found in root directory.
+    """
+    valid_subsets = []
+
+    dataname = "audiocaps"
+    if dataname in datasets:
+        if verbose >= 1:
+            logger.info(f"Searching for {dataname} in root='{root}'...")
+
+        for subset in AudioCaps.SUBSETS:
+            try:
+                _ = AudioCaps(root, subset, verbose=0)
+                valid_subsets.append(f"{dataname}_{subset}")
+
+            except RuntimeError:
+                if verbose >= 2:
+                    logger.info(f"Cannot find {dataname}_{subset}.")
+
+    dataname = "clotho"
+    if dataname in datasets:
+        if verbose >= 1:
+            logger.info(f"Searching for {dataname} in root='{root}'...")
+
+        for subset in Clotho.SUBSETS:
+            try:
+                _ = Clotho(root, subset, verbose=0)
+                valid_subsets.append(f"{dataname}_{subset}")
+
+            except RuntimeError:
+                if verbose >= 2:
+                    logger.info(f"Cannot find {dataname}_{subset}.")
+
+    dataname = "macs"
+    if dataname in datasets:
+        if verbose >= 1:
+            logger.info(f"Searching for {dataname} in root='{root}'...")
+
+        for subset in MACS.SUBSETS:
+            try:
+                _ = MACS(root, subset, verbose=0)
+                valid_subsets.append(f"{dataname}_{subset}")
+            except RuntimeError:
+                if verbose >= 2:
+                    logger.info(f"Cannot find {dataname}_{subset}.")
+
+    return valid_subsets
 
 
 def _get_main_check_args() -> Namespace:
@@ -32,80 +90,37 @@ def _get_main_check_args() -> Namespace:
         default=1,
         help="Verbose level of the script. 0 means silent mode, 1 is default mode and 2 add additional debugging outputs.",
     )
+    parser.add_argument(
+        "--datasets",
+        type=str,
+        nargs="+",
+        default=("audiocaps", "clotho", "macs"),
+        help="The datasets to check in root directory.",
+    )
 
     args = parser.parse_args()
     return args
-
-
-def check_directory(root: str, verbose: int = 0) -> Dict[str, Dict[str, int]]:
-    """Check which datasets are installed in root.
-
-    :returns: A dictionary with datasets name as keys containing subdics of subsets names as keys and datasets sizes as values.
-    """
-    datasets_lens = {"audiocaps": {}, "clotho": {}, "macs": {}}
-
-    if verbose >= 1:
-        logger.info(f"Searching for audiocaps in root='{root}'...")
-
-    for subset in AudioCaps.SUBSETS:
-        try:
-            dataset = AudioCaps(root, subset, verbose=0)
-            _ = dataset[0]
-            datasets_lens["audiocaps"][subset] = len(dataset)
-        except RuntimeError:
-            if verbose >= 2:
-                logger.info(f"Cannot find audiocaps_{subset}.")
-
-    if verbose >= 1:
-        logger.info(f"Searching for clotho in root='{root}'...")
-
-    for subset in Clotho.SUBSETS:
-        try:
-            dataset = Clotho(root, subset, verbose=0)
-            _ = dataset[0]
-            datasets_lens["clotho"][subset] = len(dataset)
-        except RuntimeError:
-            if verbose >= 2:
-                logger.info(f"Cannot find clotho_{subset}.")
-
-    if verbose >= 1:
-        logger.info(f"Searching for macs in root='{root}'...")
-
-    try:
-        dataset = MACS(root, verbose=0)
-        _ = dataset[0]
-        datasets_lens["macs"]["full"] = len(dataset)
-    except RuntimeError:
-        if verbose >= 2:
-            logger.info("Cannot find macs.")
-
-    datasets_lens = {
-        dataset_name: subsets_lens
-        for dataset_name, subsets_lens in datasets_lens.items()
-        if len(subsets_lens) > 0
-    }
-    return datasets_lens
 
 
 def _main_check() -> None:
     format_ = "[%(asctime)s][%(name)s][%(levelname)s] - %(message)s"
     handler = logging.StreamHandler(sys.stdout)
     handler.setFormatter(logging.Formatter(format_))
-    logger = logging.getLogger("aac_datasets")
-    logger.setLevel(logging.DEBUG)
-    logger.addHandler(handler)
+    pkg_logger = logging.getLogger("aac_datasets")
+    pkg_logger.setLevel(logging.DEBUG)
+    pkg_logger.addHandler(handler)
 
     args = _get_main_check_args()
 
     if args.verbose >= 2:
-        print(yaml.dump({"Arguments": args.__dict__}, sort_keys=False))
+        logger.debug(yaml.dump({"Arguments": args.__dict__}, sort_keys=False))
 
-    datasets_lens = check_directory(args.root, args.verbose)
+    valid_subsets = check_directory(args.root, args.verbose, args.datasets)
 
     if args.verbose >= 1:
-        print(f"Found {len(datasets_lens)} dataset(s) in root='{args.root}'.")
-        if len(datasets_lens) > 0:
-            print(yaml.dump(datasets_lens, sort_keys=False))
+        print(f"Found {len(valid_subsets)} subset(s) in root='{args.root}'.")
+        if len(valid_subsets) > 0:
+            print(yaml.dump(valid_subsets, sort_keys=False))
 
 
 if __name__ == "__main__":

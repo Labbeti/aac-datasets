@@ -26,7 +26,8 @@ pip install aac-datasets
 from aac_datasets import Clotho
 
 dataset = Clotho(root=".", subset="dev", download=True)
-audio, captions, *_ = dataset[0]
+item = dataset[0]
+audio, captions = item["audio"], item["captions"]
 # audio: Tensor of shape (n_channels=1, audio_max_size)
 # captions: list of str captions
 ```
@@ -95,7 +96,7 @@ You can also override their paths for AudioCaps:
 from aac_datasets import AudioCaps
 AudioCaps.FFMPEG_PATH = "/my/path/to/ffmpeg"
 AudioCaps.YOUTUBE_DL_PATH = "/my/path/to/youtube_dl"
-_ = AudioCaps(root=".", download=True)
+dataset = AudioCaps(root=".", download=True)
 ```
 
 ## Command line download

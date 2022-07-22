@@ -6,15 +6,24 @@ All notable changes to this project will be documented in this file.
 ### Added
 - CHANGELOG file.
 - First version of the API documentation.
+- Supports slicing and list indexing for the three datasets.
+- Competence values for MACS annotators.
+- Fields scene_label and identifier from TAU Urban acoustic scene dataset in MACS.
 
 ### Changed
 - Update README with PyPI install and software citation.
 - Download functions returns the datasets downloaded.
 - MACS now have a subset parameter.
 - Underscores in functions names to avoid import private functions.
+- Function `aac_datasets.check.check_directory` now returns only the list of subsets loaded.
+- Replace function `torchaudio.datasets.utils.download_url` by `torch.hub.download_url_to_file` to keep compatibility with future torchaudio version v0.12.
 
 ### Fixed
 - LICENCE.txt and MACS_competence.yaml download for MACS dataset.
+
+### Removed
+- Transforms dictionary in datasets.
+- Argument item_type in datasets.
 
 ## [0.1.1] 2022-06-10
 ### Added

@@ -14,6 +14,9 @@ from aac_datasets.datasets.clotho import Clotho, CLOTHO_LAST_VERSION
 from aac_datasets.datasets.macs import MACS
 
 
+logger = logging.getLogger(__name__)
+
+
 def _to_bool(s: str) -> bool:
     s = s.lower()
     if s in ("true",):
@@ -189,14 +192,14 @@ def _main_download() -> None:
     format_ = "[%(asctime)s][%(name)s][%(levelname)s] - %(message)s"
     handler = logging.StreamHandler(sys.stdout)
     handler.setFormatter(logging.Formatter(format_))
-    logger = logging.getLogger("aac_datasets")
-    logger.setLevel(logging.DEBUG)
-    logger.addHandler(handler)
+    pkg_logger = logging.getLogger("aac_datasets")
+    pkg_logger.setLevel(logging.DEBUG)
+    pkg_logger.addHandler(handler)
 
     args = _get_main_download_args()
 
     if args.verbose >= 2:
-        print(yaml.dump({"Arguments": args.__dict__}, sort_keys=False))
+        logger.debug(yaml.dump({"Arguments": args.__dict__}, sort_keys=False))
 
     if args.dataset == "audiocaps":
         download_audiocaps(
