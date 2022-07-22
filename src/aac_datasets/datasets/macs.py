@@ -424,6 +424,7 @@ class MACS(Dataset):
         return "MACS()"
 
 
+# MACS-specific files links.
 MACS_FILES = {
     "licence": {
         "fname": "LICENSE.txt",
@@ -442,6 +443,7 @@ MACS_FILES = {
     },
 }
 
+# TAU_URBAN_ACOUSTIC archives files links.
 TAU_URBAN_ACOUSTIC_DEV_FILES = {
     "audio.1": {
         "fname": "TAU-urban-acoustic-scenes-2019-development.audio.1.zip",
@@ -560,6 +562,7 @@ TAU_URBAN_ACOUSTIC_DEV_FILES = {
     },
 }
 
+# List of TAU_URBAN_ACOUSTIC archives containing at least 1 MACS audio.
 MACS_ARCHIVES_FILES = {
     name: TAU_URBAN_ACOUSTIC_DEV_FILES[name]
     for name in (
