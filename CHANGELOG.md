@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.1.2] (unreleased_date_TODO)
+## [1.0.0] (unreleased_date_TODO)
 ### Added
 - CHANGELOG file.
 - First version of the API documentation.

@@ -12,10 +12,11 @@ authors:
 repository-code: 'https://github.com/Labbeti/aac_datasets/'
 abstract: Automated Audio Captioning datasets for Pytorch.
 keywords:
-  - pytorch
-  - datasets
   - audio
+  - pytorch
   - caption
+  - datasets
+  - captioning
 license: MIT
-version: 0.1.1
-date-released: '2022-06-10'
+version: 1.0.0
+date-released: '2022-07-26'
