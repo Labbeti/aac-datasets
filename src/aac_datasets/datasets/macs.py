@@ -120,7 +120,7 @@ class MACS(Dataset):
             self._prepare_data()
         self._load_data()
 
-    def get_field(self, key: str, index: Union[int, slice, Iterable[int]]) -> Any:
+    def get_field(self, key: str, index: Union[int, slice, Iterable[int]] = slice(None)) -> Any:
         """Get a specific data field.
 
         :param key: The name of the field. Can be any attribute name of :class:`~MACSItem`.
