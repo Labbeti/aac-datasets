@@ -17,6 +17,69 @@ from aac_datasets.datasets.macs import MACS
 logger = logging.getLogger(__name__)
 
 
+def download_audiocaps(
+    root: str = ".",
+    verbose: int = 1,
+    force: bool = False,
+    download: bool = True,
+    ffmpeg: str = "ffmpeg",
+    youtube_dl: str = "youtube-dl",
+    load_tags: bool = False,
+    subsets: Iterable[str] = AudioCaps.SUBSETS,
+) -> Dict[str, AudioCaps]:
+    """Download :class:`~aac_datasets.datasets.audiocaps.AudioCaps` dataset subsets."""
+    AudioCaps.FORCE_PREPARE_DATA = force
+    AudioCaps.FFMPEG_PATH = ffmpeg
+    AudioCaps.YOUTUBE_DL_PATH = youtube_dl
+
+    datasets = {}
+    for subset in subsets:
+        datasets[subset] = AudioCaps(
+            root, subset, download=download, verbose=verbose, load_tags=load_tags
+        )
+    return datasets
+
+
+def download_clotho(
+    root: str = ".",
+    verbose: int = 1,
+    force: bool = False,
+    download: bool = True,
+    version: str = "v2.1",
+    clean_archives: bool = False,
+    subsets: Optional[Iterable[str]] = None,
+) -> Dict[str, Clotho]:
+    """Download :class:`~aac_datasets.datasets.clotho.Clotho` dataset subsets."""
+    if subsets is None:
+        subsets = Clotho.SUBSETS_DICT[version]
+    Clotho.FORCE_PREPARE_DATA = force
+    Clotho.CLEAN_ARCHIVES = clean_archives
+
+    datasets = {}
+    for subset in subsets:
+        datasets[subset] = Clotho(
+            root, subset, download=download, verbose=verbose, version=version
+        )
+    return datasets
+
+
+def download_macs(
+    root: str = ".",
+    verbose: int = 1,
+    force: bool = False,
+    download: bool = True,
+    clean_archives: bool = False,
+) -> Dict[str, MACS]:
+    """Download :class:`~aac_datasets.datasets.macs.MACS` dataset."""
+    MACS.FORCE_PREPARE_DATA = force
+    MACS.CLEAN_ARCHIVES = clean_archives
+
+    datasets = {}
+    for subset in MACS.SUBSETS:
+        datasets[subset] = MACS(root, download=download, verbose=verbose)
+    return datasets
+
+
 def _to_bool(s: str) -> bool:
     s = s.lower()
     if s in ("true",):
@@ -49,7 +112,7 @@ def _get_main_download_args() -> Namespace:
         type=_to_bool,
         default=False,
         choices=(False, True),
-        help="Force download of files, even if already downloaded.",
+        help="Force download of files, even if they are already downloaded.",
     )
 
     subparsers = parser.add_subparsers(
@@ -123,69 +186,6 @@ def _get_main_download_args() -> Namespace:
 
     args = parser.parse_args()
     return args
-
-
-def download_audiocaps(
-    root: str = ".",
-    verbose: int = 1,
-    force: bool = False,
-    download: bool = True,
-    ffmpeg: str = "ffmpeg",
-    youtube_dl: str = "youtube-dl",
-    load_tags: bool = False,
-    subsets: Iterable[str] = AudioCaps.SUBSETS,
-) -> Dict[str, AudioCaps]:
-    """Download :class:`~aac_datasets.datasets.audiocaps.AudioCaps` dataset subsets."""
-    AudioCaps.FORCE_PREPARE_DATA = force
-    AudioCaps.FFMPEG_PATH = ffmpeg
-    AudioCaps.YOUTUBE_DL_PATH = youtube_dl
-
-    datasets = {}
-    for subset in subsets:
-        datasets[subset] = AudioCaps(
-            root, subset, download=download, verbose=verbose, load_tags=load_tags
-        )
-    return datasets
-
-
-def download_clotho(
-    root: str = ".",
-    verbose: int = 1,
-    force: bool = False,
-    download: bool = True,
-    version: str = "v2.1",
-    clean_archives: bool = False,
-    subsets: Optional[Iterable[str]] = None,
-) -> Dict[str, Clotho]:
-    """Download :class:`~aac_datasets.datasets.clotho.Clotho` dataset subsets."""
-    if subsets is None:
-        subsets = Clotho.SUBSETS_DICT[version]
-    Clotho.FORCE_PREPARE_DATA = force
-    Clotho.CLEAN_ARCHIVES = clean_archives
-
-    datasets = {}
-    for subset in subsets:
-        datasets[subset] = Clotho(
-            root, subset, download=download, verbose=verbose, version=version
-        )
-    return datasets
-
-
-def download_macs(
-    root: str = ".",
-    verbose: int = 1,
-    force: bool = False,
-    download: bool = True,
-    clean_archives: bool = False,
-) -> Dict[str, MACS]:
-    """Download :class:`~aac_datasets.datasets.macs.MACS` dataset."""
-    MACS.FORCE_PREPARE_DATA = force
-    MACS.CLEAN_ARCHIVES = clean_archives
-
-    datasets = {}
-    for subset in MACS.SUBSETS:
-        datasets[subset] = MACS(root, download=download, verbose=verbose)
-    return datasets
 
 
 def _main_download() -> None:

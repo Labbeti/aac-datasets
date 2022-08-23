@@ -14,7 +14,7 @@ import aac_datasets
 
 
 def get_packages_versions() -> Dict[str, str]:
-    """Return a dictionary containing the version python, the os, the architecture and of the following packages: aac_datasets, torch, torchaudio."""
+    """Return a dictionary containing the version python, the os name, the architecture name and the versions of the following packages: aac_datasets, torch, torchaudio."""
     return {
         "aac_datasets": aac_datasets.__version__,
         "python": f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}",

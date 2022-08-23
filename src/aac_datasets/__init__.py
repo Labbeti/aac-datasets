@@ -9,5 +9,5 @@ from .datasets.macs import MACS
 __author__ = "Etienne Labbé (Labbeti)"
 __maintainer__ = "Etienne Labbé (Labbeti)"
 __name__ = "aac-datasets"
-__status__ = "Released"
-__version__ = "1.0.0"
+__status__ = "Development"
+__version__ = "0.2.0"
