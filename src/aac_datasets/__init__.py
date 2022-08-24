@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""
+Automated Audio Captioning Datasets package.
+"""
+
 from .datasets.audiocaps import AudioCaps
 from .datasets.clotho import Clotho
 from .datasets.macs import MACS
