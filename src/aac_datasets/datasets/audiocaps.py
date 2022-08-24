@@ -39,7 +39,7 @@ class AudioCapsItem:
     # AudioCaps-specific attributes
     audiocaps_ids: List[int] = field(default_factory=list)
     start_time: int = -1
-    tags: List[str] = field(default_factory=list)
+    tags: List[int] = field(default_factory=list)
     youtube_id: str = "unknown"
 
 
@@ -78,9 +78,9 @@ class AudioCaps(Dataset):
     # Global
     AUDIO_FILE_EXTENSION = "flac"
     AUDIO_N_CHANNELS = 1
-    AUDIO_MAX_LENGTH = 10.00096876  # in seconds
-    AUDIO_MIN_LENGTH = 0.6501874  # in seconds
-    CAPTION_MIN_LENGTH = 1
+    AUDIO_MAX_SEC = 10.00096876  # in seconds
+    AUDIO_MIN_SEC = 0.6501874  # in seconds
+    CAPTION_MIN_LENGTH = 2
     CAPTION_MAX_LENGTH = 52
     CAPTIONS_PER_AUDIO = {"train": 1, "val": 5, "test": 5}
     DNAME_LOG = "logs"
@@ -101,7 +101,7 @@ class AudioCaps(Dataset):
         unfold: bool = False,
         verbose: int = 0,
         add_removed_audio: bool = False,
-        load_tags: bool = True,
+        load_tags: bool = False,
     ) -> None:
         """
         :param root: Dataset root directory.
@@ -117,7 +117,7 @@ class AudioCaps(Dataset):
             defaults to True.
         :param verbose: Verbose level.
             defaults to 0.
-        :param accept_invalid_fpath: If True, the dataset will return an empty Tensor when the audio has been removed from Youtube (or not present on disk).
+        :param add_removed_audio: If True, the dataset will return an empty Tensor when the audio has been removed from Youtube (or not present on disk).
             defaults to False.
         :param load_tags: If True, load the tags from AudioSet dataset.
             Note: tags needs to be downloaded with download=True & load_tags=True before being used.
@@ -140,6 +140,7 @@ class AudioCaps(Dataset):
 
         self.__all_items = {}
         self.__is_loaded = False
+        self.__index_to_tagname = []
 
         if self.__download:
             self._prepare_data()
@@ -224,6 +225,9 @@ class AudioCaps(Dataset):
             raise ValueError(
                 f"Invalid argument {key=} at {index=}. (expected one of {tuple(keys)})"
             )
+
+    def get_index_to_tagname(self) -> List[str]:
+        return self.__index_to_tagname
 
     def _check_file(self, fpath: str) -> bool:
         try:
@@ -335,6 +339,10 @@ class AudioCaps(Dataset):
             mid_to_tag_name[line["mid"]] = line["display_name"]
             tag_name_to_index[line["display_name"]] = int(line["index"])
 
+        classes_indexes = list(tag_name_to_index.values())
+        assert classes_indexes == list(range(classes_indexes[-1] + 1))
+        self.__index_to_tagname = list(tag_name_to_index.keys())
+
         # Process each field into a single structure
         all_caps_dic: Dict[str, List[Any]] = {
             key: [None for _ in range(dataset_size)]
@@ -381,12 +389,13 @@ class AudioCaps(Dataset):
             start_time = int(float(line["start_seconds"]))
             fname = f"{youtube_id}_{start_time}.{self.AUDIO_FILE_EXTENSION}"
             if fname in fname_to_idx:
-                tags = line["positive_labels"]
-                tags = tags.split(",")
-                tags = [mid_to_tag_name[tag] for tag in tags]
+                tags_mid = line["positive_labels"]
+                tags_mid = tags_mid.split(",")
+                tags_names = [mid_to_tag_name[tag] for tag in tags_mid]
+                tags_indexes = [tag_name_to_index[tag] for tag in tags_names]
 
                 idx = fname_to_idx[fname]
-                all_tags_lst[idx] = tags
+                all_tags_lst[idx] = tags_indexes
 
         all_items = {
             "fname": fnames_lst,
@@ -501,7 +510,7 @@ class AudioCaps(Dataset):
                         youtube_id,
                         fpath,
                         start_time,
-                        duration=self.AUDIO_MAX_LENGTH,
+                        duration=self.AUDIO_MAX_SEC,
                         sr=self.SAMPLE_RATE,
                         youtube_dl_path=self.YOUTUBE_DL_PATH,
                         ffmpeg_path=self.FFMPEG_PATH,

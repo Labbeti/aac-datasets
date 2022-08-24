@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import copy
 import csv
 import logging
 import os
@@ -38,7 +39,7 @@ class MACSItem:
     # MACS-specific attributes
     annotators_ids: List[str] = field(default_factory=list)
     competences: List[float] = field(default_factory=list)
-    identifier: str = "unknwon"
+    identifier: str = "unknown"
     scene_label: str = "unknown"
     tags: List[List[str]] = field(default_factory=list)
 
@@ -199,6 +200,11 @@ class MACS(Dataset):
         """Get competence value for a specific annotator id."""
         return self.__annotator_id_to_competence[annotator_id]
 
+    def get_annotator_to_competence_dict(self) -> Dict[int, float]:
+        """Get annotator to competence dictionary."""
+        # Note : copy to prevent any changes on this attribute
+        return copy.deepcopy(self.__annotator_id_to_competence)
+
     @cached_property
     def _dpath_archives(self) -> str:
         return osp.join(self._dpath_data, "archives")
@@ -336,6 +342,7 @@ class MACS(Dataset):
 
         os.makedirs(self._dpath_audio, exist_ok=True)
         os.makedirs(self._dpath_archives, exist_ok=True)
+        os.makedirs(self._dpath_tau_meta, exist_ok=True)
 
         # Download MACS specific files
         for file_info in MACS_FILES.values():
