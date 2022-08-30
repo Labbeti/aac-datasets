@@ -14,14 +14,8 @@ Automated Audio Captioning Unofficial datasets source code for **AudioCaps** [1]
 </div>
 
 ## Installation
-
 ```bash
-pip install git+https://github.com/Labbeti/aac_datasets
-```
-or clone the repository :
-```bash
-git clone https://github.com/Labbeti/aac_datasets
-pip install -e aac_datasets
+pip install aac-datasets
 ```
 
 ## Examples
@@ -32,7 +26,8 @@ pip install -e aac_datasets
 from aac_datasets import Clotho
 
 dataset = Clotho(root=".", subset="dev", download=True)
-audio, captions, *_ = dataset[0]
+item = dataset[0]
+audio, captions = item["audio"], item["captions"]
 # audio: Tensor of shape (n_channels=1, audio_max_size)
 # captions: list of str captions
 ```
@@ -41,15 +36,15 @@ audio, captions, *_ = dataset[0]
 
 ```python
 from torch.utils.data.dataloader import DataLoader
-from aac_datasets import MACS
+from aac_datasets import Clotho
 from aac_datasets.utils import BasicCollate
 
-dataset = MACS(root=".", download=True)
+dataset = Clotho(root=".", download=True)
 dataloader = DataLoader(dataset, batch_size=4, collate_fn=BasicCollate())
 
 for audio_batch, captions_batch in dataloader:
-    # audio_batch: Tensor of shape (batch_size=4, n_channels=2, audio_max_size)
-    # captions_batch: list of list of str captions
+    # audio_batch: Tensor of shape (batch_size, n_channels, audio_max_size)
+    # captions_batch: list of list of str
     ...
 ```
 
@@ -73,7 +68,7 @@ Here is the **train** subset statistics for each dataset :
 | Nb captions per audio | 1 | 5 | 2-5 |
 | Nb captions | 49838 | 19195 | 17275 |
 | Total nb words<sup>2</sup> | 402482 | 217362 | 160006 |
-| Nb words range<sup>2</sup> | 1-52 | 8-20 | 5-40 |
+| Nb words range<sup>2</sup> | 2-52 | 8-20 | 5-40 |
 
 <sup>1</sup> This duration is estimated on the total duration of 46230/49838 files of 126.7h.
 
@@ -101,7 +96,7 @@ You can also override their paths for AudioCaps:
 from aac_datasets import AudioCaps
 AudioCaps.FFMPEG_PATH = "/my/path/to/ffmpeg"
 AudioCaps.YOUTUBE_DL_PATH = "/my/path/to/youtube_dl"
-_ = AudioCaps(root=".", download=True)
+dataset = AudioCaps(root=".", download=True)
 ```
 
 ## Command line download
@@ -118,3 +113,19 @@ python -m aac_datasets.download --root "./data" clotho --version "v2.1"
 [2] K. Drossos, S. Lipping, and T. Virtanen, “Clotho: An Audio Captioning Dataset,” arXiv:1910.09387 [cs, eess], Oct. 2019, Available: http://arxiv.org/abs/1910.09387
 
 [3] F. Font, A. Mesaros, D. P. W. Ellis, E. Fonseca, M. Fuentes, and B. Elizalde, Proceedings of the 6th Workshop on Detection and Classication of Acoustic Scenes and Events (DCASE 2021). Barcelona, Spain: Music Technology Group - Universitat Pompeu Fabra, Nov. 2021. Available: https://doi.org/10.5281/zenodo.5770113
+
+## Cite the aac-datasets package
+If you use this software, please consider cite it as below :
+
+```
+@software{
+    Labbe_aac-datasets_2022,
+    author = {Labbé, Etienne},
+    license = {MIT},
+    month = {6},
+    title = {{aac-datasets}},
+    url = {https://github.com/Labbeti/aac_datasets/},
+    version = {0.1.1},
+    year = {2022}
+}
+```

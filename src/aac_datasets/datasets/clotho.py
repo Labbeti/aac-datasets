@@ -7,19 +7,19 @@ import logging
 import os
 import os.path as osp
 
-from dataclasses import asdict, astuple, dataclass, field, fields
+from dataclasses import dataclass, field, fields
 from functools import cached_property
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Callable, Dict, Iterable, List, Optional, Union
 from zipfile import ZipFile
 
 import torch
 import torchaudio
 
 from py7zr import SevenZipFile
-from torch import nn, Tensor
+from torch import Tensor
+from torch.hub import download_url_to_file
 from torch.utils.data.dataset import Dataset
-from torchaudio.backend.common import AudioMetaData
-from torchaudio.datasets.utils import download_url
+from torchaudio.datasets.utils import validate_file
 
 
 logger = logging.getLogger(__name__)
@@ -27,14 +27,23 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class ClothoItem:
+    """Dataclass representing a single Clotho item."""
+
+    # Common attributes
     audio: Tensor = torch.empty((0,))
     captions: List[str] = field(default_factory=list)
-    keywords: List[str] = field(default_factory=list)
-    fname: Optional[str] = None
-    index: Optional[int] = None
     dataset: str = "clotho"
-    subset: Optional[str] = None
+    fname: str = "unknown"
+    index: int = -1
+    subset: str = "unknown"
     sr: int = -1
+    # Clotho-specific attributes
+    keywords: List[str] = field(default_factory=list)
+    sound_id: str = "unknown"
+    sound_link: str = "unknown"
+    start_end_samples: str = "unknown"
+    manufacturer: str = "unknown"
+    license: str = "unknown"
 
 
 CLOTHO_LINKS = {
@@ -228,52 +237,52 @@ CLOTHO_LAST_VERSION = "v2.1"
 
 
 class Clotho(Dataset):
-    """
-    Unofficial Clotho pytorch dataset for DCASE 2021 Task 6.
-    Subsets available are 'train', 'val', 'eval' and 'test' (for v2 and v2.1).
+    r"""
+    Unofficial Clotho pytorch dataset.
+    Subsets available are 'train', 'val', 'eval', 'test' and 'analysis'.
 
     Audio are waveform sounds of 15 to 30 seconds, sampled at 44100 Hz.
     Target is a list of 5 different sentences strings describing an audio sample.
-    Max number of words in captions is 20.
+    The maximal number of words in captions is 20.
 
     Clotho V1 Paper : https://arxiv.org/pdf/1910.09387.pdf
 
-    Dataset folder tree for version 'v2.1':
+    .. code-block:: text
+        :caption:  Dataset folder tree for version 'v2.1'
 
-    ```
-    {root}
-    └── CLOTHO_v2.1
-        ├── clotho_audio_files
-        │   ├── clotho_analysis
-        │   │    └── (8360 files, ~19GB)
-        │   ├── development
-        │   │    └── (3840 files, ~7.1GB)
-        │   ├── evaluation
-        │   │    └── (1045 files, ~2.0GB)
-        │   ├── validation
-        │   │    └── (1046 files, ~2.0GB)
-        │   └── test
-        │        └── (1044 files, ~2.0GB)
-        └── clotho_csv_files
-            ├── clotho_captions_development.csv
-            ├── clotho_captions_evaluation.csv
-            ├── clotho_captions_validation.csv
-            ├── clotho_metadata_development.csv
-            ├── clotho_metadata_evaluation.csv
-            ├── clotho_metadata_test.csv
-            └── clotho_metadata_validation.csv
-    ```
+        {root}
+        └── CLOTHO_v2.1
+            ├── clotho_audio_files
+            │   ├── clotho_analysis
+            │   │    └── (8360 wav files, ~19GB)
+            │   ├── development
+            │   │    └── (3840 wav files, ~7.1GB)
+            │   ├── evaluation
+            │   │    └── (1045 wav files, ~2.0GB)
+            │   ├── validation
+            │   │    └── (1046 wav files, ~2.0GB)
+            │   └── test
+            │        └── (1044 wav files, ~2.0GB)
+            └── clotho_csv_files
+                ├── clotho_captions_development.csv
+                ├── clotho_captions_evaluation.csv
+                ├── clotho_captions_validation.csv
+                ├── clotho_metadata_development.csv
+                ├── clotho_metadata_evaluation.csv
+                ├── clotho_metadata_test.csv
+                └── clotho_metadata_validation.csv
+
     """
 
-    AUDIO_MAX_LENGTH = 30.0  # in seconds
-    AUDIO_MIN_LENGTH = 15.0  # in seconds
+    # Global
+    AUDIO_MAX_SEC = 30.0
+    AUDIO_MIN_SEC = 15.0
     AUDIO_N_CHANNELS = 1
     CAPTION_MAX_LENGTH = 20
     CAPTION_MIN_LENGTH = 8
-    CAPTIONS_PER_AUDIO = {"dev": 5, "val": 5, "eval": 5, "test": 0}
+    CAPTIONS_PER_AUDIO = {"dev": 5, "val": 5, "eval": 5, "test": 0, "analysis": 0}
     CLEAN_ARCHIVES: bool = False
     FORCE_PREPARE_DATA: bool = False
-    ITEM_TYPES = ("tuple", "dict", "dataclass")
     SAMPLE_RATE = 44100
     SUBSETS_DICT = {
         version: tuple(links.keys()) for version, links in CLOTHO_LINKS.items()
@@ -286,32 +295,27 @@ class Clotho(Dataset):
         root: str = ".",
         subset: str = "dev",
         download: bool = False,
-        transforms: Optional[Dict[str, Optional[nn.Module]]] = None,
+        item_transform: Optional[Callable] = None,
         unfold: bool = False,
-        item_type: str = "tuple",
-        version: str = "v2.1",
         verbose: int = 0,
+        version: str = "v2.1",
     ) -> None:
         """
         :param root: The parent of the dataset root directory.
             Note: The data is stored in the 'CLOTHO_{version}' subdirectory.
             defaults to ".".
-        :param subset: The subset of Clotho to use.
-            Can be 'dev', 'val', 'eval', 'test' or 'analysis' for clotho v2.1.
+        :param subset: The subset of Clotho to use. Can be one of :attr:`~Clotho.SUBSETS`.
+            defaults to "dev".
         :param download: Download the dataset if download=True and if the dataset is not already downloaded.
-            default to False.
-        :param transforms: The transform to apply values (Tensor).
-            Keys can be 'audio', 'captions' or 'keywords'.
+            defaults to False.
+        :param item_transform: The transform to apply to the global dict item. This transform is applied AFTER each field transform.
             defaults to None.
         :param unfold: If True, map captions to audio instead of audio to caption.
             defaults to True.
-        :param item_type: The type of the value returned by __getitem__.
-            Can be 'tuple', 'dict' or 'dataclass'.
-            defaults to 'tuple'.
-        :param version: The version of the dataset. Can be 'v1', 'v2' or 'v2.1'.
-            defaults to 'v2.1'.
         :param verbose: Verbose level to use. Can be 0 or 1.
             defaults to 0.
+        :param version: The version of the dataset. Can be one of :attr:`~Clotho.VERSIONS`.
+            defaults to 'v2.1'.
         """
         if version not in Clotho.VERSIONS:
             raise ValueError(
@@ -323,137 +327,95 @@ class Clotho(Dataset):
                 f"Invalid Clotho argument {subset=} for {version=}. Must be one of {tuple(CLOTHO_LINKS[version].keys())}."
             )
 
-        if item_type not in self.ITEM_TYPES:
-            raise ValueError(
-                f"Invalid argument {item_type=} for Clotho. (expected one of {self.ITEM_TYPES})"
-            )
-
-        if transforms is None:
-            transforms = {}
-
-        accepted_keys = [field_.name for field_ in fields(ClothoItem)]
-        for key in transforms.keys():
-            if key not in accepted_keys:
-                raise ValueError(
-                    f"Invalid transform {key=}. (expected one of {accepted_keys})"
-                )
-
         super().__init__()
-        self._root = root
-        self._subset = subset
-        self._download = download
-        self._transforms = transforms
-        self._unfold = unfold
-        self._item_type = item_type
-        self._version = version
-        self._verbose = verbose
+        self.__root = root
+        self.__subset = subset
+        self.__download = download
+        self.__item_transform = item_transform
+        self.__unfold = unfold
+        self.__version = version
+        self.__verbose = verbose
 
-        self._all_infos = []
-        self._metadata_keys = []
+        self.__all_items = {}
+        self.__is_loaded = False
 
-        if self._download:
+        if self.__download:
             self._prepare_data()
         self._load_data()
 
-    def __getitem__(self, index: int) -> Union[Tuple, Dict, ClothoItem]:
+    def get_field(
+        self, key: str, index: Union[int, slice, Iterable[int]] = slice(None)
+    ) -> Any:
+        """Get a specific data field.
+
+        :param key: The name of the field. Can be any attribute name of :class:`~ClothoItem`.
+        :param index: The index or slice of the value in range [0, len(dataset)-1].
+        :returns: The field value. The type depends of the transform applied to the field.
         """
-        Get the audio data as 1D tensor and the matching captions as 5 sentences.
+        if isinstance(index, (int, slice)) and key in self.__all_items.keys():
+            return self.__all_items[key][index]
 
-        :param index: The index of the item.
-        :return: Audio data of shape (size,) and the 5 matching captions as tuple or dict.
-        """
-        kwargs = {
-            field.name: self.get(field.name, index) for field in fields(ClothoItem)
-        }
-        item = ClothoItem(**kwargs)
+        if isinstance(index, slice):
+            index = range(len(self))[index]
 
-        if self._item_type == "tuple":
-            return astuple(item)
-        elif self._item_type == "dict":
-            return asdict(item)
-        elif self._item_type == "dataclass":
-            return item
-        else:
-            raise ValueError(
-                f"Invalid item_type={self._item_type} for Clotho_{self._subset}. (expected one of {self.ITEM_TYPES})"
-            )
+        if isinstance(index, Iterable):
+            return [self.get_field(key, idx) for idx in index]
 
-    def __len__(self) -> int:
-        """
-        :return: The number of items in the dataset.
-        """
-        return len(self._all_infos)
-
-    def get_valid_item_keys(self) -> Tuple[str, ...]:
-        return ("audio", "fpath", "dataset", "subset", "index") + tuple(
-            self._all_infos[0].keys()
-        )
-
-    def get_raw(self, name: str, index: int) -> Any:
-        """Read the processed raw data. (without transform)
-
-        :param name: The name of the value.
-                Can be 'audio', 'fpath', 'fname', 'captions', 'keywords', 'sound_id', 'sound_link', 'start_end_samples', 'manufacturer', 'license'.
-        :param index: The index of the value in range [0, len(dataset)[.
-        """
-        if not (0 <= index < len(self)):
-            raise IndexError(
-                f"Invalid argument {index=} for {self} (expected in range [0, {len(self)}-1])"
-            )
-
-        if name == "audio":
-            fpath = self.get("fpath", index)
-            value, sr = torchaudio.load(fpath)  # type: ignore
+        if key == "audio":
+            fpath = self.get_field("fpath", index)
+            audio, sr = torchaudio.load(fpath)  # type: ignore
 
             # Sanity check
+            if audio.nelement() == 0:
+                raise RuntimeError(
+                    f"Invalid audio number of elements in {fpath}. (expected {audio.nelement()=} > 0)"
+                )
             if sr != self.SAMPLE_RATE:
                 raise RuntimeError(
-                    f"Invalid sample rate {sr}Hz of audio file {fpath} with Clotho {self.SAMPLE_RATE}Hz."
+                    f"Invalid sample rate in {fpath}. (expected {self.SAMPLE_RATE} but found {sr=})"
                 )
+            return audio
 
-        elif name == "fpath":
-            fname = self.get("fname", index)
-            value = osp.join(self._dpath_audio_subset, fname)
+        elif key == "audio_metadata":
+            fpath = self.get_field("fpath", index)
+            audio_metadata = torchaudio.info(fpath)  # type: ignore
+            return audio_metadata
 
-        elif name == "dataset":
-            value = "clotho"
+        elif key == "dataset":
+            return "clotho"
 
-        elif name == "subset":
-            value = self._subset
+        elif key == "fpath":
+            fname = self.get_field("fname", index)
+            fpath = osp.join(self._dpath_audio_subset, fname)
+            return fpath
 
-        elif name == "index":
-            value = index
+        elif key == "index":
+            return index
 
-        elif name == "sr":
-            fpath = self.get("fpath", index)
-            audio_info: AudioMetaData = torchaudio.info(fpath)  # type: ignore
-            return audio_info.sample_rate
+        elif key == "num_channels":
+            audio_metadata = self.get_field("audio_metadata", index)
+            return audio_metadata.num_channels
 
-        elif name in self._all_infos[index].keys():
-            value = self._all_infos[index][name]
+        elif key == "num_frames":
+            audio_metadata = self.get_field("audio_metadata", index)
+            return audio_metadata.num_frames
+
+        elif key == "sr":
+            audio_metadata = self.get_field("audio_metadata", index)
+            return audio_metadata.sample_rate
+
+        elif key == "subset":
+            return self.__subset
 
         else:
+            keys = [field.name for field in fields(ClothoItem)]
             raise ValueError(
-                f"Invalid value {name=} at {index=}. (dataset=clotho, subset={self._subset}, len={len(self)})"
+                f"Invalid argument {key=} at {index=}. (expected one of {tuple(keys)})"
             )
-        return value
-
-    def get(self, name: str, index: int) -> Any:
-        """Read the processed data. (with transform)
-
-        :param name: The name of the value.
-                Can be 'audio', 'fpath', 'fname', 'captions', 'keywords', 'sound_id', 'sound_link', 'start_end_samples', 'manufacturer', 'license'.
-        :param index: The index of the value in range [0, len(dataset)[.
-        """
-        value = self.get_raw(name, index)
-        transform = self._transforms.get(name, None)
-        if transform is not None:
-            value = transform(value)
-        return value
 
     @cached_property
-    def _dpath_data(self) -> str:
-        return osp.join(self._root, f"CLOTHO_{self._version}")
+    def _dpath_archives(self) -> str:
+        return osp.join(self._dpath_data, "archives")
 
     @cached_property
     def _dpath_audio(self) -> str:
@@ -464,21 +426,28 @@ class Clotho(Dataset):
         return osp.join(
             self._dpath_data,
             "clotho_audio_files",
-            CLOTHO_AUDIO_DNAMES[self._subset],
+            CLOTHO_AUDIO_DNAMES[self.__subset],
         )
 
     @cached_property
     def _dpath_csv(self) -> str:
         return osp.join(self._dpath_data, "clotho_csv_files")
 
+    @cached_property
+    def _dpath_data(self) -> str:
+        return osp.join(self.__root, f"CLOTHO_{self.__version}")
+
+    def _is_loaded(self) -> bool:
+        return self.__is_loaded
+
     def _is_prepared(self) -> bool:
         if not all(map(osp.isdir, (self._dpath_audio_subset, self._dpath_csv))):
             return False
 
-        if self._subset in ("test", "analysis"):
+        if Clotho.CAPTIONS_PER_AUDIO[self.__subset] == 0:
             return True
 
-        links = CLOTHO_LINKS[self._version][self._subset]
+        links = CLOTHO_LINKS[self.__version][self.__subset]
         captions_fname = links["captions"]["fname"]
         captions_fpath = osp.join(self._dpath_csv, captions_fname)
         with open(captions_fpath, "r") as file:
@@ -486,26 +455,138 @@ class Clotho(Dataset):
             lines = list(reader)
         return len(lines) == len(os.listdir(self._dpath_audio_subset))
 
-    def _prepare_data(self) -> None:
-        if not osp.isdir(self._root):
-            raise RuntimeError(f"Cannot find root directory '{self._root}'.")
+    def _load_data(self) -> None:
+        if not self._is_prepared():
+            raise RuntimeError(
+                f"Cannot load data: clotho_{self.__subset} is not prepared in data root={self.__root}. Please use download=True in dataset constructor."
+            )
 
+        # Read fpath of .wav audio files
+        links = CLOTHO_LINKS[self.__version][self.__subset]
+        dpath_audio_subset = self._dpath_audio_subset
+
+        if not osp.isdir(dpath_audio_subset):
+            raise RuntimeError(f'Cannot find directory "{dpath_audio_subset}".')
+
+        all_fnames_lst = os.listdir(dpath_audio_subset)
+        idx_to_fname = {i: fname for i, fname in enumerate(all_fnames_lst)}
+        fname_to_idx = {fname: i for i, fname in idx_to_fname.items()}
+        dataset_size = len(all_fnames_lst)
+
+        # Read Clotho files
+        if "captions" in links.keys():
+            captions_fname = links["captions"]["fname"]
+            captions_fpath = osp.join(self._dpath_csv, captions_fname)
+
+            with open(captions_fpath, "r") as file:
+                reader = csv.DictReader(file)
+                captions_data = list(reader)
+        else:
+            captions_data = []
+
+        METADATA_KEYS = (
+            "keywords",
+            "sound_id",
+            "sound_link",
+            "start_end_samples",
+            "manufacturer",
+            "license",
+        )
+        if "metadata" in links.keys():
+            metadata_fname = links["metadata"]["fname"]
+            metadata_fpath = osp.join(self._dpath_csv, metadata_fname)
+
+            # Keys: file_name, keywords, sound_id, sound_link, start_end_samples, manufacturer, license
+            if self.__version in ("v2", "v2.1"):
+                encoding = "ISO-8859-1"
+            else:
+                encoding = None
+
+            with open(metadata_fpath, "r", encoding=encoding) as file:
+                delimiter = ";" if self.__subset == "test" else ","
+                reader = csv.DictReader(file, delimiter=delimiter)
+                metadata = list(reader)
+        else:
+            metadata = []
+
+        # Process each item field
+        all_captions_lst = [[] for _ in range(dataset_size)]
+        captions_keys = (
+            "caption_1",
+            "caption_2",
+            "caption_3",
+            "caption_4",
+            "caption_5",
+        )
+        for line in captions_data:
+            fname = line["file_name"]
+            idx = fname_to_idx[fname]
+            all_captions_lst[idx] = [line[caption_key] for caption_key in captions_keys]
+
+        all_metadata_dic: Dict[str, List[Any]] = {
+            key: [None for _ in range(dataset_size)] for key in METADATA_KEYS
+        }
+        for line in metadata:
+            fname = line["file_name"]
+            idx = fname_to_idx[fname]
+            for key in METADATA_KEYS:
+                # The test subset does not have keywords in metadata, but has sound_id, sound_link, etc.
+                if key in line:
+                    all_metadata_dic[key][idx] = line[key]
+
+        all_items = {
+            "fname": all_fnames_lst,
+            "captions": all_captions_lst,
+        } | all_metadata_dic
+
+        # Split keywords into list[str]
+        all_items["keywords"] = [
+            keywords.split(";") if keywords is not None else []
+            for keywords in all_items["keywords"]
+        ]
+
+        if self.__unfold and self.CAPTIONS_PER_AUDIO[self.__subset] > 1:
+            all_infos_unfolded = {key: [] for key in all_items.keys()}
+
+            for i, captions in enumerate(all_items["captions"]):
+                for caption in captions:
+                    for key in all_items.keys():
+                        all_infos_unfolded[key].append(all_items[key][i])
+                    all_infos_unfolded["captions"] = [caption]
+
+            all_items = all_infos_unfolded
+
+        self.__all_items = all_items
+        self.__is_loaded = True
+
+        if self.__verbose >= 1:
+            logger.info(f"{repr(self)} has been loaded. (len={len(self)})")
+
+    def _prepare_data(self) -> None:
+        if not osp.isdir(self.__root):
+            raise RuntimeError(f"Cannot find root directory '{self.__root}'.")
+
+        os.makedirs(self._dpath_archives, exist_ok=True)
         os.makedirs(self._dpath_audio, exist_ok=True)
         os.makedirs(self._dpath_csv, exist_ok=True)
 
-        if self._verbose >= 1:
-            logger.info(f"Start to download files for clotho_{self._subset}...")
+        if self.__verbose >= 1:
+            logger.info(f"Start to download files for clotho_{self.__subset}...")
 
-        links = copy.deepcopy(CLOTHO_LINKS[self._version][self._subset])
+        links = copy.deepcopy(CLOTHO_LINKS[self.__version][self.__subset])
         extensions = ("7z", "csv", "zip")
 
         # Download csv and 7z files
-        for info in links.values():
-            fname, url, hash_value = info["fname"], info["url"], info["hash_value"]
+        for file_info in links.values():
+            fname, url, hash_value = (
+                file_info["fname"],
+                file_info["url"],
+                file_info["hash_value"],
+            )
             extension = fname.split(".")[-1]
 
             if extension in ("7z", "zip"):
-                dpath = self._dpath_audio
+                dpath = self._dpath_archives
             elif extension == "csv":
                 dpath = self._dpath_csv
             else:
@@ -515,30 +596,33 @@ class Clotho(Dataset):
 
             fpath = osp.join(dpath, fname)
             if not osp.isfile(fpath) or self.FORCE_PREPARE_DATA:
-                if self._verbose >= 1:
+                if self.__verbose >= 1:
                     logger.info(f"Download and check file '{fname}' from {url=}...")
 
-                download_url(
+                download_url_to_file(
                     url,
-                    dpath,
+                    fpath,
                     fname,
-                    hash_value=hash_value,
-                    hash_type="md5",
-                    progress_bar=self._verbose >= 1,
+                    progress=self.__verbose >= 1,
                 )
 
-            elif self._verbose >= 1:
+            elif self.__verbose >= 1:
                 logger.info(f"File {fname=} is already extracted.")
 
+            with open(fpath, "rb") as file:
+                valid = validate_file(file, hash_value, hash_type="md5")
+            if not valid:
+                raise RuntimeError(f"Invalid checksum for file {fname}.")
+
         # Extract audio files from archives
-        for info in links.values():
-            fname = info["fname"]
+        for file_info in links.values():
+            fname = file_info["fname"]
             extension = fname.split(".")[-1]
 
             if extension in ("7z", "zip"):
-                fpath = osp.join(self._dpath_audio, fname)
+                fpath = osp.join(self._dpath_archives, fname)
 
-                if self._verbose >= 1:
+                if self.__verbose >= 1:
                     logger.info(f"Extract archive file {fname=}...")
 
                 if extension == "7z":
@@ -552,13 +636,13 @@ class Clotho(Dataset):
                         osp.basename(file.filename) for file in archive_file.filelist
                     ]
                 else:
-                    raise RuntimeError
+                    raise RuntimeError(f"Invalid extension '{extension}'.")
 
                 # Ignore dir name from archive file
                 compressed_fnames = [
                     fname
                     for fname in compressed_fnames
-                    if fname not in ("", CLOTHO_AUDIO_DNAMES[self._subset])
+                    if fname not in ("", CLOTHO_AUDIO_DNAMES[self.__subset])
                 ]
                 extracted_fnames = (
                     os.listdir(self._dpath_audio_subset)
@@ -587,122 +671,31 @@ class Clotho(Dataset):
                 )
 
         if self.CLEAN_ARCHIVES:
-            for info in links.values():
-                fname = info["fname"]
+            for file_info in links.values():
+                fname = file_info["fname"]
                 extension = fname.split(".")[-1]
 
                 if extension in ("7z", "zip"):
                     fpath = osp.join(self._dpath_audio, fname)
-                    if self._verbose >= 1:
+                    if self.__verbose >= 1:
                         logger.info(f"Removing archive file {osp.basename(fpath)}...")
                     os.remove(fpath)
 
-    def _load_data(self) -> None:
-        if not self._is_prepared():
-            raise RuntimeError(
-                f"Cannot load data: clotho_{self._subset} is not prepared in data root={self._root}. Please use download=True in dataset constructor."
-            )
+    def __getitem__(self, index: Union[int, slice]) -> Dict[str, Any]:
+        keys = [field.name for field in fields(ClothoItem)]
+        item = {key: self.get_field(key, index) for key in keys}
+        if self.__item_transform is not None:
+            item = self.__item_transform(item)
+        return item
 
-        # Read fpath of .wav audio files
-        links = CLOTHO_LINKS[self._version][self._subset]
-        dpath_audio_subset = self._dpath_audio_subset
-
-        if not osp.isdir(dpath_audio_subset):
-            raise RuntimeError(f'Cannot find directory "{dpath_audio_subset}".')
-
-        self._all_infos = [
-            {
-                "fname": fname,
-                "captions": [],
-                "keywords": [],
-            }
-            for fname in os.listdir(dpath_audio_subset)
-        ]
-        idx_to_fname = {i: infos["fname"] for i, infos in enumerate(self._all_infos)}
-        fname_to_idx = {fname: i for i, fname in idx_to_fname.items()}
-
-        # --- Read captions info
-        if "captions" in links.keys():
-            captions_fname = links["captions"]["fname"]
-            captions_fpath = osp.join(self._dpath_csv, captions_fname)
-
-            with open(captions_fpath, "r") as file:
-                reader = csv.DictReader(file)
-                for row in reader:
-                    # Keys: file_name, caption_1, caption_2, caption_3, caption_4, caption_5
-                    fname = row["file_name"]
-
-                    if fname not in fname_to_idx.keys():
-                        raise RuntimeError(
-                            f"Found '{fname=}' in CSV '{captions_fname=}' but not the corresponding audio file."
-                        )
-                    else:
-                        idx = fname_to_idx[fname]
-                        self._all_infos[idx]["captions"] = list(
-                            row[caption_key]
-                            for caption_key in (
-                                "caption_1",
-                                "caption_2",
-                                "caption_3",
-                                "caption_4",
-                                "caption_5",
-                            )
-                        )
-
-        # --- Read metadata info
-        if "metadata" in links.keys():
-            metadata_fname = links["metadata"]["fname"]
-            metadata_fpath = osp.join(self._dpath_csv, metadata_fname)
-
-            # Keys: file_name, keywords, sound_id, sound_link, start_end_samples, manufacturer, license
-            if self._version in ("v2", "v2.1"):
-                encoding = "ISO-8859-1"
-            else:
-                encoding = None
-
-            with open(metadata_fpath, "r", encoding=encoding) as file:
-                delimiter = ";" if self._subset == "test" else ","
-                reader = csv.DictReader(file, delimiter=delimiter)
-                self._metadata_keys = (
-                    reader.fieldnames if reader.fieldnames is not None else ()
-                )
-
-                for row in reader:
-                    # file_name,keywords,sound_id,sound_link,start_end_samples,manufacturer,license
-                    fname = row["file_name"]
-                    row_copy: Any = copy.deepcopy(row)
-                    row_copy.pop("file_name")
-
-                    if "keywords" in row_copy.keys():
-                        row_copy["keywords"] = row_copy["keywords"].split(";")
-                    else:
-                        row_copy["keywords"] = []
-
-                    if fname in fname_to_idx.keys():
-                        idx = fname_to_idx[fname]
-                        self._all_infos[idx].update(row_copy)
-                    else:
-                        raise RuntimeError(
-                            f"Found value {fname=} in CSV metadata file '{metadata_fname}' but not the corresponding audio file."
-                        )
-
-        if self._unfold and self.CAPTIONS_PER_AUDIO[self._subset] > 1:
-            data_info_unfolded = []
-            for infos in self._all_infos:
-                captions = infos["captions"]
-                for caption in captions:
-                    new_infos = dict(infos)
-                    new_infos["captions"] = [caption]
-                    data_info_unfolded.append(new_infos)
-
-            self._all_infos = data_info_unfolded
-
-        self._all_infos = self._all_infos
-        if self._verbose >= 1:
-            logger.info(f"clotho_{self._subset} has been loaded. (len={len(self)})")
+    def __len__(self) -> int:
+        """
+        :return: The number of items in the dataset.
+        """
+        return len(self.__all_items["captions"])
 
     def __repr__(self) -> str:
-        return f"Clotho(subset={self._subset})"
+        return f"Clotho(subset={self.__subset})"
 
 
 CLOTHO_AUDIO_DNAMES = {

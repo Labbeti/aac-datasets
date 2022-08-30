@@ -5,7 +5,7 @@ import logging
 import sys
 
 from argparse import ArgumentParser, Namespace
-from typing import Iterable
+from typing import Dict, Iterable, Optional
 
 import yaml
 
@@ -14,7 +14,73 @@ from aac_datasets.datasets.clotho import Clotho, CLOTHO_LAST_VERSION
 from aac_datasets.datasets.macs import MACS
 
 
-def to_bool(s: str) -> bool:
+logger = logging.getLogger(__name__)
+
+
+def download_audiocaps(
+    root: str = ".",
+    verbose: int = 1,
+    force: bool = False,
+    download: bool = True,
+    ffmpeg: str = "ffmpeg",
+    youtube_dl: str = "youtube-dl",
+    load_tags: bool = False,
+    subsets: Iterable[str] = AudioCaps.SUBSETS,
+) -> Dict[str, AudioCaps]:
+    """Download :class:`~aac_datasets.datasets.audiocaps.AudioCaps` dataset subsets."""
+    AudioCaps.FORCE_PREPARE_DATA = force
+    AudioCaps.FFMPEG_PATH = ffmpeg
+    AudioCaps.YOUTUBE_DL_PATH = youtube_dl
+
+    datasets = {}
+    for subset in subsets:
+        datasets[subset] = AudioCaps(
+            root, subset, download=download, verbose=verbose, load_tags=load_tags
+        )
+    return datasets
+
+
+def download_clotho(
+    root: str = ".",
+    verbose: int = 1,
+    force: bool = False,
+    download: bool = True,
+    version: str = "v2.1",
+    clean_archives: bool = False,
+    subsets: Optional[Iterable[str]] = None,
+) -> Dict[str, Clotho]:
+    """Download :class:`~aac_datasets.datasets.clotho.Clotho` dataset subsets."""
+    if subsets is None:
+        subsets = Clotho.SUBSETS_DICT[version]
+    Clotho.FORCE_PREPARE_DATA = force
+    Clotho.CLEAN_ARCHIVES = clean_archives
+
+    datasets = {}
+    for subset in subsets:
+        datasets[subset] = Clotho(
+            root, subset, download=download, verbose=verbose, version=version
+        )
+    return datasets
+
+
+def download_macs(
+    root: str = ".",
+    verbose: int = 1,
+    force: bool = False,
+    download: bool = True,
+    clean_archives: bool = False,
+) -> Dict[str, MACS]:
+    """Download :class:`~aac_datasets.datasets.macs.MACS` dataset."""
+    MACS.FORCE_PREPARE_DATA = force
+    MACS.CLEAN_ARCHIVES = clean_archives
+
+    datasets = {}
+    for subset in MACS.SUBSETS:
+        datasets[subset] = MACS(root, download=download, verbose=verbose)
+    return datasets
+
+
+def _to_bool(s: str) -> bool:
     s = s.lower()
     if s in ("true",):
         return True
@@ -24,9 +90,9 @@ def to_bool(s: str) -> bool:
         raise ValueError(f"Invalid argument value {s}. (not a boolean)")
 
 
-def get_main_download_args() -> Namespace:
+def _get_main_download_args() -> Namespace:
     parser = ArgumentParser(
-        description="Download a dataset at specified root directory."
+        description="Download a dataset at specified root directory.",
     )
 
     parser.add_argument(
@@ -43,13 +109,17 @@ def get_main_download_args() -> Namespace:
     )
     parser.add_argument(
         "--force",
-        type=to_bool,
+        type=_to_bool,
         default=False,
         choices=(False, True),
-        help="Force download of files, even if already downloaded.",
+        help="Force download of files, even if they are already downloaded.",
     )
 
-    subparsers = parser.add_subparsers(dest="dataset", required=True)
+    subparsers = parser.add_subparsers(
+        dest="dataset",
+        required=True,
+        description="The dataset to download.",
+    )
 
     audiocaps_subparser = subparsers.add_parser("audiocaps")
     audiocaps_subparser.add_argument(
@@ -66,7 +136,7 @@ def get_main_download_args() -> Namespace:
     )
     audiocaps_subparser.add_argument(
         "--load_tags",
-        type=to_bool,
+        type=_to_bool,
         default=True,
         choices=(False, True),
         help="Download additional audioset tags corresponding to audiocaps audio.",
@@ -90,7 +160,7 @@ def get_main_download_args() -> Namespace:
     )
     clotho_subparser.add_argument(
         "--clean_archives",
-        type=to_bool,
+        type=_to_bool,
         default=False,
         choices=(False, True),
         help="Remove archives files after extraction.",
@@ -101,87 +171,42 @@ def get_main_download_args() -> Namespace:
         default=Clotho.SUBSETS,
         nargs="+",
         choices=Clotho.SUBSETS,
-        help="Clotho subsets to download.",
+        help="Clotho subsets to download. Available subsets depends of the Clotho version used.",
     )
 
     macs_subparser = subparsers.add_parser("macs")
     macs_subparser.add_argument(
         "--clean_archives",
-        type=to_bool,
+        type=_to_bool,
         default=False,
         choices=(False, True),
         help="Remove archives files after extraction.",
     )
+    # Note : MACS only have 1 subset, so we do not add MACS subsets arg
 
     args = parser.parse_args()
     return args
 
 
-def download_audiocaps(
-    root: str = ".",
-    verbose: int = 1,
-    force: bool = False,
-    ffmpeg: str = "ffmpeg",
-    youtube_dl: str = "youtube-dl",
-    load_tags: bool = False,
-    subsets: Iterable[str] = AudioCaps.SUBSETS,
-) -> None:
-    """Download AudioCaps dataset subsets."""
-    AudioCaps.FORCE_PREPARE_DATA = force
-    AudioCaps.FFMPEG_PATH = ffmpeg
-    AudioCaps.YOUTUBE_DL_PATH = youtube_dl
-
-    for subset in subsets:
-        _ = AudioCaps(root, subset, download=True, verbose=verbose, load_tags=load_tags)
-
-
-def download_clotho(
-    root: str = ".",
-    verbose: int = 1,
-    force: bool = False,
-    version: str = "v2.1",
-    clean_archives: bool = False,
-    subsets: Iterable[str] = Clotho.SUBSETS,
-) -> None:
-    """Download Clotho dataset subsets."""
-    Clotho.FORCE_PREPARE_DATA = force
-    Clotho.CLEAN_ARCHIVES = clean_archives
-
-    for subset in subsets:
-        _ = Clotho(root, subset, download=True, verbose=verbose, version=version)
-
-
-def download_macs(
-    root: str = ".",
-    verbose: int = 1,
-    force: bool = False,
-    clean_archives: bool = False,
-) -> None:
-    """Download MACS dataset."""
-    MACS.FORCE_PREPARE_DATA = force
-    MACS.CLEAN_ARCHIVES = clean_archives
-
-    _ = MACS(root, download=True, verbose=verbose)
-
-
-def main_download() -> None:
+def _main_download() -> None:
     format_ = "[%(asctime)s][%(name)s][%(levelname)s] - %(message)s"
     handler = logging.StreamHandler(sys.stdout)
     handler.setFormatter(logging.Formatter(format_))
-    logger = logging.getLogger("aac_datasets")
-    logger.setLevel(logging.DEBUG)
-    logger.addHandler(handler)
+    pkg_logger = logging.getLogger("aac_datasets")
+    pkg_logger.setLevel(logging.DEBUG)
+    pkg_logger.addHandler(handler)
 
-    args = get_main_download_args()
+    args = _get_main_download_args()
 
     if args.verbose >= 2:
-        print(yaml.dump({"Arguments": args.__dict__}, sort_keys=False))
+        logger.debug(yaml.dump({"Arguments": args.__dict__}, sort_keys=False))
 
     if args.dataset == "audiocaps":
         download_audiocaps(
             root=args.root,
             verbose=args.verbose,
             force=args.force,
+            download=True,
             ffmpeg=args.ffmpeg,
             youtube_dl=args.youtube_dl,
             load_tags=args.load_tags,
@@ -193,6 +218,7 @@ def main_download() -> None:
             root=args.root,
             verbose=args.verbose,
             force=args.force,
+            download=True,
             version=args.version,
             clean_archives=args.clean_archives,
             subsets=args.subsets,
@@ -203,6 +229,7 @@ def main_download() -> None:
             root=args.root,
             verbose=args.verbose,
             force=args.force,
+            download=True,
             clean_archives=args.clean_archives,
         )
 
@@ -214,4 +241,4 @@ def main_download() -> None:
 
 
 if __name__ == "__main__":
-    main_download()
+    _main_download()
