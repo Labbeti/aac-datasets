@@ -636,7 +636,7 @@ class Clotho(Dataset):
                         osp.basename(file.filename) for file in archive_file.filelist
                     ]
                 else:
-                    raise RuntimeError
+                    raise RuntimeError(f"Invalid extension '{extension}'.")
 
                 # Ignore dir name from archive file
                 compressed_fnames = [
