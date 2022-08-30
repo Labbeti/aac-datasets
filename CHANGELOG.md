@@ -2,14 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.2.0] (2022-08-23)
+## [0.2.0] (2022-08-30)
 ### Added
 - CHANGELOG file.
 - First version of the API documentation.
 - Supports slicing and list indexing for the three datasets.
 - Competence values for MACS annotators.
 - Fields scene_label and identifier from TAU Urban acoustic scene dataset in MACS.
-- Added `examples/dataloader.ipynb` notebook.
+- Add `examples/dataloader.ipynb` notebook.
 
 ### Changed
 - Update README with PyPI install and software citation.
