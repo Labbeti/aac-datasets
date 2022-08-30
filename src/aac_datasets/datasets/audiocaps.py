@@ -28,7 +28,9 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class AudioCapsItem:
-    # AAC attributes
+    """Dataclass representing a single AudioCAps item."""
+
+    # Common attributes
     audio: Tensor = torch.empty((0,))
     captions: List[str] = field(default_factory=list)
     dataset: str = "audiocaps"

@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 - Supports slicing and list indexing for the three datasets.
 - Competence values for MACS annotators.
 - Fields scene_label and identifier from TAU Urban acoustic scene dataset in MACS.
+- Added `examples/dataloader.ipynb` notebook.
 
 ### Changed
 - Update README with PyPI install and software citation.
@@ -21,6 +22,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 - LICENCE.txt and MACS_competence.yaml download for MACS dataset.
+- Clotho download archives files.
 
 ### Removed
 - Transforms dictionary in datasets.

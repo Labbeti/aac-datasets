@@ -68,7 +68,7 @@ Here is the **train** subset statistics for each dataset :
 | Nb captions per audio | 1 | 5 | 2-5 |
 | Nb captions | 49838 | 19195 | 17275 |
 | Total nb words<sup>2</sup> | 402482 | 217362 | 160006 |
-| Nb words range<sup>2</sup> | 1-52 | 8-20 | 5-40 |
+| Nb words range<sup>2</sup> | 2-52 | 8-20 | 5-40 |
 
 <sup>1</sup> This duration is estimated on the total duration of 46230/49838 files of 126.7h.
 

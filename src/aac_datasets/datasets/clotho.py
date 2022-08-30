@@ -27,7 +27,9 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class ClothoItem:
-    # AAC attributes
+    """Dataclass representing a single Clotho item."""
+
+    # Common attributes
     audio: Tensor = torch.empty((0,))
     captions: List[str] = field(default_factory=list)
     dataset: str = "clotho"
@@ -412,6 +414,10 @@ class Clotho(Dataset):
             )
 
     @cached_property
+    def _dpath_archives(self) -> str:
+        return osp.join(self._dpath_data, "archives")
+
+    @cached_property
     def _dpath_audio(self) -> str:
         return osp.join(self._dpath_data, "clotho_audio_files")
 
@@ -438,7 +444,7 @@ class Clotho(Dataset):
         if not all(map(osp.isdir, (self._dpath_audio_subset, self._dpath_csv))):
             return False
 
-        if self.__subset in ("test", "analysis"):
+        if Clotho.CAPTIONS_PER_AUDIO[self.__subset] == 0:
             return True
 
         links = CLOTHO_LINKS[self.__version][self.__subset]
@@ -560,6 +566,7 @@ class Clotho(Dataset):
         if not osp.isdir(self.__root):
             raise RuntimeError(f"Cannot find root directory '{self.__root}'.")
 
+        os.makedirs(self._dpath_archives, exist_ok=True)
         os.makedirs(self._dpath_audio, exist_ok=True)
         os.makedirs(self._dpath_csv, exist_ok=True)
 
@@ -579,7 +586,7 @@ class Clotho(Dataset):
             extension = fname.split(".")[-1]
 
             if extension in ("7z", "zip"):
-                dpath = self._dpath_audio
+                dpath = self._dpath_archives
             elif extension == "csv":
                 dpath = self._dpath_csv
             else:
@@ -602,7 +609,6 @@ class Clotho(Dataset):
             elif self.__verbose >= 1:
                 logger.info(f"File {fname=} is already extracted.")
 
-            hash_value = file_info["hash"]
             with open(fpath, "rb") as file:
                 valid = validate_file(file, hash_value, hash_type="md5")
             if not valid:
@@ -614,7 +620,7 @@ class Clotho(Dataset):
             extension = fname.split(".")[-1]
 
             if extension in ("7z", "zip"):
-                fpath = osp.join(self._dpath_audio, fname)
+                fpath = osp.join(self._dpath_archives, fname)
 
                 if self.__verbose >= 1:
                     logger.info(f"Extract archive file {fname=}...")

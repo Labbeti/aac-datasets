@@ -28,7 +28,9 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class MACSItem:
-    # AAC attributes
+    """Dataclass representing a single MACS item."""
+
+    # Common attributes
     audio: Tensor = torch.empty((0,))
     captions: List[str] = field(default_factory=list)
     dataset: str = "macs"
@@ -340,8 +342,8 @@ class MACS(Dataset):
         if not osp.isdir(self.__root):
             raise RuntimeError(f"Cannot find root directory '{self.__root}'.")
 
-        os.makedirs(self._dpath_audio, exist_ok=True)
         os.makedirs(self._dpath_archives, exist_ok=True)
+        os.makedirs(self._dpath_audio, exist_ok=True)
         os.makedirs(self._dpath_tau_meta, exist_ok=True)
 
         # Download MACS specific files
@@ -361,7 +363,7 @@ class MACS(Dataset):
                     progress=self.__verbose >= 1,
                 )
 
-            hash_value = file_info["hash"]
+            hash_value = file_info["hash_value"]
             with open(fpath, "rb") as file:
                 valid = validate_file(file, hash_value, hash_type="md5")
             if not valid:
@@ -391,7 +393,7 @@ class MACS(Dataset):
                     progress=self.__verbose >= 1,
                 )
 
-            hash_value = file_info["hash"]
+            hash_value = file_info["hash_value"]
             with open(zip_fpath, "rb") as file:
                 valid = validate_file(file, hash_value, hash_type="md5")
             if not valid:
@@ -471,17 +473,17 @@ MACS_FILES = {
     "licence": {
         "fname": "LICENSE.txt",
         "url": "https://zenodo.org/record/5114771/files/LICENSE.txt?download=1",
-        "hash": "d3086f4517cccc32c1bb3a081b07cfa1",
+        "hash_value": "d3086f4517cccc32c1bb3a081b07cfa1",
     },
     "captions": {
         "fname": "MACS.yaml",
         "url": "https://zenodo.org/record/5114771/files/MACS.yaml?download=1",
-        "hash": "23fcb2ebd0b109094034ef9e87972256",
+        "hash_value": "23fcb2ebd0b109094034ef9e87972256",
     },
     "annotators_competences": {
         "fname": "MACS_competence.csv",
         "url": "https://zenodo.org/record/5114771/files/MACS_competence.csv?download=1",
-        "hash": "4dfe9f951f0af9f29cb7952ec030370a",
+        "hash_value": "4dfe9f951f0af9f29cb7952ec030370a",
     },
 }
 
@@ -490,117 +492,117 @@ TAU_URBAN_ACOUSTIC_DEV_FILES = {
     "audio.1": {
         "fname": "TAU-urban-acoustic-scenes-2019-development.audio.1.zip",
         "url": "https://zenodo.org/record/2589280/files/TAU-urban-acoustic-scenes-2019-development.audio.1.zip?download=1",
-        "hash": "aca4ebfd9ed03d5f747d6ba8c24bc728",
+        "hash_value": "aca4ebfd9ed03d5f747d6ba8c24bc728",
     },
     "audio.10": {
         "fname": "TAU-urban-acoustic-scenes-2019-development.audio.10.zip",
         "url": "https://zenodo.org/record/2589280/files/TAU-urban-acoustic-scenes-2019-development.audio.10.zip?download=1",
-        "hash": "0ffbf60006da520cc761fb74c878b98b",
+        "hash_value": "0ffbf60006da520cc761fb74c878b98b",
     },
     "audio.11": {
         "fname": "TAU-urban-acoustic-scenes-2019-development.audio.11.zip",
         "url": "https://zenodo.org/record/2589280/files/TAU-urban-acoustic-scenes-2019-development.audio.11.zip?download=1",
-        "hash": "599055d93b4c11057c29be2df54538d4",
+        "hash_value": "599055d93b4c11057c29be2df54538d4",
     },
     "audio.12": {
         "fname": "TAU-urban-acoustic-scenes-2019-development.audio.12.zip",
         "url": "https://zenodo.org/record/2589280/files/TAU-urban-acoustic-scenes-2019-development.audio.12.zip?download=1",
-        "hash": "98b8d162ff3665695c4c910e6c372cc8",
+        "hash_value": "98b8d162ff3665695c4c910e6c372cc8",
     },
     "audio.13": {
         "fname": "TAU-urban-acoustic-scenes-2019-development.audio.13.zip",
         "url": "https://zenodo.org/record/2589280/files/TAU-urban-acoustic-scenes-2019-development.audio.13.zip?download=1",
-        "hash": "a356c08b1a5a21d433eba37ef87587f4",
+        "hash_value": "a356c08b1a5a21d433eba37ef87587f4",
     },
     "audio.14": {
         "fname": "TAU-urban-acoustic-scenes-2019-development.audio.14.zip",
         "url": "https://zenodo.org/record/2589280/files/TAU-urban-acoustic-scenes-2019-development.audio.14.zip?download=1",
-        "hash": "f8969771e7faf7dd471d1cf78b0cf011",
+        "hash_value": "f8969771e7faf7dd471d1cf78b0cf011",
     },
     "audio.15": {
         "fname": "TAU-urban-acoustic-scenes-2019-development.audio.15.zip",
         "url": "https://zenodo.org/record/2589280/files/TAU-urban-acoustic-scenes-2019-development.audio.15.zip?download=1",
-        "hash": "4758c4b0fb7484faa632266e78850820",
+        "hash_value": "4758c4b0fb7484faa632266e78850820",
     },
     "audio.16": {
         "fname": "TAU-urban-acoustic-scenes-2019-development.audio.16.zip",
         "url": "https://zenodo.org/record/2589280/files/TAU-urban-acoustic-scenes-2019-development.audio.16.zip?download=1",
-        "hash": "a18acad9ede8ea76574216feb887f0bc",
+        "hash_value": "a18acad9ede8ea76574216feb887f0bc",
     },
     "audio.17": {
         "fname": "TAU-urban-acoustic-scenes-2019-development.audio.17.zip",
         "url": "https://zenodo.org/record/2589280/files/TAU-urban-acoustic-scenes-2019-development.audio.17.zip?download=1",
-        "hash": "1af7703484632f340da5c33662dc9632",
+        "hash_value": "1af7703484632f340da5c33662dc9632",
     },
     "audio.18": {
         "fname": "TAU-urban-acoustic-scenes-2019-development.audio.18.zip",
         "url": "https://zenodo.org/record/2589280/files/TAU-urban-acoustic-scenes-2019-development.audio.18.zip?download=1",
-        "hash": "b67402bf3e08f4da394a7c18756c0fd2",
+        "hash_value": "b67402bf3e08f4da394a7c18756c0fd2",
     },
     "audio.19": {
         "fname": "TAU-urban-acoustic-scenes-2019-development.audio.19.zip",
         "url": "https://zenodo.org/record/2589280/files/TAU-urban-acoustic-scenes-2019-development.audio.19.zip?download=1",
-        "hash": "035db315f19106eb848b6f9b32bcc47c",
+        "hash_value": "035db315f19106eb848b6f9b32bcc47c",
     },
     "audio.2": {
         "fname": "TAU-urban-acoustic-scenes-2019-development.audio.2.zip",
         "url": "https://zenodo.org/record/2589280/files/TAU-urban-acoustic-scenes-2019-development.audio.2.zip?download=1",
-        "hash": "c4f170408ce77c8c70c532bf268d7be0",
+        "hash_value": "c4f170408ce77c8c70c532bf268d7be0",
     },
     "audio.20": {
         "fname": "TAU-urban-acoustic-scenes-2019-development.audio.20.zip",
         "url": "https://zenodo.org/record/2589280/files/TAU-urban-acoustic-scenes-2019-development.audio.20.zip?download=1",
-        "hash": "9cb28c74911bf8a3eadcf53f50a5b5d6",
+        "hash_value": "9cb28c74911bf8a3eadcf53f50a5b5d6",
     },
     "audio.21": {
         "fname": "TAU-urban-acoustic-scenes-2019-development.audio.21.zip",
         "url": "https://zenodo.org/record/2589280/files/TAU-urban-acoustic-scenes-2019-development.audio.21.zip?download=1",
-        "hash": "0e44ed85c88ec036a9725b4dd1dfaea0",
+        "hash_value": "0e44ed85c88ec036a9725b4dd1dfaea0",
     },
     "audio.3": {
         "fname": "TAU-urban-acoustic-scenes-2019-development.audio.3.zip",
         "url": "https://zenodo.org/record/2589280/files/TAU-urban-acoustic-scenes-2019-development.audio.3.zip?download=1",
-        "hash": "c7214a07211f10f3250290d05e72c37e",
+        "hash_value": "c7214a07211f10f3250290d05e72c37e",
     },
     "audio.4": {
         "fname": "TAU-urban-acoustic-scenes-2019-development.audio.4.zip",
         "url": "https://zenodo.org/record/2589280/files/TAU-urban-acoustic-scenes-2019-development.audio.4.zip?download=1",
-        "hash": "a6a62110f6699cf4432072acb1dffda6",
+        "hash_value": "a6a62110f6699cf4432072acb1dffda6",
     },
     "audio.5": {
         "fname": "TAU-urban-acoustic-scenes-2019-development.audio.5.zip",
         "url": "https://zenodo.org/record/2589280/files/TAU-urban-acoustic-scenes-2019-development.audio.5.zip?download=1",
-        "hash": "091a0b6d3c84b8e60e46940aa7d4a8a0",
+        "hash_value": "091a0b6d3c84b8e60e46940aa7d4a8a0",
     },
     "audio.6": {
         "fname": "TAU-urban-acoustic-scenes-2019-development.audio.6.zip",
         "url": "https://zenodo.org/record/2589280/files/TAU-urban-acoustic-scenes-2019-development.audio.6.zip?download=1",
-        "hash": "114f4ca13e074391b98a1cfd8140de65",
+        "hash_value": "114f4ca13e074391b98a1cfd8140de65",
     },
     "audio.7": {
         "fname": "TAU-urban-acoustic-scenes-2019-development.audio.7.zip",
         "url": "https://zenodo.org/record/2589280/files/TAU-urban-acoustic-scenes-2019-development.audio.7.zip?download=1",
-        "hash": "5951dd2968f7a514e2afbe279c4f060d",
+        "hash_value": "5951dd2968f7a514e2afbe279c4f060d",
     },
     "audio.8": {
         "fname": "TAU-urban-acoustic-scenes-2019-development.audio.8.zip",
         "url": "https://zenodo.org/record/2589280/files/TAU-urban-acoustic-scenes-2019-development.audio.8.zip?download=1",
-        "hash": "b0b63dc95b327e1509857c8d8a663cc3",
+        "hash_value": "b0b63dc95b327e1509857c8d8a663cc3",
     },
     "audio.9": {
         "fname": "TAU-urban-acoustic-scenes-2019-development.audio.9.zip",
         "url": "https://zenodo.org/record/2589280/files/TAU-urban-acoustic-scenes-2019-development.audio.9.zip?download=1",
-        "hash": "3c32a693a6b111ffb957be3c1dd22e9b",
+        "hash_value": "3c32a693a6b111ffb957be3c1dd22e9b",
     },
     "doc": {
         "fname": "TAU-urban-acoustic-scenes-2019-development.doc.zip",
         "url": "https://zenodo.org/record/2589280/files/TAU-urban-acoustic-scenes-2019-development.doc.zip?download=1",
-        "hash": "1f6879544e80da70099a191613e7e51f",
+        "hash_value": "1f6879544e80da70099a191613e7e51f",
     },
     "meta": {
         "fname": "TAU-urban-acoustic-scenes-2019-development.meta.zip",
         "url": "https://zenodo.org/record/2589280/files/TAU-urban-acoustic-scenes-2019-development.meta.zip?download=1",
-        "hash": "09782f2097e4735687af73c44919329c",
+        "hash_value": "09782f2097e4735687af73c44919329c",
     },
 }
 
