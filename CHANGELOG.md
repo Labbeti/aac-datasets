@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.1] UNRELEASED
+### Fixed
+- AudioCaps loading when load_tags is False.
+
 ## [0.2.0] 2022-08-30
 ### Added
 - CHANGELOG file.
