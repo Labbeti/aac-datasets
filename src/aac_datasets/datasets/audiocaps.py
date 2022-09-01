@@ -342,7 +342,9 @@ class AudioCaps(Dataset):
             tag_name_to_index[line["display_name"]] = int(line["index"])
 
         classes_indexes = list(tag_name_to_index.values())
-        assert len(classes_indexes) == 0 or classes_indexes == list(range(classes_indexes[-1] + 1))
+        assert len(classes_indexes) == 0 or classes_indexes == list(
+            range(classes_indexes[-1] + 1)
+        )
         self.__index_to_tagname = list(tag_name_to_index.keys())
 
         # Process each field into a single structure
