@@ -32,7 +32,7 @@ audio, captions = item["audio"], item["captions"]
 # captions: list of str captions
 ```
 
-### Build Pytorch dataloader with MACS
+### Build Pytorch dataloader with Clotho
 
 ```python
 from torch.utils.data.dataloader import DataLoader

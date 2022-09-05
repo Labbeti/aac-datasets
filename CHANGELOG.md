@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 
 ## [0.2.1] UNRELEASED
+### Changed
+- Enforce AudioCaps items order to match the order in the CSV captions file.
+- Function `check_directory` now returns the length of each dataset found in directory.
+ 
 ### Fixed
 - AudioCaps loading when load_tags is False.
 

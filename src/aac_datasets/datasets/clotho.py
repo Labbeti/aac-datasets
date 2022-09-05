@@ -468,7 +468,7 @@ class Clotho(Dataset):
         if not osp.isdir(dpath_audio_subset):
             raise RuntimeError(f'Cannot find directory "{dpath_audio_subset}".')
 
-        all_fnames_lst = os.listdir(dpath_audio_subset)
+        all_fnames_lst = list(sorted(os.listdir(dpath_audio_subset)))
         idx_to_fname = {i: fname for i, fname in enumerate(all_fnames_lst)}
         fname_to_idx = {fname: i for i, fname in idx_to_fname.items()}
         dataset_size = len(all_fnames_lst)
@@ -695,7 +695,7 @@ class Clotho(Dataset):
         return len(self.__all_items["captions"])
 
     def __repr__(self) -> str:
-        return f"Clotho(subset={self.__subset})"
+        return f"Clotho(size={len(self)}, subset={self.__subset})"
 
 
 CLOTHO_AUDIO_DNAMES = {

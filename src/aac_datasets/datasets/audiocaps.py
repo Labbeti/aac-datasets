@@ -324,7 +324,9 @@ class AudioCaps(Dataset):
             f"{line['youtube_id']}_{line['start_time']}.{self.AUDIO_FILE_EXTENSION}"
             for line in captions_data
         )
-        audio_fnames_on_disk = dict.fromkeys(os.listdir(self._dpath_audio_subset))
+        audio_fnames_on_disk = dict.fromkeys(
+            sorted(os.listdir(self._dpath_audio_subset))
+        )
         if self.__add_removed_audio:
             fnames_lst = list(fnames_dic.keys())
             is_on_disk_lst = [fname in audio_fnames_on_disk for fname in fnames_lst]
@@ -612,7 +614,7 @@ class AudioCaps(Dataset):
         return len(self.__all_items["captions"])
 
     def __repr__(self) -> str:
-        return f"AudioCaps(subset={self.__subset})"
+        return f"AudioCaps(size={len(self)}, subset={self.__subset})"
 
 
 def _download_and_extract_from_youtube(

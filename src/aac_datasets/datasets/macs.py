@@ -444,14 +444,15 @@ class MACS(Dataset):
             shutil.rmtree(self._dpath_archives, ignore_errors=True)
 
         audio_fnames = [
-            name for name in os.listdir(self._dpath_audio) if name.endswith(".wav")
+            name
+            for name in sorted(os.listdir(self._dpath_audio))
+            if name.endswith(".wav")
         ]
-        audio_fpaths = [osp.join(self._dpath_audio, name) for name in audio_fnames]
-        assert len(audio_fpaths) == len(macs_fnames)
+        assert len(audio_fnames) == len(macs_fnames)
 
         if self.__verbose >= 1:
             logger.info(
-                f"{len(audio_fpaths)} audio files has been prepared for MACS dataset."
+                f"{len(audio_fnames)} audio files has been prepared for MACS dataset."
             )
 
     def __getitem__(self, index: Union[int, slice]) -> Dict[str, Any]:
