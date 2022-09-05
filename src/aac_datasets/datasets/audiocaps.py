@@ -149,7 +149,9 @@ class AudioCaps(Dataset):
         self._load_data()
 
     def get_field(
-        self, key: str, index: Union[int, slice, Iterable[int]] = slice(None)
+        self,
+        key: str,
+        index: Union[int, slice, Iterable[int]] = slice(None),
     ) -> Any:
         """Get a specific data field.
 
@@ -318,17 +320,21 @@ class AudioCaps(Dataset):
             unbal_tags_data = []
 
         # Build global mappings
+        fnames_dic = dict.fromkeys(
+            f"{line['youtube_id']}_{line['start_time']}.{self.AUDIO_FILE_EXTENSION}"
+            for line in captions_data
+        )
         audio_fnames_on_disk = dict.fromkeys(os.listdir(self._dpath_audio_subset))
-        if not self.__add_removed_audio:
-            fnames_lst = list(audio_fnames_on_disk)
+        if self.__add_removed_audio:
+            fnames_lst = list(fnames_dic.keys())
+            is_on_disk_lst = [fname in audio_fnames_on_disk for fname in fnames_lst]
         else:
-            fnames_lst = list(
-                dict.fromkeys(
-                    f"{line['youtube_id']}_{line['start_time']}.{self.AUDIO_FILE_EXTENSION}"
-                    for line in captions_data
-                )
-            )
-        is_on_disk_lst = [fname in audio_fnames_on_disk for fname in fnames_lst]
+            fnames_lst = [
+                fname
+                for fname in fnames_dic.keys()
+                if fname in audio_fnames_on_disk.keys()
+            ]
+            is_on_disk_lst = [True for _ in range(len(fnames_lst))]
 
         dataset_size = len(fnames_lst)
         fname_to_idx = {fname: i for i, fname in enumerate(fnames_lst)}
