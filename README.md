@@ -42,9 +42,9 @@ from aac_datasets.utils import BasicCollate
 dataset = Clotho(root=".", download=True)
 dataloader = DataLoader(dataset, batch_size=4, collate_fn=BasicCollate())
 
-for audio_batch, captions_batch in dataloader:
-    # audio_batch: Tensor of shape (batch_size, n_channels, audio_max_size)
-    # captions_batch: list of list of str
+for batch in dataloader:
+    # batch["audio"]: Tensor of shape (batch_size, n_channels, audio_max_size)
+    # batch["captions"]: list of list of str
     ...
 ```
 
