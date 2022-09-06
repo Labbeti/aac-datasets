@@ -3,9 +3,13 @@
 All notable changes to this project will be documented in this file.
 
 ## [0.2.1] UNRELEASED
+### Added
+- Add `get_columns` methods in datasets to return the key names of the columns.
+
 ### Changed
-- Enforce AudioCaps items order to match the order in the CSV captions file.
+- Enforce datasets order to sort by filename to avoid different orders returned by `os.listdir`.
 - Function `check_directory` now returns the length of each dataset found in directory.
+- Rename `get_field` methods in datasets by `at` and add support for Iterable of keys and None key.
  
 ### Fixed
 - AudioCaps loading when load_tags is False.

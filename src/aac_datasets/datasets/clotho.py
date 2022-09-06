@@ -343,8 +343,10 @@ class Clotho(Dataset):
             self._prepare_data()
         self._load_data()
 
-    def get_field(
-        self, key: str, index: Union[int, slice, Iterable[int]] = slice(None)
+    def at(
+        self,
+        key: Union[str, None, Iterable[str]],
+        index: Union[int, slice, Iterable[int]] = slice(None),
     ) -> Any:
         """Get a specific data field.
 
@@ -352,6 +354,12 @@ class Clotho(Dataset):
         :param index: The index or slice of the value in range [0, len(dataset)-1].
         :returns: The field value. The type depends of the transform applied to the field.
         """
+        if key is None:
+            key = self.get_columns()
+
+        if not isinstance(key, str) and isinstance(key, Iterable):
+            return {k: self.at(k, index) for k in key}
+
         if isinstance(index, (int, slice)) and key in self.__all_items.keys():
             return self.__all_items[key][index]
 
@@ -359,10 +367,10 @@ class Clotho(Dataset):
             index = range(len(self))[index]
 
         if isinstance(index, Iterable):
-            return [self.get_field(key, idx) for idx in index]
+            return [self.at(key, idx) for idx in index]
 
         if key == "audio":
-            fpath = self.get_field("fpath", index)
+            fpath = self.at("fpath", index)
             audio, sr = torchaudio.load(fpath)  # type: ignore
 
             # Sanity check
@@ -377,7 +385,7 @@ class Clotho(Dataset):
             return audio
 
         elif key == "audio_metadata":
-            fpath = self.get_field("fpath", index)
+            fpath = self.at("fpath", index)
             audio_metadata = torchaudio.info(fpath)  # type: ignore
             return audio_metadata
 
@@ -385,7 +393,7 @@ class Clotho(Dataset):
             return "clotho"
 
         elif key == "fpath":
-            fname = self.get_field("fname", index)
+            fname = self.at("fname", index)
             fpath = osp.join(self._dpath_audio_subset, fname)
             return fpath
 
@@ -393,25 +401,27 @@ class Clotho(Dataset):
             return index
 
         elif key == "num_channels":
-            audio_metadata = self.get_field("audio_metadata", index)
+            audio_metadata = self.at("audio_metadata", index)
             return audio_metadata.num_channels
 
         elif key == "num_frames":
-            audio_metadata = self.get_field("audio_metadata", index)
+            audio_metadata = self.at("audio_metadata", index)
             return audio_metadata.num_frames
 
         elif key == "sr":
-            audio_metadata = self.get_field("audio_metadata", index)
+            audio_metadata = self.at("audio_metadata", index)
             return audio_metadata.sample_rate
 
         elif key == "subset":
             return self.__subset
 
         else:
-            keys = [field.name for field in fields(ClothoItem)]
             raise ValueError(
-                f"Invalid argument {key=} at {index=}. (expected one of {tuple(keys)})"
+                f"Invalid argument {key=} at {index=}. (expected one of {tuple(self.get_columns())})"
             )
+
+    def get_columns(self) -> List[str]:
+        return [field.name for field in fields(ClothoItem)]
 
     @cached_property
     def _dpath_archives(self) -> str:
@@ -682,8 +692,7 @@ class Clotho(Dataset):
                     os.remove(fpath)
 
     def __getitem__(self, index: Union[int, slice]) -> Dict[str, Any]:
-        keys = [field.name for field in fields(ClothoItem)]
-        item = {key: self.get_field(key, index) for key in keys}
+        item = {key: self.at(key, index) for key in self.get_columns()}
         if self.__item_transform is not None:
             item = self.__item_transform(item)
         return item

@@ -123,8 +123,10 @@ class MACS(Dataset):
             self._prepare_data()
         self._load_data()
 
-    def get_field(
-        self, key: str, index: Union[int, slice, Iterable[int]] = slice(None)
+    def at(
+        self,
+        key: Union[str, None, Iterable[str]],
+        index: Union[int, slice, Iterable[int]] = slice(None),
     ) -> Any:
         """Get a specific data field.
 
@@ -132,6 +134,12 @@ class MACS(Dataset):
         :param index: The index or slice of the value in range [0, len(dataset)-1].
         :returns: The field value. The type depends of the transform applied to the field.
         """
+        if key is None:
+            key = self.get_columns()
+
+        if not isinstance(key, str) and isinstance(key, Iterable):
+            return {k: self.at(k, index) for k in key}
+
         if isinstance(index, (int, slice)) and key in self.__all_items.keys():
             return self.__all_items[key][index]
 
@@ -139,10 +147,10 @@ class MACS(Dataset):
             index = range(len(self))[index]
 
         if isinstance(index, Iterable):
-            return [self.get_field(key, idx) for idx in index]
+            return [self.at(key, idx) for idx in index]
 
         if key == "audio":
-            fpath = self.get_field("fpath", index)
+            fpath = self.at("fpath", index)
             audio, sr = torchaudio.load(fpath)  # type: ignore
 
             # Sanity check
@@ -157,12 +165,12 @@ class MACS(Dataset):
             return audio
 
         elif key == "audio_metadata":
-            fpath = self.get_field("fpath", index)
+            fpath = self.at("fpath", index)
             audio_metadata = torchaudio.info(fpath)  # type: ignore
             return audio_metadata
 
         elif key == "competences":
-            annotators_ids = self.get_field("annotators_ids", index)
+            annotators_ids = self.at("annotators_ids", index)
             competences = [self.get_competence(id_) for id_ in annotators_ids]
             return competences
 
@@ -170,7 +178,7 @@ class MACS(Dataset):
             return "macs"
 
         elif key == "fpath":
-            fname = self.get_field("fname", index)
+            fname = self.at("fname", index)
             fpath = osp.join(self._dpath_audio, fname)
             return fpath
 
@@ -178,31 +186,33 @@ class MACS(Dataset):
             return index
 
         elif key == "num_channels":
-            audio_metadata = self.get_field("audio_metadata", index)
+            audio_metadata = self.at("audio_metadata", index)
             return audio_metadata.num_channels
 
         elif key == "num_frames":
-            audio_metadata = self.get_field("audio_metadata", index)
+            audio_metadata = self.at("audio_metadata", index)
             return audio_metadata.num_frames
 
         elif key == "sr":
-            audio_metadata = self.get_field("audio_metadata", index)
+            audio_metadata = self.at("audio_metadata", index)
             return audio_metadata.sample_rate
 
         elif key == "subset":
             return self.__subset
 
         else:
-            keys = [field.name for field in fields(MACSItem)]
             raise ValueError(
-                f"Invalid argument {key=} at {index=}. (expected one of {tuple(keys)})"
+                f"Invalid argument {key=} at {index=}. (expected one of {tuple(self.get_columns())})"
             )
+
+    def get_columns(self) -> List[str]:
+        return [field.name for field in fields(MACSItem)]
 
     def get_competence(self, annotator_id: int) -> float:
         """Get competence value for a specific annotator id."""
         return self.__annotator_id_to_competence[annotator_id]
 
-    def get_annotator_to_competence_dict(self) -> Dict[int, float]:
+    def get_annotator_id_to_competence_dict(self) -> Dict[int, float]:
         """Get annotator to competence dictionary."""
         # Note : copy to prevent any changes on this attribute
         return copy.deepcopy(self.__annotator_id_to_competence)
@@ -457,7 +467,7 @@ class MACS(Dataset):
 
     def __getitem__(self, index: Union[int, slice]) -> Dict[str, Any]:
         keys = [field.name for field in fields(MACSItem)]
-        item = {key: self.get_field(key, index) for key in keys}
+        item = {key: self.at(key, index) for key in keys}
         if self.__item_transform is not None:
             item = self.__item_transform(item)
         return item

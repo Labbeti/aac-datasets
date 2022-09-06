@@ -79,11 +79,11 @@ class AudioCaps(Dataset):
 
     # Global
     AUDIO_FILE_EXTENSION = "flac"
-    AUDIO_N_CHANNELS = 1
     AUDIO_MAX_SEC = 10.00096876  # in seconds
     AUDIO_MIN_SEC = 0.6501874  # in seconds
-    CAPTION_MIN_LENGTH = 2
+    AUDIO_N_CHANNELS = 1
     CAPTION_MAX_LENGTH = 52
+    CAPTION_MIN_LENGTH = 2
     CAPTIONS_PER_AUDIO = {"train": 1, "val": 5, "test": 5}
     DNAME_LOG = "logs"
     FFMPEG_PATH: str = "ffmpeg"
@@ -109,7 +109,7 @@ class AudioCaps(Dataset):
         :param root: Dataset root directory.
             The data will be stored in the 'AUDIOCAPS_{SAMPLE_RATE}' subdirectory.
             defaults to ".".
-        :param subset: The subset of Clotho to use. Can be one of :attr:`~Clotho.SUBSETS`.
+        :param subset: The subset of AudioCaps to use. Can be one of :attr:`~AudioCaps.SUBSETS`.
             defaults to "train".
         :param download: Download the dataset if download=True and if the dataset is not already downloaded.
             defaults to False.
@@ -131,6 +131,7 @@ class AudioCaps(Dataset):
             )
 
         super().__init__()
+        # Attributes
         self.__root = root
         self.__subset = subset
         self.__download = download
@@ -140,25 +141,32 @@ class AudioCaps(Dataset):
         self.__add_removed_audio = add_removed_audio
         self.__load_tags = load_tags
 
-        self.__all_items = {}
+        # Data to load
+        self.__all_items: Dict[str, List[Any]] = {}
         self.__is_loaded = False
-        self.__index_to_tagname = []
+        self.__index_to_tagname: List[str] = []
 
         if self.__download:
             self._prepare_data()
         self._load_data()
 
-    def get_field(
+    def at(
         self,
-        key: str,
+        key: Union[str, None, Iterable[str]],
         index: Union[int, slice, Iterable[int]] = slice(None),
     ) -> Any:
         """Get a specific data field.
 
-        :param key: The name of the field. Can be any attribute name of :class:`~ClothoItem`.
+        :param key: The name of the field. Can be any attribute name of :class:`~AudioCapsItem`.
         :param index: The index or slice of the value in range [0, len(dataset)-1].
-        :returns: The field value. The type depends of the transform applied to the field.
+        :returns: The field value. The type depends of the key
         """
+        if key is None:
+            key = self.get_columns()
+
+        if not isinstance(key, str) and isinstance(key, Iterable):
+            return {k: self.at(k, index) for k in key}
+
         if isinstance(index, (int, slice)) and key in self.__all_items.keys():
             return self.__all_items[key][index]
 
@@ -166,10 +174,10 @@ class AudioCaps(Dataset):
             index = range(len(self))[index]
 
         if isinstance(index, Iterable):
-            return [self.get_field(key, idx) for idx in index]
+            return [self.at(key, idx) for idx in index]
 
         if key == "audio":
-            fpath = self.get_field("fpath", index)
+            fpath = self.at("fpath", index)
             if not self.__all_items["is_on_disk"][index]:
                 return torch.empty((0,))
             audio, sr = torchaudio.load(fpath)  # type: ignore
@@ -186,7 +194,7 @@ class AudioCaps(Dataset):
             return audio
 
         elif key == "audio_metadata":
-            fpath = self.get_field("fpath", index)
+            fpath = self.at("fpath", index)
             if not self.__all_items["is_on_disk"][index]:
                 return None
             audio_metadata = torchaudio.info(fpath)  # type: ignore
@@ -196,7 +204,7 @@ class AudioCaps(Dataset):
             return "audiocaps"
 
         elif key == "fpath":
-            fname = self.get_field("fname", index)
+            fname = self.at("fname", index)
             fpath = osp.join(self._dpath_audio_subset, fname)
             return fpath
 
@@ -204,19 +212,19 @@ class AudioCaps(Dataset):
             return index
 
         elif key == "num_channels":
-            audio_metadata = self.get_field("audio_metadata", index)
+            audio_metadata = self.at("audio_metadata", index)
             if audio_metadata is None:
                 return -1
             return audio_metadata.num_channels
 
         elif key == "num_frames":
-            audio_metadata = self.get_field("audio_metadata", index)
+            audio_metadata = self.at("audio_metadata", index)
             if audio_metadata is None:
                 return -1
             return audio_metadata.num_frames
 
         elif key == "sr":
-            audio_metadata = self.get_field("audio_metadata", index)
+            audio_metadata = self.at("audio_metadata", index)
             if audio_metadata is None:
                 return -1
             return audio_metadata.sample_rate
@@ -225,10 +233,12 @@ class AudioCaps(Dataset):
             return self.__subset
 
         else:
-            keys = [field.name for field in fields(AudioCapsItem)]
             raise ValueError(
-                f"Invalid argument {key=} at {index=}. (expected one of {tuple(keys)})"
+                f"Invalid argument {key=} at {index=}. (expected one of {tuple(self.get_columns())})"
             )
+
+    def get_columns(self) -> List[str]:
+        return [field.name for field in fields(AudioCapsItem)]
 
     def get_index_to_tagname(self) -> List[str]:
         return self.__index_to_tagname
@@ -328,13 +338,11 @@ class AudioCaps(Dataset):
             sorted(os.listdir(self._dpath_audio_subset))
         )
         if self.__add_removed_audio:
-            fnames_lst = list(fnames_dic.keys())
+            fnames_lst = list(audio_fnames_on_disk | fnames_dic)
             is_on_disk_lst = [fname in audio_fnames_on_disk for fname in fnames_lst]
         else:
             fnames_lst = [
-                fname
-                for fname in fnames_dic.keys()
-                if fname in audio_fnames_on_disk.keys()
+                fname for fname in audio_fnames_on_disk if fname in fnames_dic
             ]
             is_on_disk_lst = [True for _ in range(len(fnames_lst))]
 
@@ -601,8 +609,7 @@ class AudioCaps(Dataset):
                 )
 
     def __getitem__(self, index: Union[int, slice]) -> Dict[str, Any]:
-        keys = [field.name for field in fields(AudioCapsItem)]
-        item = {key: self.get_field(key, index) for key in keys}
+        item = {key: self.at(key, index) for key in self.get_columns()}
         if self.__item_transform is not None:
             item = self.__item_transform(item)
         return item
