@@ -43,7 +43,7 @@ dataset = Clotho(root=".", download=True)
 dataloader = DataLoader(dataset, batch_size=4, collate_fn=BasicCollate())
 
 for batch in dataloader:
-    # batch["audio"]: Tensor of shape (batch_size, n_channels, audio_max_size)
+    # batch["audio"]: list of Tensor of shape (n_channels, audio_size)
     # batch["captions"]: list of list of str
     ...
 ```

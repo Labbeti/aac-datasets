@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file.
 - Enforce datasets order to sort by filename to avoid different orders returned by `os.listdir`.
 - Function `check_directory` now returns the length of each dataset found in directory.
 - Rename `get_field` methods in datasets by `at` and add support for Iterable of keys and None key.
+- Split `BasicCollate` into `BasicCollate` without padding and `AdvancedCollate` with padding options.
  
 ### Fixed
 - AudioCaps loading when load_tags is False.
