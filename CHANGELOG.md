@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 ## [0.2.1] UNRELEASED
 ### Added
 - Add `get_columns` methods in datasets to return the key names of the columns.
+- Entrypoints for command line scripts `aacd-check`, `aacd-download` and `aacd-version`.
 
 ### Changed
 - Enforce datasets order to sort by filename to avoid different orders returned by `os.listdir`.
