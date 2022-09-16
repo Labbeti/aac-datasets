@@ -280,9 +280,13 @@ class AudioCaps(Dataset[Dict[str, Any]]):
     # Magic methods
     def __getitem__(
         self,
-        index: Union[int, Iterable[int], None, slice] = None,
-        column: Union[str, Iterable[str], None] = None,
+        index_and_column: Any,
     ) -> Dict[str, Any]:
+        if isinstance(index_and_column, tuple) and len(index_and_column) == 2 and (isinstance(index_and_column[1], (str, Iterable)) or index_and_column[1] is None):
+            index, column = index_and_column
+        else:
+            index, column = index_and_column, None
+
         item = self.at(index, column)
         if self.__transform is not None:
             item = self.__transform(item)
