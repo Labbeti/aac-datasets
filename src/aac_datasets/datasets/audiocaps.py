@@ -158,11 +158,6 @@ class AudioCaps(Dataset[Dict[str, Any]]):
         return [field.name for field in fields(AudioCapsItem)]
 
     @property
-    def shape(self) -> Tuple[int, ...]:
-        """The shape of the AudioCaps dataset."""
-        return len(self), len(self.column_names)
-
-    @property
     def index_to_tagname(self) -> List[str]:
         """AudioSet ordered list of tag names. Returns an empty list if `with_tags` is False."""
         return self.__index_to_tagname
@@ -175,6 +170,11 @@ class AudioCaps(Dataset[Dict[str, Any]]):
             "subset": self.__subset,
             "with_tags": self.__with_tags,
         }
+
+    @property
+    def shape(self) -> Tuple[int, ...]:
+        """The shape of the AudioCaps dataset."""
+        return len(self), len(self.column_names)
 
     # Public methods
     def at(

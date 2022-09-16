@@ -131,17 +131,17 @@ class MACS(Dataset[Dict[str, Any]]):
         return [field.name for field in fields(MACSItem)]
 
     @property
-    def shape(self) -> Tuple[int, ...]:
-        """The shape of the MACS dataset."""
-        return len(self), len(self.column_names)
-
-    @property
     def info(self) -> Dict[str, Any]:
         """Return the global dataset info."""
         return {
             "dataset": "macs",
             "subset": self.__subset,
         }
+
+    @property
+    def shape(self) -> Tuple[int, ...]:
+        """The shape of the MACS dataset."""
+        return len(self), len(self.column_names)
 
     # Public methods
     def at(

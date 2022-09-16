@@ -4,17 +4,23 @@ All notable changes to this project will be documented in this file.
 
 ## [0.2.1] UNRELEASED
 ### Added
-- Add `get_columns` methods in datasets to return the key names of the columns.
+- Add `column_names`, `info` and `shape` properties in datasets.
+- Add `is_loaded` and `set_transform` methods in datasets.
+- Add `column` argument for method `getitem` in datasets.
 - Entrypoints for command line scripts `aacd-check`, `aacd-download` and `aacd-version`.
 
 ### Changed
 - Enforce datasets order to sort by filename to avoid different orders returned by `os.listdir`.
 - Function `check_directory` now returns the length of each dataset found in directory.
 - Rename `get_field` methods in datasets by `at` and add support for Iterable of keys and None key.
+- Change `at` arguments order and names.
 - Split `BasicCollate` into `BasicCollate` without padding and `AdvancedCollate` with padding options.
+- Weak private methods are now strongly private in datasets.
+- Rename `item_transform` to `transform` in datasets.
+- Rename `load_tags` to `with_tags` in `AudioCaps`.
  
 ### Fixed
-- AudioCaps loading when load_tags is False.
+- AudioCaps loading when `with_tags` is False.
 
 ## [0.2.0] 2022-08-30
 ### Added

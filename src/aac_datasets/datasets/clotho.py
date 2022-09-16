@@ -351,11 +351,6 @@ class Clotho(Dataset[Dict[str, Any]]):
         return [field.name for field in fields(ClothoItem)]
 
     @property
-    def shape(self) -> Tuple[int, ...]:
-        """The shape of the Clotho dataset."""
-        return len(self), len(self.column_names)
-
-    @property
     def info(self) -> Dict[str, Any]:
         """Return the global dataset info."""
         return {
@@ -363,6 +358,11 @@ class Clotho(Dataset[Dict[str, Any]]):
             "subset": self.__subset,
             "version": self.__version,
         }
+
+    @property
+    def shape(self) -> Tuple[int, ...]:
+        """The shape of the Clotho dataset."""
+        return len(self), len(self.column_names)
 
     # Public methods
     def at(
