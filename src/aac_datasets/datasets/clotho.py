@@ -449,7 +449,8 @@ class Clotho(Dataset[Dict[str, Any]]):
         return self.__loaded
 
     def set_transform(
-        self, transform: Optional[Callable[[Dict[str, Any]], Any]]
+        self,
+        transform: Optional[Callable[[Dict[str, Any]], Any]],
     ) -> None:
         """Set the transform applied to each row."""
         self.__transform = transform
