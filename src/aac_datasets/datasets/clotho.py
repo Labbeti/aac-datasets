@@ -9,7 +9,7 @@ import os.path as osp
 
 from dataclasses import dataclass, field, fields
 from functools import cached_property
-from typing import Any, Callable, Dict, Iterable, List, Optional, Union
+from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, Union
 from zipfile import ZipFile
 
 import torch
@@ -236,7 +236,7 @@ CLOTHO_LINKS = {
 CLOTHO_LAST_VERSION = "v2.1"
 
 
-class Clotho(Dataset):
+class Clotho(Dataset[Dict[str, Any]]):
     r"""
     Unofficial Clotho pytorch dataset.
     Subsets available are 'train', 'val', 'eval', 'test' and 'analysis'.
@@ -290,13 +290,14 @@ class Clotho(Dataset):
     SUBSETS = SUBSETS_DICT[CLOTHO_LAST_VERSION]
     VERSIONS = tuple(CLOTHO_LINKS.keys())
 
+    # Initialization
     def __init__(
         self,
         root: str = ".",
         subset: str = "dev",
         download: bool = False,
-        item_transform: Optional[Callable] = None,
-        unfold: bool = False,
+        transform: Optional[Callable] = None,
+        flat_captions: bool = False,
         verbose: int = 0,
         version: str = "v2.1",
     ) -> None:
@@ -308,9 +309,9 @@ class Clotho(Dataset):
             defaults to "dev".
         :param download: Download the dataset if download=True and if the dataset is not already downloaded.
             defaults to False.
-        :param item_transform: The transform to apply to the global dict item. This transform is applied AFTER each field transform.
+        :param transform: The transform to apply to the global dict item. This transform is applied only in getitem method.
             defaults to None.
-        :param unfold: If True, map captions to audio instead of audio to caption.
+        :param flat_captions: If True, map captions to audio instead of audio to caption.
             defaults to True.
         :param verbose: Verbose level to use. Can be 0 or 1.
             defaults to 0.
@@ -331,46 +332,69 @@ class Clotho(Dataset):
         self.__root = root
         self.__subset = subset
         self.__download = download
-        self.__item_transform = item_transform
-        self.__unfold = unfold
+        self.__transform = transform
+        self.__flat_captions = flat_captions
         self.__version = version
         self.__verbose = verbose
 
         self.__all_items = {}
-        self.__is_loaded = False
+        self.__loaded = False
 
         if self.__download:
-            self._prepare_data()
-        self._load_data()
+            self.__prepare_data()
+        self.__load_data()
 
+    # Properties
+    @property
+    def column_names(self) -> List[str]:
+        """The name of each column of the dataset."""
+        return [field.name for field in fields(ClothoItem)]
+
+    @property
+    def shape(self) -> Tuple[int, ...]:
+        """The shape of the Clotho dataset. """
+        return len(self), len(self.column_names)
+
+    @property
+    def info(self) -> Dict[str, Any]:
+        """Return the global dataset info."""
+        return {
+            "dataset": "clotho",
+            "subset": self.__subset,
+            "version": self.__version,
+        }
+
+    # Public methods
     def at(
         self,
-        key: Union[str, None, Iterable[str]],
-        index: Union[int, slice, Iterable[int]] = slice(None),
+        index: Union[int, Iterable[int], None, slice] = None,
+        column: Union[str, Iterable[str], None] = None,
     ) -> Any:
         """Get a specific data field.
 
-        :param key: The name of the field. Can be any attribute name of :class:`~ClothoItem`.
         :param index: The index or slice of the value in range [0, len(dataset)-1].
+        :param key: The name of the field. Can be any attribute name of :class:`~ClothoItem`.
         :returns: The field value. The type depends of the transform applied to the field.
         """
-        if key is None:
-            key = self.get_columns()
+        if index is None:
+            index = slice(None)
+        if column is None:
+            column = self.column_names
 
-        if not isinstance(key, str) and isinstance(key, Iterable):
-            return {k: self.at(k, index) for k in key}
+        if not isinstance(column, str) and isinstance(column, Iterable):
+            return {column_i: self.at(index, column_i) for column_i in column}
 
-        if isinstance(index, (int, slice)) and key in self.__all_items.keys():
-            return self.__all_items[key][index]
+        if isinstance(index, (int, slice)) and column in self.__all_items.keys():
+            return self.__all_items[column][index]
 
         if isinstance(index, slice):
             index = range(len(self))[index]
 
         if isinstance(index, Iterable):
-            return [self.at(key, idx) for idx in index]
+            return [self.at(index_i, column) for index_i in index]
 
-        if key == "audio":
-            fpath = self.at("fpath", index)
+        if column == "audio":
+            fpath = self.at(index, "fpath")
             audio, sr = torchaudio.load(fpath)  # type: ignore
 
             # Sanity check
@@ -384,74 +408,97 @@ class Clotho(Dataset):
                 )
             return audio
 
-        elif key == "audio_metadata":
-            fpath = self.at("fpath", index)
+        elif column == "audio_metadata":
+            fpath = self.at(index, "fpath")
             audio_metadata = torchaudio.info(fpath)  # type: ignore
             return audio_metadata
 
-        elif key == "dataset":
+        elif column == "dataset":
             return "clotho"
 
-        elif key == "fpath":
-            fname = self.at("fname", index)
-            fpath = osp.join(self._dpath_audio_subset, fname)
+        elif column == "fpath":
+            fname = self.at(index, "fname")
+            fpath = osp.join(self.__dpath_audio_subset, fname)
             return fpath
 
-        elif key == "index":
+        elif column == "index":
             return index
 
-        elif key == "num_channels":
-            audio_metadata = self.at("audio_metadata", index)
+        elif column == "num_channels":
+            audio_metadata = self.at(index, "audio_metadata")
             return audio_metadata.num_channels
 
-        elif key == "num_frames":
-            audio_metadata = self.at("audio_metadata", index)
+        elif column == "num_frames":
+            audio_metadata = self.at(index, "audio_metadata")
             return audio_metadata.num_frames
 
-        elif key == "sr":
-            audio_metadata = self.at("audio_metadata", index)
+        elif column == "sr":
+            audio_metadata = self.at(index, "audio_metadata")
             return audio_metadata.sample_rate
 
-        elif key == "subset":
+        elif column == "subset":
             return self.__subset
 
         else:
             raise ValueError(
-                f"Invalid argument {key=} at {index=}. (expected one of {tuple(self.get_columns())})"
+                f"Invalid argument {column=} at {index=}. (expected one of {tuple(self.column_names)})"
             )
 
-    def get_columns(self) -> List[str]:
-        return [field.name for field in fields(ClothoItem)]
+    def is_loaded(self) -> bool:
+        """Returns True if the dataset is loaded."""
+        return self.__loaded
+
+    def set_transform(self, transform: Optional[Callable[[Dict[str, Any]], Any]]) -> None:
+        """Set the transform applied to each row."""
+        self.__transform = transform
+
+    # Magic methods
+    def __getitem__(
+        self,
+        index: Union[int, Iterable[int], None, slice] = None,
+        column: Union[str, Iterable[str], None] = None,
+    ) -> Dict[str, Any]:
+        item = self.at(index, column)
+        if self.__transform is not None:
+            item = self.__transform(item)
+        return item
+
+    def __len__(self) -> int:
+        """
+        :return: The number of items in the dataset.
+        """
+        return len(self.__all_items["captions"])
+
+    def __repr__(self) -> str:
+        return f"Clotho(size={len(self)}, subset={self.__subset}, columns={self.column_names})"
+
+    # Private methods
+    @cached_property
+    def __dpath_archives(self) -> str:
+        return osp.join(self.__dpath_data, "archives")
 
     @cached_property
-    def _dpath_archives(self) -> str:
-        return osp.join(self._dpath_data, "archives")
+    def __dpath_audio(self) -> str:
+        return osp.join(self.__dpath_data, "clotho_audio_files")
 
     @cached_property
-    def _dpath_audio(self) -> str:
-        return osp.join(self._dpath_data, "clotho_audio_files")
-
-    @cached_property
-    def _dpath_audio_subset(self) -> str:
+    def __dpath_audio_subset(self) -> str:
         return osp.join(
-            self._dpath_data,
+            self.__dpath_data,
             "clotho_audio_files",
             CLOTHO_AUDIO_DNAMES[self.__subset],
         )
 
     @cached_property
-    def _dpath_csv(self) -> str:
-        return osp.join(self._dpath_data, "clotho_csv_files")
+    def __dpath_csv(self) -> str:
+        return osp.join(self.__dpath_data, "clotho_csv_files")
 
     @cached_property
-    def _dpath_data(self) -> str:
+    def __dpath_data(self) -> str:
         return osp.join(self.__root, f"CLOTHO_{self.__version}")
 
-    def _is_loaded(self) -> bool:
-        return self.__is_loaded
-
-    def _is_prepared(self) -> bool:
-        if not all(map(osp.isdir, (self._dpath_audio_subset, self._dpath_csv))):
+    def __is_prepared(self) -> bool:
+        if not all(map(osp.isdir, (self.__dpath_audio_subset, self.__dpath_csv))):
             return False
 
         if Clotho.CAPTIONS_PER_AUDIO[self.__subset] == 0:
@@ -459,21 +506,21 @@ class Clotho(Dataset):
 
         links = CLOTHO_LINKS[self.__version][self.__subset]
         captions_fname = links["captions"]["fname"]
-        captions_fpath = osp.join(self._dpath_csv, captions_fname)
+        captions_fpath = osp.join(self.__dpath_csv, captions_fname)
         with open(captions_fpath, "r") as file:
             reader = csv.DictReader(file)
             lines = list(reader)
-        return len(lines) == len(os.listdir(self._dpath_audio_subset))
+        return len(lines) == len(os.listdir(self.__dpath_audio_subset))
 
-    def _load_data(self) -> None:
-        if not self._is_prepared():
+    def __load_data(self) -> None:
+        if not self.__is_prepared():
             raise RuntimeError(
                 f"Cannot load data: clotho_{self.__subset} is not prepared in data root={self.__root}. Please use download=True in dataset constructor."
             )
 
         # Read fpath of .wav audio files
         links = CLOTHO_LINKS[self.__version][self.__subset]
-        dpath_audio_subset = self._dpath_audio_subset
+        dpath_audio_subset = self.__dpath_audio_subset
 
         if not osp.isdir(dpath_audio_subset):
             raise RuntimeError(f'Cannot find directory "{dpath_audio_subset}".')
@@ -486,7 +533,7 @@ class Clotho(Dataset):
         # Read Clotho files
         if "captions" in links.keys():
             captions_fname = links["captions"]["fname"]
-            captions_fpath = osp.join(self._dpath_csv, captions_fname)
+            captions_fpath = osp.join(self.__dpath_csv, captions_fname)
 
             with open(captions_fpath, "r") as file:
                 reader = csv.DictReader(file)
@@ -504,7 +551,7 @@ class Clotho(Dataset):
         )
         if "metadata" in links.keys():
             metadata_fname = links["metadata"]["fname"]
-            metadata_fpath = osp.join(self._dpath_csv, metadata_fname)
+            metadata_fpath = osp.join(self.__dpath_csv, metadata_fname)
 
             # Keys: file_name, keywords, sound_id, sound_link, start_end_samples, manufacturer, license
             if self.__version in ("v2", "v2.1"):
@@ -555,7 +602,7 @@ class Clotho(Dataset):
             for keywords in all_items["keywords"]
         ]
 
-        if self.__unfold and self.CAPTIONS_PER_AUDIO[self.__subset] > 1:
+        if self.__flat_captions and self.CAPTIONS_PER_AUDIO[self.__subset] > 1:
             all_infos_unfolded = {key: [] for key in all_items.keys()}
 
             for i, captions in enumerate(all_items["captions"]):
@@ -567,18 +614,18 @@ class Clotho(Dataset):
             all_items = all_infos_unfolded
 
         self.__all_items = all_items
-        self.__is_loaded = True
+        self.__loaded = True
 
         if self.__verbose >= 1:
             logger.info(f"{repr(self)} has been loaded. (len={len(self)})")
 
-    def _prepare_data(self) -> None:
+    def __prepare_data(self) -> None:
         if not osp.isdir(self.__root):
             raise RuntimeError(f"Cannot find root directory '{self.__root}'.")
 
-        os.makedirs(self._dpath_archives, exist_ok=True)
-        os.makedirs(self._dpath_audio, exist_ok=True)
-        os.makedirs(self._dpath_csv, exist_ok=True)
+        os.makedirs(self.__dpath_archives, exist_ok=True)
+        os.makedirs(self.__dpath_audio, exist_ok=True)
+        os.makedirs(self.__dpath_csv, exist_ok=True)
 
         if self.__verbose >= 1:
             logger.info(f"Start to download files for clotho_{self.__subset}...")
@@ -596,9 +643,9 @@ class Clotho(Dataset):
             extension = fname.split(".")[-1]
 
             if extension in ("7z", "zip"):
-                dpath = self._dpath_archives
+                dpath = self.__dpath_archives
             elif extension == "csv":
-                dpath = self._dpath_csv
+                dpath = self.__dpath_csv
             else:
                 raise RuntimeError(
                     f"Found invalid {extension=}. Must be one of {extensions}."
@@ -630,7 +677,7 @@ class Clotho(Dataset):
             extension = fname.split(".")[-1]
 
             if extension in ("7z", "zip"):
-                fpath = osp.join(self._dpath_archives, fname)
+                fpath = osp.join(self.__dpath_archives, fname)
 
                 if self.__verbose >= 1:
                     logger.info(f"Extract archive file {fname=}...")
@@ -655,16 +702,16 @@ class Clotho(Dataset):
                     if fname not in ("", CLOTHO_AUDIO_DNAMES[self.__subset])
                 ]
                 extracted_fnames = (
-                    os.listdir(self._dpath_audio_subset)
-                    if osp.isdir(self._dpath_audio_subset)
+                    os.listdir(self.__dpath_audio_subset)
+                    if osp.isdir(self.__dpath_audio_subset)
                     else []
                 )
 
                 if set(extracted_fnames) != set(compressed_fnames):
-                    archive_file.extractall(self._dpath_audio)
+                    archive_file.extractall(self.__dpath_audio)
 
                     # Check if files is good now
-                    extracted_fnames = os.listdir(self._dpath_audio_subset)
+                    extracted_fnames = os.listdir(self.__dpath_audio_subset)
                     if set(extracted_fnames) != set(compressed_fnames):
                         raise RuntimeError(
                             f"Invalid number of audios extracted. (found {len(extracted_fnames)} files but expected the same {len(compressed_fnames)} files)"
@@ -686,25 +733,10 @@ class Clotho(Dataset):
                 extension = fname.split(".")[-1]
 
                 if extension in ("7z", "zip"):
-                    fpath = osp.join(self._dpath_audio, fname)
+                    fpath = osp.join(self.__dpath_audio, fname)
                     if self.__verbose >= 1:
                         logger.info(f"Removing archive file {osp.basename(fpath)}...")
                     os.remove(fpath)
-
-    def __getitem__(self, index: Union[int, slice]) -> Dict[str, Any]:
-        item = {key: self.at(key, index) for key in self.get_columns()}
-        if self.__item_transform is not None:
-            item = self.__item_transform(item)
-        return item
-
-    def __len__(self) -> int:
-        """
-        :return: The number of items in the dataset.
-        """
-        return len(self.__all_items["captions"])
-
-    def __repr__(self) -> str:
-        return f"Clotho(size={len(self)}, subset={self.__subset})"
 
 
 CLOTHO_AUDIO_DNAMES = {
