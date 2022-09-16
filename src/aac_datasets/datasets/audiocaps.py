@@ -159,7 +159,7 @@ class AudioCaps(Dataset[Dict[str, Any]]):
 
     @property
     def shape(self) -> Tuple[int, ...]:
-        """The shape of the AudioCaps dataset. """
+        """The shape of the AudioCaps dataset."""
         return len(self), len(self.column_names)
 
     @property
@@ -270,7 +270,9 @@ class AudioCaps(Dataset[Dict[str, Any]]):
         """Returns True if the dataset is loaded."""
         return self.__loaded
 
-    def set_transform(self, transform: Optional[Callable[[Dict[str, Any]], Any]]) -> None:
+    def set_transform(
+        self, transform: Optional[Callable[[Dict[str, Any]], Any]]
+    ) -> None:
         """Set the transform applied to each row."""
         self.__transform = transform
 
@@ -670,7 +672,7 @@ def _download_and_extract_from_youtube(
     youtube_dl_path: str = "youtube-dl",
     ffmpeg_path: str = "ffmpeg",
 ) -> bool:
-    """Download audio from youtube with youtube-dl and ffmpeg. """
+    """Download audio from youtube with youtube-dl and ffmpeg."""
 
     # Get audio download link with youtube-dl
     link = f"https://www.youtube.com/watch?v={youtube_id}"

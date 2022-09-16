@@ -352,7 +352,7 @@ class Clotho(Dataset[Dict[str, Any]]):
 
     @property
     def shape(self) -> Tuple[int, ...]:
-        """The shape of the Clotho dataset. """
+        """The shape of the Clotho dataset."""
         return len(self), len(self.column_names)
 
     @property
@@ -448,7 +448,9 @@ class Clotho(Dataset[Dict[str, Any]]):
         """Returns True if the dataset is loaded."""
         return self.__loaded
 
-    def set_transform(self, transform: Optional[Callable[[Dict[str, Any]], Any]]) -> None:
+    def set_transform(
+        self, transform: Optional[Callable[[Dict[str, Any]], Any]]
+    ) -> None:
         """Set the transform applied to each row."""
         self.__transform = transform
 
