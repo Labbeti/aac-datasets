@@ -253,7 +253,14 @@ class MACS(Dataset[Dict[str, Any]]):
         self,
         index_and_column: Any,
     ) -> Dict[str, Any]:
-        if isinstance(index_and_column, tuple) and len(index_and_column) == 2 and (isinstance(index_and_column[1], (str, Iterable)) or index_and_column[1] is None):
+        if (
+            isinstance(index_and_column, tuple)
+            and len(index_and_column) == 2
+            and (
+                isinstance(index_and_column[1], (str, Iterable))
+                or index_and_column[1] is None
+            )
+        ):
             index, column = index_and_column
         else:
             index, column = index_and_column, None
