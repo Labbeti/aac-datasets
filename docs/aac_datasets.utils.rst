@@ -5,3 +5,11 @@ aac\_datasets.utils module
    :members:
    :undoc-members:
    :show-inheritance:
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 4
+
+   aac_datasets.utils.collate

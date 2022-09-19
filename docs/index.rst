@@ -3,7 +3,7 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to aac-datasets's documentation!
+aac-datasets's documentation
 ========================================
 
 .. toctree::
@@ -11,6 +11,7 @@ Welcome to aac-datasets's documentation!
    :caption: Contents:
 
    aac_datasets
+   usage
 
 
 Indices and tables
