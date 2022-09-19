@@ -46,8 +46,8 @@ def check_directory(
         valid_subsets = {}
         for subset in ds_class.SUBSETS:
             try:
-                dset = ds_class(root, subset, verbose=0)
-                valid_subsets[subset] = len(dset)
+                ds = ds_class(root, subset, verbose=0)
+                valid_subsets[subset] = len(ds)
 
             except RuntimeError:
                 if verbose >= 2:

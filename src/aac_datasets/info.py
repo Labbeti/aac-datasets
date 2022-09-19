@@ -13,7 +13,7 @@ import yaml
 import aac_datasets
 
 
-def get_packages_versions() -> Dict[str, str]:
+def get_install_info() -> Dict[str, str]:
     """Return a dictionary containing the version python, the os name, the architecture name and the versions of the following packages: aac_datasets, torch, torchaudio."""
     return {
         "aac_datasets": aac_datasets.__version__,
@@ -25,11 +25,11 @@ def get_packages_versions() -> Dict[str, str]:
     }
 
 
-def _main_version(*args, **kwargs) -> None:
-    """Print some packages versions."""
-    versions = get_packages_versions()
-    print(yaml.dump(versions, sort_keys=False))
+def print_install_info(*args, **kwargs) -> None:
+    """Print packages versions and architecture info."""
+    install_info = get_install_info()
+    print(yaml.dump(install_info, sort_keys=False))
 
 
 if __name__ == "__main__":
-    _main_version()
+    print_install_info()
