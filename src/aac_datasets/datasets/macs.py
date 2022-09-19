@@ -155,7 +155,7 @@ class MACS(Dataset[Dict[str, Any]]):
 
         :param index: The index or slice of the value in range [0, len(dataset)-1].
         :param column: The name(s) of the column. Can be any value of :meth:`~MACS.column_names`.
-        :returns: The field value. The type depends of the transform applied to the field.
+        :returns: The field value. The type depends of the column.
         """
         if index is None:
             index = slice(None)

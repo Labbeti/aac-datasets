@@ -373,8 +373,8 @@ class Clotho(Dataset[Dict[str, Any]]):
         """Get a specific data field.
 
         :param index: The index or slice of the value in range [0, len(dataset)-1].
-        :param key: The name of the field. Can be any attribute name of :class:`~ClothoItem`.
-        :returns: The field value. The type depends of the transform applied to the field.
+        :param column: The name(s) of the column. Can be any value of :meth:`~Clotho.column_names`.
+        :returns: The field value. The type depends of the column.
         """
         if index is None:
             index = slice(None)
