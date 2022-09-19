@@ -23,15 +23,16 @@ class AdvancedCollate:
     """Advanced collate object for :class:`~torch.utils.data.dataloader.DataLoader`.
 
     Merge lists in dicts into a single dict of lists.
-    Audio will be padded if a fill value is given in __init__.
+    Audio will be padded if a fill value is given in `__init__`.
 
-    Example 1
-    ---------
-    ```
-    >>> collate = AdvancedCollate({"audio": 0.0})
-    >>> loader = DataLoader(..., collate_fn=collate)
-    >>> next(iter(loader))
-    ... {"audio": tensor([[...]]), ...}
+    .. code-block:: python
+        :caption:  Example
+
+        >>> collate = AdvancedCollate({"audio": 0.0})
+        >>> loader = DataLoader(..., collate_fn=collate)
+        >>> next(iter(loader))
+        ... {"audio": tensor([[...]]), ...}
+
     """
 
     def __init__(self, fill_values: Dict[str, Union[float, int]]) -> None:

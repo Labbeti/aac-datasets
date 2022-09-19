@@ -1,5 +1,5 @@
-aac\_datasets.utils module
-==========================
+aac\_datasets.utils package
+===========================
 
 .. automodule:: aac_datasets.utils
    :members:

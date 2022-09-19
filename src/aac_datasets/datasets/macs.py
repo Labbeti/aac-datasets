@@ -67,7 +67,9 @@ class MACS(Dataset[Dict[str, Any]]):
     """
 
     # Global
+    AUDIO_MAX_SEC = 10.000020833333334
     AUDIO_MAX_SIZE = 480001
+    AUDIO_MIN_SEC = 9.999979166666666
     AUDIO_MIN_SIZE = 479999
     AUDIO_N_CHANNELS = 2
     CLEAN_ARCHIVES: bool = False
@@ -152,7 +154,7 @@ class MACS(Dataset[Dict[str, Any]]):
         """Get a specific data field.
 
         :param index: The index or slice of the value in range [0, len(dataset)-1].
-        :param column: The name of the field. Can be any attribute name of :class:`~MACSItem`.
+        :param column: The name(s) of the column. Can be any value of :meth:`~MACS.column_names`.
         :returns: The field value. The type depends of the transform applied to the field.
         """
         if index is None:
@@ -251,19 +253,16 @@ class MACS(Dataset[Dict[str, Any]]):
     # Magic methods
     def __getitem__(
         self,
-        index_and_column: Any,
+        index: Any,
     ) -> Dict[str, Any]:
         if (
-            isinstance(index_and_column, tuple)
-            and len(index_and_column) == 2
-            and (
-                isinstance(index_and_column[1], (str, Iterable))
-                or index_and_column[1] is None
-            )
+            isinstance(index, tuple)
+            and len(index) == 2
+            and (isinstance(index[1], (str, Iterable)) or index[1] is None)
         ):
-            index, column = index_and_column
+            index, column = index
         else:
-            index, column = index_and_column, None
+            column = None
 
         item = self.at(index, column)
         if self.__transform is not None:

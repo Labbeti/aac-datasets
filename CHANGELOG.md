@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 - Add `column_names`, `info` and `shape` properties in datasets.
 - Add `is_loaded` and `set_transform` methods in datasets.
-- Add `column` argument for method `getitem` in datasets.
+- Add column argument for method `getitem` in datasets.
 - Entrypoints for command line scripts `aacd-check`, `aacd-download` and `aacd-version`.
 
 ### Changed
