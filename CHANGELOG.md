@@ -14,7 +14,7 @@ All notable changes to this project will be documented in this file.
 - Function `check_directory` now returns the length of each dataset found in directory.
 - Rename `get_field` methods in datasets by `at` and add support for Iterable of keys and None key.
 - Change `at` arguments order and names.
-- Split `BasicCollate` into `BasicCollate` without padding and `AdvancedCollate` with padding options.
+- Split `BasicCollate` into 2 classes: `BasicCollate` without padding and `AdvancedCollate` with padding options.
 - Weak private methods are now strongly private in datasets.
 - Rename `item_transform` to `transform` in datasets.
 - Rename `load_tags` to `with_tags` in `AudioCaps`.

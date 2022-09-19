@@ -35,26 +35,26 @@ def check_directory(
         ("macs", MACS),
     ]
     data_infos = [
-        (dataname, class_) for dataname, class_ in data_infos if dataname in datasets
+        (ds_name, class_) for ds_name, class_ in data_infos if ds_name in datasets
     ]
 
     valid_datasubsets = {}
-    for dataname, class_ in data_infos:
+    for ds_name, ds_class in data_infos:
         if verbose >= 1:
-            logger.info(f"Searching for {dataname} in root='{root}'...")
+            logger.info(f"Searching for {ds_name} in root='{root}'...")
 
         valid_subsets = {}
-        for subset in class_.SUBSETS:
+        for subset in ds_class.SUBSETS:
             try:
-                dset = class_(root, subset, verbose=0)
+                dset = ds_class(root, subset, verbose=0)
                 valid_subsets[subset] = len(dset)
 
             except RuntimeError:
                 if verbose >= 2:
-                    logger.info(f"Cannot find {dataname}_{subset}.")
+                    logger.info(f"Cannot find {ds_name}_{subset}.")
 
         if len(valid_subsets) > 0:
-            valid_datasubsets[dataname] = valid_subsets
+            valid_datasubsets[ds_name] = valid_subsets
 
     return valid_datasubsets
 
