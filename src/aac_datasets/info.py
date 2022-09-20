@@ -25,7 +25,7 @@ def get_install_info() -> Dict[str, str]:
     }
 
 
-def print_install_info(*args, **kwargs) -> None:
+def print_install_info() -> None:
     """Print packages versions and architecture info."""
     install_info = get_install_info()
     print(yaml.dump(install_info, sort_keys=False))
