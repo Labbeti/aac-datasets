@@ -9,7 +9,7 @@
 <a href="https://black.readthedocs.io/en/stable/"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-black.svg?style=for-the-badge&labelColor=gray"></a>
 <a href="https://github.com/Labbeti/aac-datasets/actions"><img alt="Build" src="https://img.shields.io/github/workflow/status/Labbeti/aac-datasets/Python%20package%20using%20Pip/main?style=for-the-badge&logo=github"></a>
 
-Audio Captioning Unofficial datasets source code for **AudioCaps** [1], **Clotho** [2], and **MACS** [3], designed for Pytorch.
+Audio Captioning unofficial datasets source code for **AudioCaps** [1], **Clotho** [2], and **MACS** [3], designed for Pytorch.
 
 </div>
 
@@ -124,8 +124,8 @@ If you use this software, please consider cite it as below :
     license = {MIT},
     month = {6},
     title = {{aac-datasets}},
-    url = {https://github.com/Labbeti/aac_datasets/},
-    version = {0.1.1},
+    url = {https://github.com/Labbeti/aac-datasets/},
+    version = {0.2.0},
     year = {2022}
 }
 ```

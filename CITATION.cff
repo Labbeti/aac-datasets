@@ -10,7 +10,7 @@ authors:
     affiliation: IRIT
     orcid: 'https://orcid.org/0000-0002-7219-5463'
 repository-code: 'https://github.com/Labbeti/aac-datasets/'
-abstract: Automated Audio Captioning datasets for Pytorch.
+abstract: Audio Captioning datasets for Pytorch.
 keywords:
   - audio
   - deep-learning

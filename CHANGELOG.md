@@ -7,7 +7,7 @@ All notable changes to this project will be documented in this file.
 - Add `column_names`, `info` and `shape` properties in datasets.
 - Add `is_loaded` and `set_transform` methods in datasets.
 - Add column argument for method `getitem` in datasets.
-- Entrypoints for command line scripts `aac-ds-check`, `aac-ds-download` and `aac-ds-version`.
+- Entrypoints for command line scripts `aac-datasets-check`, `aac-datasets-download` and `aac-datasets-info`.
 
 ### Changed
 - Enforce datasets order to sort by filename to avoid different orders returned by `os.listdir`.
