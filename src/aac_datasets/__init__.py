@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-Automated Audio Captioning Datasets package.
+Audio Captioning Datasets package.
 """
 
 from .datasets.audiocaps import AudioCaps
