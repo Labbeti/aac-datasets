@@ -670,7 +670,6 @@ class Clotho(Dataset[Dict[str, Any]]):
                 download_url_to_file(
                     url,
                     fpath,
-                    fname,
                     progress=self.__verbose >= 1,
                 )
 

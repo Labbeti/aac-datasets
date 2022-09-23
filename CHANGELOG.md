@@ -21,6 +21,7 @@ All notable changes to this project will be documented in this file.
  
 ### Fixed
 - AudioCaps loading when `with_tags` is False.
+- Clotho files download.
 
 ## [0.2.0] 2022-08-30
 ### Added
