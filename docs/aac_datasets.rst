@@ -23,4 +23,4 @@ Submodules
 
    aac_datasets.check
    aac_datasets.download
-   aac_datasets.version
+   aac_datasets.info
