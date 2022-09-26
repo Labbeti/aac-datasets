@@ -367,7 +367,7 @@ class Clotho(Dataset[Dict[str, Any]]):
     # Public methods
     def at(
         self,
-        index: Union[int, Iterable[int], None, slice] = None,
+        idx: Union[int, Iterable[int], None, slice] = None,
         column: Union[str, Iterable[str], None] = None,
     ) -> Any:
         """Get a specific data field.
@@ -376,25 +376,25 @@ class Clotho(Dataset[Dict[str, Any]]):
         :param column: The name(s) of the column. Can be any value of :meth:`~Clotho.column_names`.
         :returns: The field value. The type depends of the column.
         """
-        if index is None:
-            index = slice(None)
+        if idx is None:
+            idx = slice(None)
         if column is None:
             column = self.column_names
 
         if not isinstance(column, str) and isinstance(column, Iterable):
-            return {column_i: self.at(index, column_i) for column_i in column}
+            return {column_i: self.at(idx, column_i) for column_i in column}
 
-        if isinstance(index, (int, slice)) and column in self.__all_items.keys():
-            return self.__all_items[column][index]
+        if isinstance(idx, (int, slice)) and column in self.__all_items.keys():
+            return self.__all_items[column][idx]
 
-        if isinstance(index, slice):
-            index = range(len(self))[index]
+        if isinstance(idx, slice):
+            idx = range(len(self))[idx]
 
-        if isinstance(index, Iterable):
-            return [self.at(index_i, column) for index_i in index]
+        if isinstance(idx, Iterable):
+            return [self.at(idx_i, column) for idx_i in idx]
 
         if column == "audio":
-            fpath = self.at(index, "fpath")
+            fpath = self.at(idx, "fpath")
             audio, sr = torchaudio.load(fpath)  # type: ignore
 
             # Sanity check
@@ -409,7 +409,7 @@ class Clotho(Dataset[Dict[str, Any]]):
             return audio
 
         elif column == "audio_metadata":
-            fpath = self.at(index, "fpath")
+            fpath = self.at(idx, "fpath")
             audio_metadata = torchaudio.info(fpath)  # type: ignore
             return audio_metadata
 
@@ -417,23 +417,23 @@ class Clotho(Dataset[Dict[str, Any]]):
             return "clotho"
 
         elif column == "fpath":
-            fname = self.at(index, "fname")
+            fname = self.at(idx, "fname")
             fpath = osp.join(self.__dpath_audio_subset, fname)
             return fpath
 
         elif column == "index":
-            return index
+            return idx
 
         elif column == "num_channels":
-            audio_metadata = self.at(index, "audio_metadata")
+            audio_metadata = self.at(idx, "audio_metadata")
             return audio_metadata.num_channels
 
         elif column == "num_frames":
-            audio_metadata = self.at(index, "audio_metadata")
+            audio_metadata = self.at(idx, "audio_metadata")
             return audio_metadata.num_frames
 
         elif column == "sr":
-            audio_metadata = self.at(index, "audio_metadata")
+            audio_metadata = self.at(idx, "audio_metadata")
             return audio_metadata.sample_rate
 
         elif column == "subset":
@@ -441,7 +441,7 @@ class Clotho(Dataset[Dict[str, Any]]):
 
         else:
             raise ValueError(
-                f"Invalid argument {column=} at {index=}. (expected one of {tuple(self.column_names)})"
+                f"Invalid argument {column=} at {idx=}. (expected one of {tuple(self.column_names)})"
             )
 
     def is_loaded(self) -> bool:

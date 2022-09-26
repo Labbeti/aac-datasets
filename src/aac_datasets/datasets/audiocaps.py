@@ -179,7 +179,7 @@ class AudioCaps(Dataset[Dict[str, Any]]):
     # Public methods
     def at(
         self,
-        index: Union[int, Iterable[int], None, slice] = None,
+        idx: Union[int, Iterable[int], None, slice] = None,
         column: Union[str, Iterable[str], None] = None,
     ) -> Any:
         """Get a specific data field.
@@ -188,26 +188,26 @@ class AudioCaps(Dataset[Dict[str, Any]]):
         :param column: The name(s) of the column. Can be any value of :meth:`~AudioCaps.column_names`.
         :returns: The field value. The type depends of the column.
         """
-        if index is None:
-            index = slice(None)
+        if idx is None:
+            idx = slice(None)
         if column is None:
             column = self.column_names
 
         if not isinstance(column, str) and isinstance(column, Iterable):
-            return {column_i: self.at(index, column_i) for column_i in column}
+            return {column_i: self.at(idx, column_i) for column_i in column}
 
-        if isinstance(index, (int, slice)) and column in self.__all_items.keys():
-            return self.__all_items[column][index]
+        if isinstance(idx, (int, slice)) and column in self.__all_items.keys():
+            return self.__all_items[column][idx]
 
-        if isinstance(index, slice):
-            index = range(len(self))[index]
+        if isinstance(idx, slice):
+            idx = range(len(self))[idx]
 
-        if isinstance(index, Iterable):
-            return [self.at(index_i, column) for index_i in index]
+        if isinstance(idx, Iterable):
+            return [self.at(idx_i, column) for idx_i in idx]
 
         if column == "audio":
-            fpath = self.at(index, "fpath")
-            if not self.__all_items["is_on_disk"][index]:
+            fpath = self.at(idx, "fpath")
+            if not self.__all_items["is_on_disk"][idx]:
                 return torch.empty((0,))
             audio, sr = torchaudio.load(fpath)  # type: ignore
 
@@ -223,8 +223,8 @@ class AudioCaps(Dataset[Dict[str, Any]]):
             return audio
 
         elif column == "audio_metadata":
-            fpath = self.at(index, "fpath")
-            if not self.__all_items["is_on_disk"][index]:
+            fpath = self.at(idx, "fpath")
+            if not self.__all_items["is_on_disk"][idx]:
                 return None
             audio_metadata = torchaudio.info(fpath)  # type: ignore
             return audio_metadata
@@ -233,27 +233,27 @@ class AudioCaps(Dataset[Dict[str, Any]]):
             return "audiocaps"
 
         elif column == "fpath":
-            fname = self.at(index, "fname")
+            fname = self.at(idx, "fname")
             fpath = osp.join(self.__dpath_audio_subset, fname)
             return fpath
 
         elif column == "index":
-            return index
+            return idx
 
         elif column == "num_channels":
-            audio_metadata = self.at(index, "audio_metadata")
+            audio_metadata = self.at(idx, "audio_metadata")
             if audio_metadata is None:
                 return -1
             return audio_metadata.num_channels
 
         elif column == "num_frames":
-            audio_metadata = self.at(index, "audio_metadata")
+            audio_metadata = self.at(idx, "audio_metadata")
             if audio_metadata is None:
                 return -1
             return audio_metadata.num_frames
 
         elif column == "sr":
-            audio_metadata = self.at(index, "audio_metadata")
+            audio_metadata = self.at(idx, "audio_metadata")
             if audio_metadata is None:
                 return -1
             return audio_metadata.sample_rate
@@ -263,7 +263,7 @@ class AudioCaps(Dataset[Dict[str, Any]]):
 
         else:
             raise ValueError(
-                f"Invalid argument {column=} at {index=}. (expected one of {tuple(self.column_names)})"
+                f"Invalid argument {column=} at {idx=}. (expected one of {tuple(self.column_names)})"
             )
 
     def is_loaded(self) -> bool:
@@ -280,18 +280,18 @@ class AudioCaps(Dataset[Dict[str, Any]]):
     # Magic methods
     def __getitem__(
         self,
-        index: Any,
+        idx: Any,
     ) -> Dict[str, Any]:
         if (
-            isinstance(index, tuple)
-            and len(index) == 2
-            and (isinstance(index[1], (str, Iterable)) or index[1] is None)
+            isinstance(idx, tuple)
+            and len(idx) == 2
+            and (isinstance(idx[1], (str, Iterable)) or idx[1] is None)
         ):
-            index, column = index
+            idx, column = idx
         else:
             column = None
 
-        item = self.at(index, column)
+        item = self.at(idx, column)
         if self.__transform is not None:
             item = self.__transform(item)
         return item
