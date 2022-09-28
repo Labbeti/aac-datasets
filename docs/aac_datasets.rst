@@ -13,6 +13,7 @@ Subpackages
    :maxdepth: 4
 
    aac_datasets.datasets
+   aac_datasets.utils
 
 Submodules
 ----------
@@ -22,5 +23,4 @@ Submodules
 
    aac_datasets.check
    aac_datasets.download
-   aac_datasets.utils
-   aac_datasets.version
+   aac_datasets.info

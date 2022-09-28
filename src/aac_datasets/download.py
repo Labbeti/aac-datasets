@@ -24,7 +24,7 @@ def download_audiocaps(
     download: bool = True,
     ffmpeg: str = "ffmpeg",
     youtube_dl: str = "youtube-dl",
-    load_tags: bool = False,
+    with_tags: bool = False,
     subsets: Iterable[str] = AudioCaps.SUBSETS,
 ) -> Dict[str, AudioCaps]:
     """Download :class:`~aac_datasets.datasets.audiocaps.AudioCaps` dataset subsets."""
@@ -35,7 +35,7 @@ def download_audiocaps(
     datasets = {}
     for subset in subsets:
         datasets[subset] = AudioCaps(
-            root, subset, download=download, verbose=verbose, load_tags=load_tags
+            root, subset, download=download, verbose=verbose, with_tags=with_tags
         )
     return datasets
 
@@ -135,7 +135,7 @@ def _get_main_download_args() -> Namespace:
         help="Path to youtube-dl used to extract metadata from a youtube video.",
     )
     audiocaps_subparser.add_argument(
-        "--load_tags",
+        "--with_tags",
         type=_to_bool,
         default=True,
         choices=(False, True),
@@ -209,7 +209,7 @@ def _main_download() -> None:
             download=True,
             ffmpeg=args.ffmpeg,
             youtube_dl=args.youtube_dl,
-            load_tags=args.load_tags,
+            with_tags=args.with_tags,
             subsets=args.subsets,
         )
 
