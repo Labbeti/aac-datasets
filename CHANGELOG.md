@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.2.1] UNRELEASED
+## [0.3.0] 2022-09-28
 ### Added
 - Add `column_names`, `info` and `shape` properties in datasets.
 - Add `is_loaded` and `set_transform` methods in datasets.

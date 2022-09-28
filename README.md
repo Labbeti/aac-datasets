@@ -125,7 +125,7 @@ If you use this software, please consider cite it as below :
     month = {6},
     title = {{aac-datasets}},
     url = {https://github.com/Labbeti/aac-datasets/},
-    version = {0.2.0},
+    version = {0.3.0},
     year = {2022}
 }
 ```
