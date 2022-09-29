@@ -536,16 +536,12 @@ class Clotho(Dataset[Dict[str, Any]]):
         if not osp.isdir(dpath_audio_subset):
             raise RuntimeError(f'Cannot find directory "{dpath_audio_subset}".')
 
-        all_fnames_lst = list(sorted(os.listdir(dpath_audio_subset)))
-        idx_to_fname = {i: fname for i, fname in enumerate(all_fnames_lst)}
-        fname_to_idx = {fname: i for i, fname in idx_to_fname.items()}
-        dataset_size = len(all_fnames_lst)
-
         # Read Clotho files
         if "captions" in links.keys():
             captions_fname = links["captions"]["fname"]
             captions_fpath = osp.join(self.__dpath_csv, captions_fname)
 
+            # Keys: file_name, caption_1, caption_2, caption_3, caption_4, caption_5
             with open(captions_fpath, "r") as file:
                 reader = csv.DictReader(file)
                 captions_data = list(reader)
@@ -577,6 +573,11 @@ class Clotho(Dataset[Dict[str, Any]]):
         else:
             metadata = []
 
+        fnames_lst = [line["file_name"] for line in captions_data]
+        idx_to_fname = {i: fname for i, fname in enumerate(fnames_lst)}
+        fname_to_idx = {fname: i for i, fname in idx_to_fname.items()}
+        dataset_size = len(fnames_lst)
+
         # Process each item field
         all_captions_lst = [[] for _ in range(dataset_size)]
         captions_keys = (
@@ -603,7 +604,7 @@ class Clotho(Dataset[Dict[str, Any]]):
                     all_metadata_dic[key][idx] = line[key]
 
         all_items = {
-            "fname": all_fnames_lst,
+            "fname": fnames_lst,
             "captions": all_captions_lst,
         } | all_metadata_dic
 

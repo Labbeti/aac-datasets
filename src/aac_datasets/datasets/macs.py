@@ -230,14 +230,14 @@ class MACS(Dataset[Dict[str, Any]]):
                 f"Invalid argument {column=} at {idx=}. (expected one of {tuple(self.column_names)})"
             )
 
-    def get_competence(self, annotator_id: int) -> float:
-        """Get competence value for a specific annotator id."""
-        return self.__annotator_id_to_competence[annotator_id]
-
     def get_annotator_id_to_competence_dict(self) -> Dict[int, float]:
         """Get annotator to competence dictionary."""
         # Note : copy to prevent any changes on this attribute
         return copy.deepcopy(self.__annotator_id_to_competence)
+
+    def get_competence(self, annotator_id: int) -> float:
+        """Get competence value for a specific annotator id."""
+        return self.__annotator_id_to_competence[annotator_id]
 
     def is_loaded(self) -> bool:
         """Returns True if the dataset is loaded."""
@@ -510,9 +510,7 @@ class MACS(Dataset[Dict[str, Any]]):
             shutil.rmtree(self.__dpath_archives, ignore_errors=True)
 
         audio_fnames = [
-            name
-            for name in sorted(os.listdir(self.__dpath_audio))
-            if name.endswith(".wav")
+            name for name in os.listdir(self.__dpath_audio) if name.endswith(".wav")
         ]
         assert len(audio_fnames) == len(macs_fnames)
 
