@@ -18,7 +18,7 @@ You can also do the same by the command line :
 .. code-block:: bash
     :caption: Download Clotho development dataset (command).
 
-    aacd-download --root "/my/path/to/data" clotho --subsets dev
+    aac-datasets-download --root "/my/path/to/data" clotho --subsets dev
 
 
 Load data
