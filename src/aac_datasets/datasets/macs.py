@@ -115,7 +115,7 @@ class MACS(Dataset[Dict[str, Any]]):
         self.__subset = subset
         self.__download = download
         self.__transform = transform
-        self.__unfold = flat_captions
+        self.__flat_captions = flat_captions
         self.__verbose = verbose
 
         self.__annotator_id_to_competence = {}
@@ -378,7 +378,7 @@ class MACS(Dataset[Dict[str, Any]]):
                 for key in tau_additional_keys:
                     all_items[key][idx] = tau_tags[key]
 
-        if self.__unfold and self.MIN_CAPTIONS_PER_AUDIO[self.__subset] > 1:
+        if self.__flat_captions and self.MIN_CAPTIONS_PER_AUDIO[self.__subset] > 1:
             all_infos_unfolded = {key: [] for key in all_items.keys()}
 
             for i, captions in enumerate(all_items["captions"]):
