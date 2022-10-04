@@ -609,7 +609,9 @@ class Clotho(Dataset[Dict[str, Any]]):
         for line in metadata:
             fname = line["file_name"]
             if fname not in fname_to_idx:
-                raise KeyError(f"Cannot find metadata {fname=} in captions file. (subset={self.__subset})")
+                raise KeyError(
+                    f"Cannot find metadata {fname=} in captions file. (subset={self.__subset})"
+                )
             idx = fname_to_idx[fname]
             for key in METADATA_KEYS:
                 # The test subset does not have keywords in metadata, but has sound_id, sound_link, etc.
