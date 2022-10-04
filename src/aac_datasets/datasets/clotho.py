@@ -548,14 +548,6 @@ class Clotho(Dataset[Dict[str, Any]]):
         else:
             captions_data = []
 
-        METADATA_KEYS = (
-            "keywords",
-            "sound_id",
-            "sound_link",
-            "start_end_samples",
-            "manufacturer",
-            "license",
-        )
         if "metadata" in links.keys():
             metadata_fname = links["metadata"]["fname"]
             metadata_fpath = osp.join(self.__dpath_csv, metadata_fname)
@@ -573,30 +565,51 @@ class Clotho(Dataset[Dict[str, Any]]):
         else:
             metadata = []
 
-        fnames_lst = [line["file_name"] for line in captions_data]
+        if "captions" in links.keys():
+            # note: "dev", "val", "eval"
+            fnames_lst = [line["file_name"] for line in captions_data]
+        elif "metadata" in links.keys():
+            # note: for "test" subset which do not have captions CSV file
+            fnames_lst = [line["file_name"] for line in metadata]
+        else:
+            # note 1: for "analysis" subset which do not have any CSV file
+            # note 2: force sorted list to have the same order on all OS
+            fnames_lst = list(sorted(os.listdir(dpath_audio_subset)))
+
         idx_to_fname = {i: fname for i, fname in enumerate(fnames_lst)}
         fname_to_idx = {fname: i for i, fname in idx_to_fname.items()}
         dataset_size = len(fnames_lst)
 
         # Process each item field
-        all_captions_lst = [[] for _ in range(dataset_size)]
-        captions_keys = (
+        CAPTIONS_KEYS = (
             "caption_1",
             "caption_2",
             "caption_3",
             "caption_4",
             "caption_5",
         )
+        METADATA_KEYS = (
+            "keywords",
+            "sound_id",
+            "sound_link",
+            "start_end_samples",
+            "manufacturer",
+            "license",
+        )
+
+        all_captions_lst = [[] for _ in range(dataset_size)]
         for line in captions_data:
             fname = line["file_name"]
             idx = fname_to_idx[fname]
-            all_captions_lst[idx] = [line[caption_key] for caption_key in captions_keys]
+            all_captions_lst[idx] = [line[caption_key] for caption_key in CAPTIONS_KEYS]
 
         all_metadata_dic: Dict[str, List[Any]] = {
             key: [None for _ in range(dataset_size)] for key in METADATA_KEYS
         }
         for line in metadata:
             fname = line["file_name"]
+            if fname not in fname_to_idx:
+                raise KeyError(f"Cannot find metadata {fname=} in captions file. (subset={self.__subset})")
             idx = fname_to_idx[fname]
             for key in METADATA_KEYS:
                 # The test subset does not have keywords in metadata, but has sound_id, sound_link, etc.
