@@ -304,7 +304,7 @@ class AudioCaps(Dataset[Dict[str, Any]]):
         return len(self.__all_items["captions"])
 
     def __repr__(self) -> str:
-        return f"AudioCaps(size={len(self)}, subset={self.__subset}, columns={self.column_names})"
+        return f"AudioCaps(size={len(self)}, subset={self.__subset}, num_columns={len(self.column_names)}, with_tags={self.__with_tags})"
 
     # Private methods
     def __check_file(self, fpath: str) -> bool:

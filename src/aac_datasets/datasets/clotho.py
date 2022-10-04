@@ -481,7 +481,7 @@ class Clotho(Dataset[Dict[str, Any]]):
         return len(self.__all_items["captions"])
 
     def __repr__(self) -> str:
-        return f"Clotho(size={len(self)}, subset={self.__subset}, columns={self.column_names})"
+        return f"Clotho(size={len(self)}, subset={self.__subset}, num_columns={len(self.column_names)}, version={self.__version})"
 
     # Private methods
     @cached_property

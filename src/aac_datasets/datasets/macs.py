@@ -273,7 +273,7 @@ class MACS(Dataset[Dict[str, Any]]):
         return len(self.__all_items["captions"])
 
     def __repr__(self) -> str:
-        return f"MACS(size={len(self)}, subset={self.__subset}, columns={self.column_names})"
+        return f"MACS(size={len(self)}, subset={self.__subset}, num_columns={len(self.column_names)})"
 
     # Private methods
     @cached_property
