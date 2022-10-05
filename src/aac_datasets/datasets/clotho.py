@@ -235,6 +235,22 @@ CLOTHO_LINKS = {
 }
 CLOTHO_LAST_VERSION = "v2.1"
 
+CAPTIONS_KEYS = (
+    "caption_1",
+    "caption_2",
+    "caption_3",
+    "caption_4",
+    "caption_5",
+)
+METADATA_KEYS = (
+    "keywords",
+    "sound_id",
+    "sound_link",
+    "start_end_samples",
+    "manufacturer",
+    "license",
+)
+
 
 class Clotho(Dataset[Dict[str, Any]]):
     r"""
@@ -348,7 +364,11 @@ class Clotho(Dataset[Dict[str, Any]]):
     @property
     def column_names(self) -> List[str]:
         """The name of each column of the dataset."""
-        return [field.name for field in fields(ClothoItem)]
+        return [
+            field_.name
+            for field_ in fields(ClothoItem)
+            if field_.name in self.__all_items or field_.name not in METADATA_KEYS
+        ]
 
     @property
     def info(self) -> Dict[str, Any]:
@@ -581,21 +601,10 @@ class Clotho(Dataset[Dict[str, Any]]):
         dataset_size = len(fnames_lst)
 
         # Process each item field
-        CAPTIONS_KEYS = (
-            "caption_1",
-            "caption_2",
-            "caption_3",
-            "caption_4",
-            "caption_5",
-        )
-        METADATA_KEYS = (
-            "keywords",
-            "sound_id",
-            "sound_link",
-            "start_end_samples",
-            "manufacturer",
-            "license",
-        )
+        if len(metadata) > 0:
+            subset_metadata_keys = [key for key in METADATA_KEYS if key in metadata[0]]
+        else:
+            subset_metadata_keys = []
 
         all_captions_lst = [[] for _ in range(dataset_size)]
         for line in captions_data:
@@ -604,7 +613,7 @@ class Clotho(Dataset[Dict[str, Any]]):
             all_captions_lst[idx] = [line[caption_key] for caption_key in CAPTIONS_KEYS]
 
         all_metadata_dic: Dict[str, List[Any]] = {
-            key: [None for _ in range(dataset_size)] for key in METADATA_KEYS
+            key: [None for _ in range(dataset_size)] for key in subset_metadata_keys
         }
         for line in metadata:
             fname = line["file_name"]
@@ -613,7 +622,7 @@ class Clotho(Dataset[Dict[str, Any]]):
                     f"Cannot find metadata {fname=} in captions file. (subset={self.__subset})"
                 )
             idx = fname_to_idx[fname]
-            for key in METADATA_KEYS:
+            for key in subset_metadata_keys:
                 # The test subset does not have keywords in metadata, but has sound_id, sound_link, etc.
                 if key in line:
                     all_metadata_dic[key][idx] = line[key]
@@ -623,11 +632,12 @@ class Clotho(Dataset[Dict[str, Any]]):
             "captions": all_captions_lst,
         } | all_metadata_dic
 
-        # Split keywords into list[str]
-        all_items["keywords"] = [
-            keywords.split(";") if keywords is not None else []
-            for keywords in all_items["keywords"]
-        ]
+        if "keywords" in all_items:
+            # Split keywords into list[str]
+            all_items["keywords"] = [
+                keywords.split(";") if keywords is not None else []
+                for keywords in all_items["keywords"]
+            ]
 
         if self.__flat_captions and self.CAPTIONS_PER_AUDIO[self.__subset] > 1:
             all_infos_unfolded = {key: [] for key in all_items.keys()}
