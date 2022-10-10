@@ -253,18 +253,18 @@ class MACS(Dataset[Dict[str, Any]]):
     # Magic methods
     def __getitem__(
         self,
-        index: Any,
+        idx: Any,
     ) -> Dict[str, Any]:
         if (
-            isinstance(index, tuple)
-            and len(index) == 2
-            and (isinstance(index[1], (str, Iterable)) or index[1] is None)
+            isinstance(idx, tuple)
+            and len(idx) == 2
+            and (isinstance(idx[1], (str, Iterable)) or idx[1] is None)
         ):
-            index, column = index
+            idx, column = idx
         else:
             column = None
 
-        item = self.at(index, column)
+        item = self.at(idx, column)
         if self.__transform is not None:
             item = self.__transform(item)
         return item
