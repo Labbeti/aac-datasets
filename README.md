@@ -129,3 +129,7 @@ If you use this software, please consider cite it as below :
     year = {2022}
 }
 ```
+
+## Contact
+Maintainer:
+- Etienne Labbé "Labbeti": labbeti.pub@gmail.com
