@@ -9,7 +9,7 @@
 <a href="https://black.readthedocs.io/en/stable/"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-black.svg?style=for-the-badge&labelColor=gray"></a>
 <a href="https://github.com/Labbeti/aac-datasets/actions"><img alt="Build" src="https://img.shields.io/github/workflow/status/Labbeti/aac-datasets/Python%20package%20using%20Pip/main?style=for-the-badge&logo=github"></a>
 
-Audio Captioning unofficial datasets source code for **AudioCaps** [1], **Clotho** [2], and **MACS** [3], designed for Pytorch.
+Audio Captioning unofficial datasets source code for **AudioCaps** [[1]](#audiocaps), **Clotho** [[2]](#clotho), and **MACS** [[3]](#macs), designed for Pytorch.
 
 </div>
 
@@ -107,11 +107,13 @@ python -m aac_datasets.download --root "./data" clotho --version "v2.1"
 ```
 
 ## References
-
+#### AudioCaps
 [1] C. D. Kim, B. Kim, H. Lee, and G. Kim, “Audiocaps: Generating captions for audios in the wild,” in NAACL-HLT, 2019. Available: https://aclanthology.org/N19-1011/
 
+#### Clotho
 [2] K. Drossos, S. Lipping, and T. Virtanen, “Clotho: An Audio Captioning Dataset,” arXiv:1910.09387 [cs, eess], Oct. 2019, Available: http://arxiv.org/abs/1910.09387
 
+#### MACS
 [3] F. Font, A. Mesaros, D. P. W. Ellis, E. Fonseca, M. Fuentes, and B. Elizalde, Proceedings of the 6th Workshop on Detection and Classication of Acoustic Scenes and Events (DCASE 2021). Barcelona, Spain: Music Technology Group - Universitat Pompeu Fabra, Nov. 2021. Available: https://doi.org/10.5281/zenodo.5770113
 
 ## Cite the aac-datasets package
