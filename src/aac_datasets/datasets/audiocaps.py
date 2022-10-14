@@ -28,7 +28,7 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class AudioCapsItem:
-    """Dataclass representing a single AudioCAps item."""
+    """Dataclass representing a single AudioCaps item."""
 
     # Common attributes
     audio: Tensor = torch.empty((0,))
