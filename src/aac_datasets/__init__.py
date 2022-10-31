@@ -11,7 +11,9 @@ from .datasets.macs import MACS
 
 
 __author__ = "Etienne Labbé (Labbeti)"
+__author_email__ = "labbeti.pub@gmail.com"
+__license__ = "MIT"
 __maintainer__ = "Etienne Labbé (Labbeti)"
 __name__ = "aac-datasets"
 __status__ = "Development"
-__version__ = "0.3.0"
+__version__ = "0.3.1"

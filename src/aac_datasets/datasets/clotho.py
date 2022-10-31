@@ -235,6 +235,22 @@ CLOTHO_LINKS = {
 }
 CLOTHO_LAST_VERSION = "v2.1"
 
+CAPTIONS_KEYS = (
+    "caption_1",
+    "caption_2",
+    "caption_3",
+    "caption_4",
+    "caption_5",
+)
+METADATA_KEYS = (
+    "keywords",
+    "sound_id",
+    "sound_link",
+    "start_end_samples",
+    "manufacturer",
+    "license",
+)
+
 
 class Clotho(Dataset[Dict[str, Any]]):
     r"""
@@ -348,7 +364,11 @@ class Clotho(Dataset[Dict[str, Any]]):
     @property
     def column_names(self) -> List[str]:
         """The name of each column of the dataset."""
-        return [field.name for field in fields(ClothoItem)]
+        return [
+            field_.name
+            for field_ in fields(ClothoItem)
+            if field_.name in self.__all_items or field_.name not in METADATA_KEYS
+        ]
 
     @property
     def info(self) -> Dict[str, Any]:
@@ -458,18 +478,18 @@ class Clotho(Dataset[Dict[str, Any]]):
     # Magic methods
     def __getitem__(
         self,
-        index: Any,
+        idx: Any,
     ) -> Dict[str, Any]:
         if (
-            isinstance(index, tuple)
-            and len(index) == 2
-            and (isinstance(index[1], (str, Iterable)) or index[1] is None)
+            isinstance(idx, tuple)
+            and len(idx) == 2
+            and (isinstance(idx[1], (str, Iterable)) or idx[1] is None)
         ):
-            index, column = index
+            idx, column = idx
         else:
             column = None
 
-        item = self.at(index, column)
+        item = self.at(idx, column)
         if self.__transform is not None:
             item = self.__transform(item)
         return item
@@ -481,7 +501,7 @@ class Clotho(Dataset[Dict[str, Any]]):
         return len(self.__all_items["captions"])
 
     def __repr__(self) -> str:
-        return f"Clotho(size={len(self)}, subset={self.__subset}, columns={self.column_names})"
+        return f"Clotho(size={len(self)}, subset={self.__subset}, num_columns={len(self.column_names)}, version={self.__version})"
 
     # Private methods
     @cached_property
@@ -536,30 +556,18 @@ class Clotho(Dataset[Dict[str, Any]]):
         if not osp.isdir(dpath_audio_subset):
             raise RuntimeError(f'Cannot find directory "{dpath_audio_subset}".')
 
-        all_fnames_lst = list(sorted(os.listdir(dpath_audio_subset)))
-        idx_to_fname = {i: fname for i, fname in enumerate(all_fnames_lst)}
-        fname_to_idx = {fname: i for i, fname in idx_to_fname.items()}
-        dataset_size = len(all_fnames_lst)
-
         # Read Clotho files
         if "captions" in links.keys():
             captions_fname = links["captions"]["fname"]
             captions_fpath = osp.join(self.__dpath_csv, captions_fname)
 
+            # Keys: file_name, caption_1, caption_2, caption_3, caption_4, caption_5
             with open(captions_fpath, "r") as file:
                 reader = csv.DictReader(file)
                 captions_data = list(reader)
         else:
             captions_data = []
 
-        METADATA_KEYS = (
-            "keywords",
-            "sound_id",
-            "sound_link",
-            "start_end_samples",
-            "manufacturer",
-            "license",
-        )
         if "metadata" in links.keys():
             metadata_fname = links["metadata"]["fname"]
             metadata_fpath = osp.join(self.__dpath_csv, metadata_fname)
@@ -577,41 +585,59 @@ class Clotho(Dataset[Dict[str, Any]]):
         else:
             metadata = []
 
+        if "captions" in links.keys():
+            # note: "dev", "val", "eval"
+            fnames_lst = [line["file_name"] for line in captions_data]
+        elif "metadata" in links.keys():
+            # note: for "test" subset which do not have captions CSV file
+            fnames_lst = [line["file_name"] for line in metadata]
+        else:
+            # note 1: for "analysis" subset which do not have any CSV file
+            # note 2: force sorted list to have the same order on all OS
+            fnames_lst = list(sorted(os.listdir(dpath_audio_subset)))
+
+        idx_to_fname = {i: fname for i, fname in enumerate(fnames_lst)}
+        fname_to_idx = {fname: i for i, fname in idx_to_fname.items()}
+        dataset_size = len(fnames_lst)
+
         # Process each item field
+        if len(metadata) > 0:
+            subset_metadata_keys = [key for key in METADATA_KEYS if key in metadata[0]]
+        else:
+            subset_metadata_keys = []
+
         all_captions_lst = [[] for _ in range(dataset_size)]
-        captions_keys = (
-            "caption_1",
-            "caption_2",
-            "caption_3",
-            "caption_4",
-            "caption_5",
-        )
         for line in captions_data:
             fname = line["file_name"]
             idx = fname_to_idx[fname]
-            all_captions_lst[idx] = [line[caption_key] for caption_key in captions_keys]
+            all_captions_lst[idx] = [line[caption_key] for caption_key in CAPTIONS_KEYS]
 
         all_metadata_dic: Dict[str, List[Any]] = {
-            key: [None for _ in range(dataset_size)] for key in METADATA_KEYS
+            key: [None for _ in range(dataset_size)] for key in subset_metadata_keys
         }
         for line in metadata:
             fname = line["file_name"]
+            if fname not in fname_to_idx:
+                raise KeyError(
+                    f"Cannot find metadata {fname=} in captions file. (subset={self.__subset})"
+                )
             idx = fname_to_idx[fname]
-            for key in METADATA_KEYS:
+            for key in subset_metadata_keys:
                 # The test subset does not have keywords in metadata, but has sound_id, sound_link, etc.
                 if key in line:
                     all_metadata_dic[key][idx] = line[key]
 
         all_items = {
-            "fname": all_fnames_lst,
+            "fname": fnames_lst,
             "captions": all_captions_lst,
         } | all_metadata_dic
 
-        # Split keywords into list[str]
-        all_items["keywords"] = [
-            keywords.split(";") if keywords is not None else []
-            for keywords in all_items["keywords"]
-        ]
+        if "keywords" in all_items:
+            # Split keywords into list[str]
+            all_items["keywords"] = [
+                keywords.split(";") if keywords is not None else []
+                for keywords in all_items["keywords"]
+            ]
 
         if self.__flat_captions and self.CAPTIONS_PER_AUDIO[self.__subset] > 1:
             all_infos_unfolded = {key: [] for key in all_items.keys()}

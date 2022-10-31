@@ -7,8 +7,8 @@ aac-datasets's documentation
 ========================================
 
 .. toctree::
-   :maxdepth: 4
-   :caption: Contents:
+   :maxdepth: 6
+   :caption: Contents
 
    aac_datasets
    usage
@@ -25,5 +25,5 @@ Indices and tables
 External links
 =========================================================
 
-* `Github link <https://github.com/Labbeti/aac_datasets>`_
+* `Github link <https://github.com/Labbeti/aac-datasets>`_
 * `PyPI link <https://pypi.org/project/aac-datasets/>`_

@@ -115,7 +115,7 @@ class MACS(Dataset[Dict[str, Any]]):
         self.__subset = subset
         self.__download = download
         self.__transform = transform
-        self.__unfold = flat_captions
+        self.__flat_captions = flat_captions
         self.__verbose = verbose
 
         self.__annotator_id_to_competence = {}
@@ -230,14 +230,14 @@ class MACS(Dataset[Dict[str, Any]]):
                 f"Invalid argument {column=} at {idx=}. (expected one of {tuple(self.column_names)})"
             )
 
-    def get_competence(self, annotator_id: int) -> float:
-        """Get competence value for a specific annotator id."""
-        return self.__annotator_id_to_competence[annotator_id]
-
     def get_annotator_id_to_competence_dict(self) -> Dict[int, float]:
         """Get annotator to competence dictionary."""
         # Note : copy to prevent any changes on this attribute
         return copy.deepcopy(self.__annotator_id_to_competence)
+
+    def get_competence(self, annotator_id: int) -> float:
+        """Get competence value for a specific annotator id."""
+        return self.__annotator_id_to_competence[annotator_id]
 
     def is_loaded(self) -> bool:
         """Returns True if the dataset is loaded."""
@@ -253,18 +253,18 @@ class MACS(Dataset[Dict[str, Any]]):
     # Magic methods
     def __getitem__(
         self,
-        index: Any,
+        idx: Any,
     ) -> Dict[str, Any]:
         if (
-            isinstance(index, tuple)
-            and len(index) == 2
-            and (isinstance(index[1], (str, Iterable)) or index[1] is None)
+            isinstance(idx, tuple)
+            and len(idx) == 2
+            and (isinstance(idx[1], (str, Iterable)) or idx[1] is None)
         ):
-            index, column = index
+            idx, column = idx
         else:
             column = None
 
-        item = self.at(index, column)
+        item = self.at(idx, column)
         if self.__transform is not None:
             item = self.__transform(item)
         return item
@@ -273,7 +273,7 @@ class MACS(Dataset[Dict[str, Any]]):
         return len(self.__all_items["captions"])
 
     def __repr__(self) -> str:
-        return f"MACS(size={len(self)}, subset={self.__subset}, columns={self.column_names})"
+        return f"MACS(size={len(self)}, subset={self.__subset}, num_columns={len(self.column_names)})"
 
     # Private methods
     @cached_property
@@ -378,7 +378,7 @@ class MACS(Dataset[Dict[str, Any]]):
                 for key in tau_additional_keys:
                     all_items[key][idx] = tau_tags[key]
 
-        if self.__unfold and self.MIN_CAPTIONS_PER_AUDIO[self.__subset] > 1:
+        if self.__flat_captions and self.MIN_CAPTIONS_PER_AUDIO[self.__subset] > 1:
             all_infos_unfolded = {key: [] for key in all_items.keys()}
 
             for i, captions in enumerate(all_items["captions"]):
@@ -510,9 +510,7 @@ class MACS(Dataset[Dict[str, Any]]):
             shutil.rmtree(self.__dpath_archives, ignore_errors=True)
 
         audio_fnames = [
-            name
-            for name in sorted(os.listdir(self.__dpath_audio))
-            if name.endswith(".wav")
+            name for name in os.listdir(self.__dpath_audio) if name.endswith(".wav")
         ]
         assert len(audio_fnames) == len(macs_fnames)
 

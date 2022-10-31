@@ -28,7 +28,7 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class AudioCapsItem:
-    """Dataclass representing a single AudioCAps item."""
+    """Dataclass representing a single AudioCaps item."""
 
     # Common attributes
     audio: Tensor = torch.empty((0,))
@@ -50,7 +50,7 @@ class AudioCaps(Dataset[Dict[str, Any]]):
 
     Subsets available are 'train', 'val' and 'test'.
 
-    Audio is a waveform tensor of shape (1, n_times) of 10 seconds max, sampled at 16 KHz.
+    Audio is a waveform tensor of shape (1, n_times) of 10 seconds max, sampled at 32KHz.
     Target is a list of strings containing the captions.
     The 'train' subset has only 1 caption per sample and 'val' and 'test' have 5 captions.
 
@@ -121,14 +121,15 @@ class AudioCaps(Dataset[Dict[str, Any]]):
         :param verbose: Verbose level.
             defaults to 0.
         :param exclude_removed_audio: If True, the dataset will return exclude from the dataset the audio not downloaded from youtube (i.e. not present on disk).
+            If False, invalid audios will return an empty tensor of shape (0,).
             defaults to True.
         :param with_tags: If True, load the tags from AudioSet dataset.
             Note: tags needs to be downloaded with download=True & with_tags=True before being used.
             defaults to False.
         """
-        if subset not in self.SUBSETS:
+        if subset not in AudioCaps.SUBSETS:
             raise ValueError(
-                f"Invalid argument {subset=} for AudioCaps. (expected one of {self.SUBSETS})"
+                f"Invalid argument {subset=} for AudioCaps. (expected one of {AudioCaps.SUBSETS})"
             )
 
         super().__init__()
@@ -303,7 +304,7 @@ class AudioCaps(Dataset[Dict[str, Any]]):
         return len(self.__all_items["captions"])
 
     def __repr__(self) -> str:
-        return f"AudioCaps(size={len(self)}, subset={self.__subset}, columns={self.column_names})"
+        return f"AudioCaps(size={len(self)}, subset={self.__subset}, num_columns={len(self.column_names)}, with_tags={self.__with_tags})"
 
     # Private methods
     def __check_file(self, fpath: str) -> bool:
@@ -394,16 +395,14 @@ class AudioCaps(Dataset[Dict[str, Any]]):
             f"{line['youtube_id']}_{line['start_time']}.{self.AUDIO_FILE_EXTENSION}"
             for line in captions_data
         )
-        audio_fnames_on_disk = dict.fromkeys(
-            sorted(os.listdir(self.__dpath_audio_subset))
-        )
+        audio_fnames_on_disk = dict.fromkeys(os.listdir(self.__dpath_audio_subset))
         if self.__exclude_removed_audio:
             fnames_lst = [
-                fname for fname in audio_fnames_on_disk if fname in fnames_dic
+                fname for fname in fnames_dic if fname in audio_fnames_on_disk
             ]
             is_on_disk_lst = [True for _ in range(len(fnames_lst))]
         else:
-            fnames_lst = list(audio_fnames_on_disk | fnames_dic)
+            fnames_lst = list(fnames_dic)
             is_on_disk_lst = [fname in audio_fnames_on_disk for fname in fnames_lst]
 
         dataset_size = len(fnames_lst)
