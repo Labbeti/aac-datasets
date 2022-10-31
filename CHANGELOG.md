@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.3.1] UNRELEASED
+## [0.3.1] 2022-10-31
 ### Changed
 - AudioCaps, Clotho and MACS order are now defined by their order in the corresponding captions CSV files when available.
 - Update documentation usage and main page.
