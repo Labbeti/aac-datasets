@@ -88,6 +88,7 @@ class AudioCaps(Dataset[Dict[str, Any]]):
     DNAME_LOG = "logs"
     FFMPEG_PATH: str = "ffmpeg"
     FORCE_PREPARE_DATA: bool = False
+    N_AUDIOSET_CLASSES: int = 527
     REDIRECT_LOG = False
     SAMPLE_RATE = 32000
     SUBSETS = ("train", "val", "test")
@@ -306,6 +307,19 @@ class AudioCaps(Dataset[Dict[str, Any]]):
     def __repr__(self) -> str:
         return f"AudioCaps(size={len(self)}, subset={self.__subset}, num_columns={len(self.column_names)}, with_tags={self.__with_tags})"
 
+    # Public class methods
+    @classmethod
+    def load_class_labels_indices(cls, root: str) -> list[dict[str, str]]:
+        class_labels_indices_fpath = osp.join(
+            root,
+            f"AUDIOCAPS_{AudioCaps.SAMPLE_RATE}Hz",
+            AUDIOSET_LINKS["class_labels_indices"]["fname"],
+        )
+        with open(class_labels_indices_fpath, "r") as file:
+            reader = csv.DictReader(file)
+            audioset_classes_data = list(reader)
+        return audioset_classes_data
+
     # Private methods
     def __check_file(self, fpath: str) -> bool:
         try:
@@ -373,9 +387,7 @@ class AudioCaps(Dataset[Dict[str, Any]]):
                     f"Please use download=True and with_tags=True in dataset constructor."
                 )
 
-            with open(class_labels_indices_fpath, "r") as file:
-                reader = csv.DictReader(file)
-                audioset_classes_data = list(reader)
+            audioset_classes_data = AudioCaps.load_class_labels_indices(self.__root)
 
             with open(unbal_tags_fpath, "r") as file:
                 fieldnames = ("YTID", "start_seconds", "end_seconds", "positive_labels")
