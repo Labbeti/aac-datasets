@@ -309,7 +309,7 @@ class AudioCaps(Dataset[Dict[str, Any]]):
 
     # Public class methods
     @classmethod
-    def load_class_labels_indices(cls, root: str) -> list[dict[str, str]]:
+    def load_class_labels_indices(cls, root: str) -> List[Dict[str, str]]:
         class_labels_indices_fpath = osp.join(
             root,
             f"AUDIOCAPS_{AudioCaps.SAMPLE_RATE}Hz",
