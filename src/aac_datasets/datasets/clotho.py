@@ -345,18 +345,18 @@ class Clotho(Dataset[Dict[str, Any]]):
             )
 
         super().__init__()
-        self.__root = root
-        self.__subset = subset
-        self.__download = download
-        self.__transform = transform
-        self.__flat_captions = flat_captions
-        self.__version = version
-        self.__verbose = verbose
+        self._root = root
+        self._subset = subset
+        self._download = download
+        self._transform = transform
+        self._flat_captions = flat_captions
+        self._version = version
+        self._verbose = verbose
 
-        self.__all_items = {}
-        self.__loaded = False
+        self._all_items = {}
+        self._loaded = False
 
-        if self.__download:
+        if self._download:
             self.__prepare_data()
         self.__load_data()
 
@@ -367,7 +367,7 @@ class Clotho(Dataset[Dict[str, Any]]):
         return [
             field_.name
             for field_ in fields(ClothoItem)
-            if field_.name in self.__all_items or field_.name not in METADATA_KEYS
+            if field_.name in self._all_items or field_.name not in METADATA_KEYS
         ]
 
     @property
@@ -375,8 +375,8 @@ class Clotho(Dataset[Dict[str, Any]]):
         """Return the global dataset info."""
         return {
             "dataset": "clotho",
-            "subset": self.__subset,
-            "version": self.__version,
+            "subset": self._subset,
+            "version": self._version,
         }
 
     @property
@@ -404,8 +404,8 @@ class Clotho(Dataset[Dict[str, Any]]):
         if not isinstance(column, str) and isinstance(column, Iterable):
             return {column_i: self.at(idx, column_i) for column_i in column}
 
-        if isinstance(idx, (int, slice)) and column in self.__all_items.keys():
-            return self.__all_items[column][idx]
+        if isinstance(idx, (int, slice)) and column in self._all_items.keys():
+            return self._all_items[column][idx]
 
         if isinstance(idx, slice):
             idx = range(len(self))[idx]
@@ -457,7 +457,7 @@ class Clotho(Dataset[Dict[str, Any]]):
             return audio_metadata.sample_rate
 
         elif column == "subset":
-            return self.__subset
+            return self._subset
 
         else:
             raise ValueError(
@@ -466,14 +466,14 @@ class Clotho(Dataset[Dict[str, Any]]):
 
     def is_loaded(self) -> bool:
         """Returns True if the dataset is loaded."""
-        return self.__loaded
+        return self._loaded
 
     def set_transform(
         self,
         transform: Optional[Callable[[Dict[str, Any]], Any]],
     ) -> None:
         """Set the transform applied to each row."""
-        self.__transform = transform
+        self._transform = transform
 
     # Magic methods
     def __getitem__(
@@ -490,18 +490,18 @@ class Clotho(Dataset[Dict[str, Any]]):
             column = None
 
         item = self.at(idx, column)
-        if self.__transform is not None:
-            item = self.__transform(item)
+        if self._transform is not None:
+            item = self._transform(item)
         return item
 
     def __len__(self) -> int:
         """
         :return: The number of items in the dataset.
         """
-        return len(self.__all_items["captions"])
+        return len(self._all_items["captions"])
 
     def __repr__(self) -> str:
-        return f"Clotho(size={len(self)}, subset={self.__subset}, num_columns={len(self.column_names)}, version={self.__version})"
+        return f"Clotho(size={len(self)}, subset={self._subset}, num_columns={len(self.column_names)}, version={self._version})"
 
     # Private methods
     @cached_property
@@ -517,7 +517,7 @@ class Clotho(Dataset[Dict[str, Any]]):
         return osp.join(
             self.__dpath_data,
             "clotho_audio_files",
-            CLOTHO_AUDIO_DNAMES[self.__subset],
+            CLOTHO_AUDIO_DNAMES[self._subset],
         )
 
     @cached_property
@@ -526,16 +526,16 @@ class Clotho(Dataset[Dict[str, Any]]):
 
     @cached_property
     def __dpath_data(self) -> str:
-        return osp.join(self.__root, f"CLOTHO_{self.__version}")
+        return osp.join(self._root, f"CLOTHO_{self._version}")
 
     def __is_prepared(self) -> bool:
         if not all(map(osp.isdir, (self.__dpath_audio_subset, self.__dpath_csv))):
             return False
 
-        if Clotho.CAPTIONS_PER_AUDIO[self.__subset] == 0:
+        if Clotho.CAPTIONS_PER_AUDIO[self._subset] == 0:
             return True
 
-        links = CLOTHO_LINKS[self.__version][self.__subset]
+        links = CLOTHO_LINKS[self._version][self._subset]
         captions_fname = links["captions"]["fname"]
         captions_fpath = osp.join(self.__dpath_csv, captions_fname)
         with open(captions_fpath, "r") as file:
@@ -546,11 +546,11 @@ class Clotho(Dataset[Dict[str, Any]]):
     def __load_data(self) -> None:
         if not self.__is_prepared():
             raise RuntimeError(
-                f"Cannot load data: clotho_{self.__subset} is not prepared in data root={self.__root}. Please use download=True in dataset constructor."
+                f"Cannot load data: clotho_{self._subset} is not prepared in data root={self._root}. Please use download=True in dataset constructor."
             )
 
         # Read fpath of .wav audio files
-        links = CLOTHO_LINKS[self.__version][self.__subset]
+        links = CLOTHO_LINKS[self._version][self._subset]
         dpath_audio_subset = self.__dpath_audio_subset
 
         if not osp.isdir(dpath_audio_subset):
@@ -573,13 +573,13 @@ class Clotho(Dataset[Dict[str, Any]]):
             metadata_fpath = osp.join(self.__dpath_csv, metadata_fname)
 
             # Keys: file_name, keywords, sound_id, sound_link, start_end_samples, manufacturer, license
-            if self.__version in ("v2", "v2.1"):
+            if self._version in ("v2", "v2.1"):
                 encoding = "ISO-8859-1"
             else:
                 encoding = None
 
             with open(metadata_fpath, "r", encoding=encoding) as file:
-                delimiter = ";" if self.__subset == "test" else ","
+                delimiter = ";" if self._subset == "test" else ","
                 reader = csv.DictReader(file, delimiter=delimiter)
                 metadata = list(reader)
         else:
@@ -619,7 +619,7 @@ class Clotho(Dataset[Dict[str, Any]]):
             fname = line["file_name"]
             if fname not in fname_to_idx:
                 raise KeyError(
-                    f"Cannot find metadata {fname=} in captions file. (subset={self.__subset})"
+                    f"Cannot find metadata {fname=} in captions file. (subset={self._subset})"
                 )
             idx = fname_to_idx[fname]
             for key in subset_metadata_keys:
@@ -639,7 +639,7 @@ class Clotho(Dataset[Dict[str, Any]]):
                 for keywords in all_items["keywords"]
             ]
 
-        if self.__flat_captions and self.CAPTIONS_PER_AUDIO[self.__subset] > 1:
+        if self._flat_captions and self.CAPTIONS_PER_AUDIO[self._subset] > 1:
             all_infos_unfolded = {key: [] for key in all_items.keys()}
 
             for i, captions in enumerate(all_items["captions"]):
@@ -650,24 +650,24 @@ class Clotho(Dataset[Dict[str, Any]]):
 
             all_items = all_infos_unfolded
 
-        self.__all_items = all_items
-        self.__loaded = True
+        self._all_items = all_items
+        self._loaded = True
 
-        if self.__verbose >= 1:
+        if self._verbose >= 1:
             logger.info(f"{repr(self)} has been loaded. (len={len(self)})")
 
     def __prepare_data(self) -> None:
-        if not osp.isdir(self.__root):
-            raise RuntimeError(f"Cannot find root directory '{self.__root}'.")
+        if not osp.isdir(self._root):
+            raise RuntimeError(f"Cannot find root directory '{self._root}'.")
 
         os.makedirs(self.__dpath_archives, exist_ok=True)
         os.makedirs(self.__dpath_audio, exist_ok=True)
         os.makedirs(self.__dpath_csv, exist_ok=True)
 
-        if self.__verbose >= 1:
-            logger.info(f"Start to download files for clotho_{self.__subset}...")
+        if self._verbose >= 1:
+            logger.info(f"Start to download files for clotho_{self._subset}...")
 
-        links = copy.deepcopy(CLOTHO_LINKS[self.__version][self.__subset])
+        links = copy.deepcopy(CLOTHO_LINKS[self._version][self._subset])
         extensions = ("7z", "csv", "zip")
 
         # Download csv and 7z files
@@ -690,16 +690,16 @@ class Clotho(Dataset[Dict[str, Any]]):
 
             fpath = osp.join(dpath, fname)
             if not osp.isfile(fpath) or self.FORCE_PREPARE_DATA:
-                if self.__verbose >= 1:
+                if self._verbose >= 1:
                     logger.info(f"Download and check file '{fname}' from {url=}...")
 
                 download_url_to_file(
                     url,
                     fpath,
-                    progress=self.__verbose >= 1,
+                    progress=self._verbose >= 1,
                 )
 
-            elif self.__verbose >= 1:
+            elif self._verbose >= 1:
                 logger.info(f"File {fname=} is already extracted.")
 
             with open(fpath, "rb") as file:
@@ -715,7 +715,7 @@ class Clotho(Dataset[Dict[str, Any]]):
             if extension in ("7z", "zip"):
                 fpath = osp.join(self.__dpath_archives, fname)
 
-                if self.__verbose >= 1:
+                if self._verbose >= 1:
                     logger.info(f"Extract archive file {fname=}...")
 
                 if extension == "7z":
@@ -735,7 +735,7 @@ class Clotho(Dataset[Dict[str, Any]]):
                 compressed_fnames = [
                     fname
                     for fname in compressed_fnames
-                    if fname not in ("", CLOTHO_AUDIO_DNAMES[self.__subset])
+                    if fname not in ("", CLOTHO_AUDIO_DNAMES[self._subset])
                 ]
                 extracted_fnames = (
                     os.listdir(self.__dpath_audio_subset)
@@ -770,7 +770,7 @@ class Clotho(Dataset[Dict[str, Any]]):
 
                 if extension in ("7z", "zip"):
                     fpath = osp.join(self.__dpath_audio, fname)
-                    if self.__verbose >= 1:
+                    if self._verbose >= 1:
                         logger.info(f"Removing archive file {osp.basename(fpath)}...")
                     os.remove(fpath)
 

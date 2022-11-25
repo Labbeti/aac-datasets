@@ -6,6 +6,9 @@ All notable changes to this project will be documented in this file.
 ### Added
 - `AudioCaps.load_class_labels_indices` to load AudioSet classes map externally.
 
+### Changed
+- Attributes in datasets classes are now weakly private.
+
 ## [0.3.1] 2022-10-31
 ### Changed
 - AudioCaps, Clotho and MACS order are now defined by their order in the corresponding captions CSV files when available.
