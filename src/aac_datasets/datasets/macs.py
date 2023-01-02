@@ -172,6 +172,11 @@ class MACS(Dataset[Dict[str, Any]]):
             idx = range(len(self))[idx]
 
         if isinstance(idx, Iterable):
+            idx = list(idx)
+            if not all(isinstance(idx_i, int) for idx_i in idx):
+                raise TypeError(
+                    f"Invalid input type for {idx=}. (expected Iterable[int], not Iterable[{idx.__class__.__name__}])"
+                )
             return [self.at(idx_i, column) for idx_i in idx]
 
         if column == "audio":
