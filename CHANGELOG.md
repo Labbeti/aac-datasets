@@ -9,6 +9,9 @@ All notable changes to this project will be documented in this file.
 ### Changed
 - Attributes in datasets classes are now weakly private.
 
+### Fixed
+- Workflow badge with Github changes. (https://github.com/badges/shields/issues/8671)
+
 ## [0.3.1] 2022-10-31
 ### Changed
 - AudioCaps, Clotho and MACS order are now defined by their order in the corresponding captions CSV files when available.
