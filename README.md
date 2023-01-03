@@ -2,14 +2,14 @@
 
 <div align="center">
 
-# Audio Captioning datasets for Pytorch
+# Audio Captioning datasets for PyTorch
 
 <a href="https://www.python.org/"><img alt="Python" src="https://img.shields.io/badge/-Python 3.8+-blue?style=for-the-badge&logo=python&logoColor=white"></a>
 <a href="https://pytorch.org/get-started/locally/"><img alt="PyTorch" src="https://img.shields.io/badge/-PyTorch 1.10.1-ee4c2c?style=for-the-badge&logo=pytorch&logoColor=white"></a>
 <a href="https://black.readthedocs.io/en/stable/"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-black.svg?style=for-the-badge&labelColor=gray"></a>
 <a href="https://github.com/Labbeti/aac-datasets/actions"><img alt="Build" src="https://img.shields.io/github/actions/workflow/status/Labbeti/aac-datasets/python-package-pip.yaml?branch=main&style=for-the-badge&logo=github"></a>
 
-Audio Captioning unofficial datasets source code for **AudioCaps** [[1]](#audiocaps), **Clotho** [[2]](#clotho), and **MACS** [[3]](#macs), designed for Pytorch.
+Audio Captioning unofficial datasets source code for **AudioCaps** [[1]](#audiocaps), **Clotho** [[2]](#clotho), and **MACS** [[3]](#macs), designed for PyTorch.
 
 </div>
 
@@ -32,7 +32,7 @@ audio, captions = item["audio"], item["captions"]
 # captions: list of str captions
 ```
 
-### Build Pytorch dataloader with Clotho
+### Build PyTorch dataloader with Clotho
 
 ```python
 from torch.utils.data.dataloader import DataLoader
@@ -43,8 +43,8 @@ dataset = Clotho(root=".", download=True)
 dataloader = DataLoader(dataset, batch_size=4, collate_fn=BasicCollate())
 
 for batch in dataloader:
-    # batch["audio"]: list of Tensor of shape (n_channels, audio_size)
-    # batch["captions"]: list of list of str
+    # batch["audio"]: list of 4 tensors of shape (n_channels, audio_size)
+    # batch["captions"]: list of 4 lists of str
     ...
 ```
 
@@ -68,7 +68,7 @@ Here is the **train** subset statistics for each dataset :
 | Nb captions per audio | 1 | 5 | 2-5 |
 | Nb captions | 49838 | 19195 | 17275 |
 | Total nb words<sup>2</sup> | 402482 | 217362 | 160006 |
-| Nb words range<sup>2</sup> | 2-52 | 8-20 | 5-40 |
+| Sentence size<sup>2</sup> | 2-52 | 8-20 | 5-40 |
 
 <sup>1</sup> This duration is estimated on the total duration of 46230/49838 files of 126.7h.
 
@@ -124,7 +124,7 @@ If you use this software, please consider cite it as below :
     Labbe_aac-datasets_2022,
     author = {Labbé, Etienne},
     license = {MIT},
-    month = {6},
+    month = {10},
     title = {{aac-datasets}},
     url = {https://github.com/Labbeti/aac-datasets/},
     version = {0.3.1},
