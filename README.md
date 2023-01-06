@@ -25,11 +25,11 @@ pip install aac-datasets
 ```python
 from aac_datasets import Clotho
 
-dataset = Clotho(root=".", subset="dev", download=True)
+dataset = Clotho(root=".", download=True)
 item = dataset[0]
 audio, captions = item["audio"], item["captions"]
 # audio: Tensor of shape (n_channels=1, audio_max_size)
-# captions: list of str captions
+# captions: list of str
 ```
 
 ### Build PyTorch dataloader with Clotho
@@ -99,11 +99,18 @@ AudioCaps.YOUTUBE_DL_PATH = "/my/path/to/youtube_dl"
 dataset = AudioCaps(root=".", download=True)
 ```
 
-## Command line download
+## Download datasets
 To download a dataset, you can use `download=True` argument in dataset construction.
+
 However, if you want to download datasets separately, you can also use the following command :
 ```bash
-python -m aac_datasets.download --root "./data" clotho --version "v2.1"
+aac-datasets-download --root "." clotho --subsets "dev"
+```
+Or use the corresponding function in the code :
+```python
+from aac_datasets.download import download_clotho
+
+download_clotho(root=".", subsets=["dev"])
 ```
 
 ## References
