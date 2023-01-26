@@ -93,4 +93,5 @@ add_module_names = False
 intersphinx_mapping = {
     "python": ("https://docs.python.org/", None),
     "torch": ("https://pytorch.org/docs/master/", None),
+    "torchaudio": ("https://pytorch.org/audio/stable/", None),
 }
