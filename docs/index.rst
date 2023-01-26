@@ -6,24 +6,29 @@
 aac-datasets's documentation
 ========================================
 
+
 .. toctree::
-   :maxdepth: 6
-   :caption: Contents
+   :maxdepth: 2
+   :name: maintoc
 
-   aac_datasets
+   installation
    usage
+   package_tree
 
 
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+.. :ref:`modules_file`
 
 
-External links
-=========================================================
+.. Indices and tables
+.. ==================
 
-* `Github link <https://github.com/Labbeti/aac-datasets>`_
-* `PyPI link <https://pypi.org/project/aac-datasets/>`_
+.. * :ref:`genindex`
+.. * :ref:`modindex`
+.. * :ref:`search`
+
+
+.. External links
+.. =========================================================
+
+.. * `Github link <https://github.com/Labbeti/aac-datasets>`_
+.. * `PyPI link <https://pypi.org/project/aac-datasets/>`_
