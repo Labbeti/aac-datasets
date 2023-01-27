@@ -46,7 +46,7 @@ class AudioCapsItem:
 
 
 class AudioCaps(Dataset[Dict[str, Any]]):
-    r"""Unofficial AudioCaps pytorch dataset.
+    r"""Unofficial AudioCaps PyTorch dataset.
 
     Subsets available are 'train', 'val' and 'test'.
 

@@ -47,7 +47,7 @@ class MACSItem:
 
 
 class MACS(Dataset[Dict[str, Any]]):
-    r"""Unofficial MACS pytorch dataset.
+    r"""Unofficial MACS PyTorch dataset.
 
     .. code-block:: text
         :caption: Dataset folder tree

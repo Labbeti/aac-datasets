@@ -254,7 +254,7 @@ METADATA_KEYS = (
 
 class Clotho(Dataset[Dict[str, Any]]):
     r"""
-    Unofficial Clotho pytorch dataset.
+    Unofficial Clotho PyTorch dataset.
     Subsets available are 'train', 'val', 'eval', 'test' and 'analysis'.
 
     Audio are waveform sounds of 15 to 30 seconds, sampled at 44100 Hz.
