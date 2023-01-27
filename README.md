@@ -131,11 +131,11 @@ If you use this software, please consider cite it as below :
     Labbe_aac-datasets_2022,
     author = {Labbé, Etienne},
     license = {MIT},
-    month = {10},
+    month = {01},
     title = {{aac-datasets}},
     url = {https://github.com/Labbeti/aac-datasets/},
-    version = {0.3.1},
-    year = {2022}
+    version = {0.3.2},
+    year = {2023}
 }
 ```
 
