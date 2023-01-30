@@ -6,24 +6,27 @@
 aac-datasets's documentation
 ========================================
 
+Audio Captioning unofficial datasets source code for **AudioCaps**, **Clotho**, and **MACS**, designed for PyTorch.
+
 .. toctree::
-   :maxdepth: 6
-   :caption: Contents
+   :maxdepth: 2
+   :name: maintoc
 
-   aac_datasets
+   installation
    usage
+   package_tree
 
 
-Indices and tables
-==================
+.. Indices and tables
+.. ==================
 
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+.. * :ref:`genindex`
+.. * :ref:`modindex`
+.. * :ref:`search`
 
 
-External links
-=========================================================
+.. External links
+.. =========================================================
 
-* `Github link <https://github.com/Labbeti/aac-datasets>`_
-* `PyPI link <https://pypi.org/project/aac-datasets/>`_
+.. * `Github link <https://github.com/Labbeti/aac-datasets>`_
+.. * `PyPI link <https://pypi.org/project/aac-datasets/>`_

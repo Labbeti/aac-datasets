@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.2] 2023-01-30
+### Added
+- `AudioCaps.load_class_labels_indices` to load AudioSet classes map externally.
+- Compatibility and tests from Python 3.7 to 3.10.
+
+### Changed
+- Attributes in datasets classes are now weakly private.
+- Documentation theme and descriptions.
+
+### Fixed
+- Workflow badge with Github changes. (https://github.com/badges/shields/issues/8671)
+
 ## [0.3.1] 2022-10-31
 ### Changed
 - AudioCaps, Clotho and MACS order are now defined by their order in the corresponding captions CSV files when available.

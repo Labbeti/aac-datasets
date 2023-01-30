@@ -117,6 +117,6 @@ def _lst_dic_to_dic_lst(
         for item in lst[1:]:
             keys = keys.intersection(item.keys())
     else:
-        raise ValueError(f"Invalid argument {key_mode=}.")
+        raise ValueError(f"Invalid argument key_mode={key_mode}.")
 
     return {key: [item[key] for item in lst] for key in keys}
