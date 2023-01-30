@@ -15,7 +15,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        python-version: [3.7, 3.8, 3.9, 3.10]
+        python-version: ["3.7", "3.8", "3.9", "3.10"]
 
     steps:
     # --- INSTALLATIONS ---
@@ -26,25 +26,29 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
-  
-    - name: Load cache of pip dependencies
-      uses: actions/cache@master
-      id: cache_requirements
-      with:
-        path: ${{ env.pythonLocation }}/lib/python${{ matrix.python-version }}/site-packages/*
-        key: ${{ runner.os }}-pip-${{ hashFiles('setup.cfg') }}
-        restore-keys: |
-          ${{ runner.os }}-pip-
-          ${{ runner.os }}-
+        cache: 'pip'
+        cache-dependency-path: |
+          **/setup.cfg
+          **/requirements.txt
 
-    - name: Install pip dev dependencies + package if needed
-      if: steps.cache_requirements.outputs.cache-hit != 'true'
-      run: |
-        python -m pip install --upgrade pip
-        python -m pip install -e .[dev]
+    # - name: Load cache of pip dependencies
+    #   uses: actions/cache@master
+    #   id: cache_requirements
+    #   with:
+    #     path: ${{ env.pythonLocation }}/lib/python${{ matrix.python-version }}/site-packages/*
+    #     key: ${{ runner.os }}-pip-${{ hashFiles('setup.cfg') }}
+    #     restore-keys: |
+    #       ${{ runner.os }}-pip-
+    #       ${{ runner.os }}-
+
+    # - name: Install pip dev dependencies + package if needed
+    #   if: steps.cache_requirements.outputs.cache-hit != 'true'
+    #   run: |
+    #     python -m pip install --upgrade pip
+    #     python -m pip install -e .[dev]
 
     - name: Install package if needed
-      if: steps.cache_requirements.outputs.cache-hit == 'true'
+      # if: steps.cache_requirements.outputs.cache-hit == 'true'
       run: |
         python -m pip install -e . --no-dependencies
 
