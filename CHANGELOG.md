@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.3.2] UNRELEASED
+## [0.3.2] 2023-01-30
 ### Added
 - `AudioCaps.load_class_labels_indices` to load AudioSet classes map externally.
 - Compatibility with Python 3.7.
