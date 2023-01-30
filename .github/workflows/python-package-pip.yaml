@@ -27,9 +27,9 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
         cache: 'pip'
-        cache-dependency-path: |
-          **/setup.cfg
-          **/requirements-dev.txt
+        # cache-dependency-path: |
+        #   **/setup.cfg
+        #   **/requirements-dev.txt
 
     # - name: Load cache of pip dependencies
     #   uses: actions/cache@master
@@ -50,7 +50,8 @@ jobs:
     - name: Install package if needed
       # if: steps.cache_requirements.outputs.cache-hit == 'true'
       run: |
-        python -m pip install -e . --no-dependencies
+        python -m pip install -e .
+      #  --no-dependencies
 
     - name: Install soundfile
       run: |
