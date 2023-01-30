@@ -10,7 +10,7 @@ import sys
 import time
 
 from dataclasses import dataclass, field, fields
-from functools import cached_property
+from functools import lru_cache
 from subprocess import CalledProcessError
 from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, Union
 
@@ -130,7 +130,7 @@ class AudioCaps(Dataset[Dict[str, Any]]):
         """
         if subset not in AudioCaps.SUBSETS:
             raise ValueError(
-                f"Invalid argument {subset=} for AudioCaps. (expected one of {AudioCaps.SUBSETS})"
+                f"Invalid argument subset={subset} for AudioCaps. (expected one of {AudioCaps.SUBSETS})"
             )
 
         super().__init__()
@@ -208,7 +208,7 @@ class AudioCaps(Dataset[Dict[str, Any]]):
             idx = list(idx)
             if not all(isinstance(idx_i, int) for idx_i in idx):
                 raise TypeError(
-                    f"Invalid input type for {idx=}. (expected Iterable[int], not Iterable[{idx.__class__.__name__}])"
+                    f"Invalid input type for idx={idx}. (expected Iterable[int], not Iterable[{idx.__class__.__name__}])"
                 )
             return [self.at(idx_i, column) for idx_i in idx]
 
@@ -221,11 +221,11 @@ class AudioCaps(Dataset[Dict[str, Any]]):
             # Sanity check
             if audio.nelement() == 0:
                 raise RuntimeError(
-                    f"Invalid audio number of elements in {fpath}. (expected {audio.nelement()=} > 0)"
+                    f"Invalid audio number of elements in '{fpath}'. (expected audio.nelements()={audio.nelement()} > 0)"
                 )
             if sr != self.SAMPLE_RATE:
                 raise RuntimeError(
-                    f"Invalid sample rate in {fpath}. (expected {self.SAMPLE_RATE} but found {sr=})"
+                    f"Invalid sample rate in '{fpath}'. (expected {self.SAMPLE_RATE} but found sr={sr})"
                 )
             return audio
 
@@ -270,7 +270,7 @@ class AudioCaps(Dataset[Dict[str, Any]]):
 
         else:
             raise ValueError(
-                f"Invalid argument {column=} at {idx=}. (expected one of {tuple(self.column_names)})"
+                f"Invalid argument column={column} at idx={idx}. (expected one of {tuple(self.column_names)})"
             )
 
     def is_loaded(self) -> bool:
@@ -346,7 +346,8 @@ class AudioCaps(Dataset[Dict[str, Any]]):
 
         return True
 
-    @cached_property
+    @property
+    @lru_cache()
     def __dpath_audio_subset(self) -> str:
         return osp.join(
             self.__dpath_data,
@@ -354,7 +355,8 @@ class AudioCaps(Dataset[Dict[str, Any]]):
             self._subset,
         )
 
-    @cached_property
+    @property
+    @lru_cache()
     def __dpath_data(self) -> str:
         return osp.join(self._root, f"AUDIOCAPS_{AudioCaps.SAMPLE_RATE}Hz")
 
@@ -497,7 +499,8 @@ class AudioCaps(Dataset[Dict[str, Any]]):
             "fname": fnames_lst,
             "tags": all_tags_lst,
             "is_on_disk": is_on_disk_lst,
-        } | all_caps_dic
+        }
+        all_items.update(all_caps_dic)
 
         # Convert audiocaps_ids and start_time to ints
         all_items["audiocaps_ids"] = [
@@ -651,7 +654,7 @@ class AudioCaps(Dataset[Dict[str, Any]]):
                 else:
                     if self._verbose >= 2:
                         logger.debug(
-                            f'[{audiocap_id:6s}] File "{youtube_id}" is already downloaded but it is not verified due to {self.VERIFY_FILES=}.'
+                            f'[{audiocap_id:6s}] File "{youtube_id}" is already downloaded but it is not verified due to self.VERIFY_FILES={self.VERIFY_FILES}.'
                         )
                     n_already_ok += 1
 

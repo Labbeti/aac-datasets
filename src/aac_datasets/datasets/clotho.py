@@ -8,7 +8,7 @@ import os
 import os.path as osp
 
 from dataclasses import dataclass, field, fields
-from functools import cached_property
+from functools import lru_cache
 from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, Union
 from zipfile import ZipFile
 
@@ -336,12 +336,13 @@ class Clotho(Dataset[Dict[str, Any]]):
         """
         if version not in Clotho.VERSIONS:
             raise ValueError(
-                f"Invalid Clotho argument {version=}. Must be one of {Clotho.VERSIONS}."
+                f"Invalid Clotho argument version={version}. Must be one of {Clotho.VERSIONS}."
             )
 
-        if subset not in CLOTHO_LINKS[version].keys():
+        subsets = tuple(CLOTHO_LINKS[version].keys())
+        if subset not in subsets:
             raise ValueError(
-                f"Invalid Clotho argument {subset=} for {version=}. Must be one of {tuple(CLOTHO_LINKS[version].keys())}."
+                f"Invalid Clotho argument subset={subset} for version={version}. Must be one of {subsets}."
             )
 
         super().__init__()
@@ -414,7 +415,7 @@ class Clotho(Dataset[Dict[str, Any]]):
             idx = list(idx)
             if not all(isinstance(idx_i, int) for idx_i in idx):
                 raise TypeError(
-                    f"Invalid input type for {idx=}. (expected Iterable[int], not Iterable[{idx.__class__.__name__}])"
+                    f"Invalid input type for idx={idx}. (expected Iterable[int], not Iterable[{idx.__class__.__name__}])"
                 )
             return [self.at(idx_i, column) for idx_i in idx]
 
@@ -425,11 +426,11 @@ class Clotho(Dataset[Dict[str, Any]]):
             # Sanity check
             if audio.nelement() == 0:
                 raise RuntimeError(
-                    f"Invalid audio number of elements in {fpath}. (expected {audio.nelement()=} > 0)"
+                    f"Invalid audio number of elements in {fpath}. (expected audio.nelement()={audio.nelement()} > 0)"
                 )
             if sr != self.SAMPLE_RATE:
                 raise RuntimeError(
-                    f"Invalid sample rate in {fpath}. (expected {self.SAMPLE_RATE} but found {sr=})"
+                    f"Invalid sample rate in {fpath}. (expected {self.SAMPLE_RATE} but found sr={sr})"
                 )
             return audio
 
@@ -466,7 +467,7 @@ class Clotho(Dataset[Dict[str, Any]]):
 
         else:
             raise ValueError(
-                f"Invalid argument {column=} at {idx=}. (expected one of {tuple(self.column_names)})"
+                f"Invalid argument column={column} at idx={idx}. (expected one of {tuple(self.column_names)})"
             )
 
     def is_loaded(self) -> bool:
@@ -509,15 +510,18 @@ class Clotho(Dataset[Dict[str, Any]]):
         return f"Clotho(size={len(self)}, subset={self._subset}, num_columns={len(self.column_names)}, version={self._version})"
 
     # Private methods
-    @cached_property
+    @property
+    @lru_cache()
     def __dpath_archives(self) -> str:
         return osp.join(self.__dpath_data, "archives")
 
-    @cached_property
+    @property
+    @lru_cache()
     def __dpath_audio(self) -> str:
         return osp.join(self.__dpath_data, "clotho_audio_files")
 
-    @cached_property
+    @property
+    @lru_cache()
     def __dpath_audio_subset(self) -> str:
         return osp.join(
             self.__dpath_data,
@@ -525,11 +529,13 @@ class Clotho(Dataset[Dict[str, Any]]):
             CLOTHO_AUDIO_DNAMES[self._subset],
         )
 
-    @cached_property
+    @property
+    @lru_cache()
     def __dpath_csv(self) -> str:
         return osp.join(self.__dpath_data, "clotho_csv_files")
 
-    @cached_property
+    @property
+    @lru_cache()
     def __dpath_data(self) -> str:
         return osp.join(self._root, f"CLOTHO_{self._version}")
 
@@ -624,7 +630,7 @@ class Clotho(Dataset[Dict[str, Any]]):
             fname = line["file_name"]
             if fname not in fname_to_idx:
                 raise KeyError(
-                    f"Cannot find metadata {fname=} in captions file. (subset={self._subset})"
+                    f"Cannot find metadata fname={fname} in captions file. (subset={self._subset})"
                 )
             idx = fname_to_idx[fname]
             for key in subset_metadata_keys:
@@ -635,7 +641,8 @@ class Clotho(Dataset[Dict[str, Any]]):
         all_items = {
             "fname": fnames_lst,
             "captions": all_captions_lst,
-        } | all_metadata_dic
+        }
+        all_items.update(all_metadata_dic)
 
         if "keywords" in all_items:
             # Split keywords into list[str]
@@ -690,13 +697,13 @@ class Clotho(Dataset[Dict[str, Any]]):
                 dpath = self.__dpath_csv
             else:
                 raise RuntimeError(
-                    f"Found invalid {extension=}. Must be one of {extensions}."
+                    f"Found invalid extension={extension}. Must be one of {extensions}."
                 )
 
             fpath = osp.join(dpath, fname)
             if not osp.isfile(fpath) or self.FORCE_PREPARE_DATA:
                 if self._verbose >= 1:
-                    logger.info(f"Download and check file '{fname}' from {url=}...")
+                    logger.info(f"Download and check file '{fname}' from url={url}...")
 
                 download_url_to_file(
                     url,
@@ -705,7 +712,7 @@ class Clotho(Dataset[Dict[str, Any]]):
                 )
 
             elif self._verbose >= 1:
-                logger.info(f"File {fname=} is already extracted.")
+                logger.info(f"File fname={fname} is already extracted.")
 
             with open(fpath, "rb") as file:
                 valid = validate_file(file, hash_value, hash_type="md5")
@@ -721,7 +728,7 @@ class Clotho(Dataset[Dict[str, Any]]):
                 fpath = osp.join(self.__dpath_archives, fname)
 
                 if self._verbose >= 1:
-                    logger.info(f"Extract archive file {fname=}...")
+                    logger.info(f"Extract archive file fname={fname}...")
 
                 if extension == "7z":
                     archive_file = SevenZipFile(fpath)
@@ -765,7 +772,7 @@ class Clotho(Dataset[Dict[str, Any]]):
 
             else:
                 logger.error(
-                    f"Found unexpected {extension=} for downloaded file '{fname}'. Expected one of {extensions}."
+                    f"Found unexpected extension={extension} for downloaded file '{fname}'. Expected one of {extensions}."
                 )
 
         if self.CLEAN_ARCHIVES:

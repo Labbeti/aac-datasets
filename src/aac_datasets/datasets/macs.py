@@ -10,7 +10,7 @@ import shutil
 import zipfile
 
 from dataclasses import dataclass, field, fields
-from functools import cached_property
+from functools import lru_cache
 from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, Union
 
 import torch
@@ -107,7 +107,7 @@ class MACS(Dataset[Dict[str, Any]]):
         """
         if subset not in self.SUBSETS:
             raise ValueError(
-                f"Invalid argument {subset=} for MACS. (expected one of {self.SUBSETS})"
+                f"Invalid argument subset={subset} for MACS. (expected one of {self.SUBSETS})"
             )
 
         super().__init__()
@@ -175,7 +175,7 @@ class MACS(Dataset[Dict[str, Any]]):
             idx = list(idx)
             if not all(isinstance(idx_i, int) for idx_i in idx):
                 raise TypeError(
-                    f"Invalid input type for {idx=}. (expected Iterable[int], not Iterable[{idx.__class__.__name__}])"
+                    f"Invalid input type for idx={idx}. (expected Iterable[int], not Iterable[{idx.__class__.__name__}])"
                 )
             return [self.at(idx_i, column) for idx_i in idx]
 
@@ -186,11 +186,11 @@ class MACS(Dataset[Dict[str, Any]]):
             # Sanity check
             if audio.nelement() == 0:
                 raise RuntimeError(
-                    f"Invalid audio number of elements in {fpath}. (expected {audio.nelement()=} > 0)"
+                    f"Invalid audio number of elements in {fpath}. (expected audio.nelement()={audio.nelement()} > 0)"
                 )
             if sr != self.SAMPLE_RATE:
                 raise RuntimeError(
-                    f"Invalid sample rate in {fpath}. (expected {self.SAMPLE_RATE} but found {sr=})"
+                    f"Invalid sample rate in {fpath}. (expected {self.SAMPLE_RATE} but found sr={sr})"
                 )
             return audio
 
@@ -232,7 +232,7 @@ class MACS(Dataset[Dict[str, Any]]):
 
         else:
             raise ValueError(
-                f"Invalid argument {column=} at {idx=}. (expected one of {tuple(self.column_names)})"
+                f"Invalid argument column={column} at idx={idx}. (expected one of {tuple(self.column_names)})"
             )
 
     def get_annotator_id_to_competence_dict(self) -> Dict[int, float]:
@@ -281,19 +281,23 @@ class MACS(Dataset[Dict[str, Any]]):
         return f"MACS(size={len(self)}, subset={self._subset}, num_columns={len(self.column_names)})"
 
     # Private methods
-    @cached_property
+    @property
+    @lru_cache()
     def __dpath_archives(self) -> str:
         return osp.join(self.__dpath_data, "archives")
 
-    @cached_property
+    @property
+    @lru_cache()
     def __dpath_audio(self) -> str:
         return osp.join(self.__dpath_data, "audio")
 
-    @cached_property
+    @property
+    @lru_cache()
     def __dpath_data(self) -> str:
         return osp.join(self._root, "MACS")
 
-    @cached_property
+    @property
+    @lru_cache()
     def __dpath_tau_meta(self) -> str:
         return osp.join(self.__dpath_data, "tau_meta")
 
@@ -372,9 +376,10 @@ class MACS(Dataset[Dict[str, Any]]):
 
         # Store TAU Urban acoustic scenes data
         tau_additional_keys = ("scene_label", "identifier")
-        all_items |= {
-            key: [None for _ in range(dataset_size)] for key in tau_additional_keys
-        }
+        all_items.update(
+            {key: [None for _ in range(dataset_size)] for key in tau_additional_keys}
+        )
+
         tau_meta_fpath = osp.join(self.__dpath_tau_meta, "meta.csv")
         for tau_tags in tau_tags_data:
             fname = osp.basename(tau_tags["filename"])
@@ -478,7 +483,7 @@ class MACS(Dataset[Dict[str, Any]]):
 
             if self._verbose >= 2:
                 logger.debug(
-                    f"Check to extract TAU Urban acoustic scenes archive {zip_fname=}..."
+                    f"Check to extract TAU Urban acoustic scenes archive zip_fname={zip_fname}..."
                 )
 
             is_audio_archive = name.startswith("audio")
