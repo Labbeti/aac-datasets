@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 ## [0.3.2] UNRELEASED
 ### Added
 - `AudioCaps.load_class_labels_indices` to load AudioSet classes map externally.
+- Compatibility with Python 3.7.
 
 ### Changed
 - Attributes in datasets classes are now weakly private.
