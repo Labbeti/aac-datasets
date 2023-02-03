@@ -1,12 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, TypeVar, Union
 
 import torch
 
 from torch import Tensor
 from torch.nn import functional as F
+
+
+T = TypeVar("T")
 
 
 class BasicCollate:
@@ -55,10 +58,11 @@ class AdvancedCollate:
             if key in self.fill_values:
                 values = list(map(torch.as_tensor, values))
 
-            are_tensors = [isinstance(value, Tensor) for value in values]
-            if not all(are_tensors):
-                batch_dic[key] = values
-                continue
+            else:
+                are_tensors = [isinstance(value, Tensor) for value in values]
+                if not all(are_tensors):
+                    batch_dic[key] = values
+                    continue
 
             are_stackables = [value.shape == values[0].shape for value in values]
             if all(are_stackables):
@@ -97,8 +101,9 @@ def pad_last_dim(tensor: Tensor, target_length: int, pad_value: float) -> Tensor
 
 
 def _lst_dic_to_dic_lst(
-    lst: List[Dict[str, Any]], key_mode: str = "intersect"
-) -> Dict[str, List[Any]]:
+    lst: List[Dict[str, T]],
+    key_mode: str = "intersect",
+) -> Dict[str, List[T]]:
     """Convert list of dicts to dict of lists.
 
     :param lst: The list of dict to merge.
