@@ -121,7 +121,7 @@ class AudioCaps(Dataset[Dict[str, Any]]):
             defaults to True.
         :param verbose: Verbose level.
             defaults to 0.
-        :param exclude_removed_audio: If True, the dataset will return exclude from the dataset the audio not downloaded from youtube (i.e. not present on disk).
+        :param exclude_removed_audio: If True, the dataset will exclude from the dataset the audio not downloaded from youtube (i.e. not present on disk).
             If False, invalid audios will return an empty tensor of shape (0,).
             defaults to True.
         :param with_tags: If True, load the tags from AudioSet dataset.
