@@ -270,7 +270,7 @@ class MACS(Dataset[Dict[str, Any]]):
             column = None
 
         item = self.at(idx, column)
-        if self._transform is not None:
+        if isinstance(idx, int) and self._transform is not None:
             item = self._transform(item)
         return item
 
