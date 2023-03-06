@@ -57,7 +57,7 @@ Here is the statistics for each dataset :
 | | AudioCaps | Clotho | MACS |
 |:---:|:---:|:---:|:---:|
 | Subset(s) | train, val, test | dev, val, eval, test, analysis | full |
-| Sample rate (Hz) | 32 000 | 44 100 | 48 000 |
+| Sample rate (Hz) | 32,000 | 44,100 | 48,000 |
 | Estimated size (GB) | 43 | 27 | 13 |
 | Audio source | AudioSet (youtube) | Freesound | TAU Urban Acoustic Scenes 2019 |
 
@@ -65,12 +65,12 @@ Here is the **train** subset statistics for each dataset :
 
 | | AudioCaps/train | Clotho/dev | MACS/full |
 |:---:|:---:|:---:|:---:|
-| Nb audios | 49 838 | 3 840 | 3 930 |
+| Nb audios | 49,838 | 3,840 | 3,930 |
 | Total audio duration | 136.6h<sup>1</sup> | 24.0h | 10.9h |
 | Audio duration range | 0.5-10s | 15-30s | 10s |
 | Nb captions per audio | 1 | 5 | 2-5 |
-| Nb captions | 49 838 | 19 195 | 17 275 |
-| Total nb words<sup>2</sup> | 402 482 | 217 362 | 160 006 |
+| Nb captions | 49,838 | 19,195 | 17,275 |
+| Total nb words<sup>2</sup> | 402,482 | 217,362 | 160,006 |
 | Sentence size<sup>2</sup> | 2-52 | 8-20 | 5-40 |
 
 <sup>1</sup> This duration is estimated on the total duration of 46230/49838 files of 126.7h.
