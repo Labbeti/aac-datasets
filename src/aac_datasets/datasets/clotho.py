@@ -339,6 +339,12 @@ class Clotho(Dataset[Dict[str, Any]]):
                 f"Invalid Clotho argument version={version}. Must be one of {Clotho.VERSIONS}."
             )
 
+        if version == "v2":
+            logger.warning(
+                f"The version '{version}' of the Clotho dataset contains minor some errors in file names and few corrupted files."
+                f"Please consider using the fixed version 'v2.1'."
+            )
+
         subsets = tuple(CLOTHO_LINKS[version].keys())
         if subset not in subsets:
             raise ValueError(
