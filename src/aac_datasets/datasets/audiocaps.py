@@ -320,6 +320,11 @@ class AudioCaps(Dataset[Dict[str, Any]]):
             f"AUDIOCAPS_{AudioCaps.SAMPLE_RATE}Hz",
             AUDIOSET_LINKS["class_labels_indices"]["fname"],
         )
+        if not osp.isfile(class_labels_indices_fpath):
+            raise ValueError(
+                f"Cannot find class_labels_indices file in {root=}. Maybe use AudioCaps(root, download=True, with_tags=True) before or use a different root directory."
+            )
+
         with open(class_labels_indices_fpath, "r") as file:
             reader = csv.DictReader(file)
             audioset_classes_data = list(reader)
