@@ -322,7 +322,8 @@ class AudioCaps(Dataset[Dict[str, Any]]):
         )
         if not osp.isfile(class_labels_indices_fpath):
             raise ValueError(
-                f"Cannot find class_labels_indices file in {root=}. Maybe use AudioCaps(root, download=True, with_tags=True) before or use a different root directory."
+                f"Cannot find class_labels_indices file in root='{root}'."
+                f"Maybe use AudioCaps(root, download=True, with_tags=True) before or use a different root directory."
             )
 
         with open(class_labels_indices_fpath, "r") as file:
