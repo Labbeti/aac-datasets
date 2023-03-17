@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 - Python minimal version in README and setup.cfg.
 - Transform applied in `getitem` method when argument is not an integer.
+- Incompatibility with `torchaudio>=2.0`.
 
 ## [0.3.2] 2023-01-30
 ### Added
