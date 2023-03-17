@@ -19,7 +19,8 @@ from py7zr import SevenZipFile
 from torch import Tensor
 from torch.hub import download_url_to_file
 from torch.utils.data.dataset import Dataset
-from torchaudio.datasets.utils import validate_file
+
+from aac_datasets.utils.download import validate_file
 
 
 logger = logging.getLogger(__name__)
@@ -720,8 +721,7 @@ class Clotho(Dataset[Dict[str, Any]]):
             elif self._verbose >= 1:
                 logger.info(f"File fname={fname} is already extracted.")
 
-            with open(fpath, "rb") as file:
-                valid = validate_file(file, hash_value, hash_type="md5")
+            valid = validate_file(fpath, hash_value, hash_type="md5")
             if not valid:
                 raise RuntimeError(f"Invalid checksum for file {fname}.")
 
