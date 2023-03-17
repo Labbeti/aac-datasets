@@ -3,9 +3,6 @@
 All notable changes to this project will be documented in this file.
 
 ## [0.3.3] UNRELEASED
-### Added
-- DCASE challenge export utilities in `utils/dcase.py`.
-
 ### Fixed
 - Python minimal version in README and setup.cfg.
 - Transform applied in `getitem` method when argument is not an integer.
