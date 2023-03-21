@@ -59,7 +59,7 @@ Here is the statistics for each dataset :
 | Subset(s) | train, val, test | dev, val, eval, test, analysis | full |
 | Sample rate (Hz) | 32,000 | 44,100 | 48,000 |
 | Estimated size (GB) | 43 | 27 | 13 |
-| Audio source | AudioSet (youtube) | Freesound | TAU Urban Acoustic Scenes 2019 |
+| Audio source | AudioSet (YouTube) | Freesound | TAU Urban Acoustic Scenes 2019 |
 
 Here is the **train** subset statistics for each dataset :
 
