@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [0.3.3] UNRELEASED
 ### Fixed
-- Python minimal version in README and setup.cfg.
+- Python minimal version in README and pyproject.toml.
 - Transform applied in `getitem` method when argument is not an integer.
 - Incompatibility with `torchaudio>=2.0`.
 
