@@ -3,7 +3,7 @@ name = "aac-datasets"
 authors = [
     {name = "Etienne Labbé (Labbeti)", email = "labbeti.pub@gmail.com"},
 ]
-description = "Audio Captioning datasets for Pytorch."
+description = "Audio Captioning datasets for PyTorch."
 readme = "README.md"
 requires-python = ">=3.7"
 keywords = ["audio", "deep-learning", "pytorch", "dataset", "caption", "datasets", "captioning", "audio-captioning"]
