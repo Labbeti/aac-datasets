@@ -11,7 +11,9 @@ HASH_TYPES = ("sha256", "md5")
 
 
 def validate_file(
-    fpath: Union[str, Path], hash_value: str, hash_type: str = "sha256"
+    fpath: Union[str, Path],
+    hash_value: str,
+    hash_type: str = "sha256",
 ) -> bool:
     """Validate a given file object with its hash.
 
@@ -26,6 +28,7 @@ def validate_file(
 
 
 def _hash_file(fpath: Union[str, Path], hash_type: str, chunk_size: int = 1028) -> str:
+    """Return the hash value for a file."""
     if hash_type == "sha256":
         hasher = hashlib.sha256()
     elif hash_type == "md5":
@@ -40,7 +43,7 @@ def _hash_file(fpath: Union[str, Path], hash_type: str, chunk_size: int = 1028) 
         while is_valid_chunk:
             chunk = file.read(chunk_size)
             hasher.update(chunk)
-            is_valid_chunk = bool(is_valid_chunk)
+            is_valid_chunk = bool(chunk)
 
     hash_value = hasher.hexdigest()
     return hash_value
