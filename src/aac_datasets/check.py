@@ -2,11 +2,13 @@
 # -*- coding: utf-8 -*-
 
 import logging
+import os.path as osp
 import sys
 
 from argparse import ArgumentParser, Namespace
 from typing import Dict, Iterable
 
+import tqdm
 import yaml
 
 from aac_datasets.datasets.audiocaps import AudioCaps
@@ -38,25 +40,46 @@ def check_directory(
         (ds_name, class_) for ds_name, class_ in data_infos if ds_name in datasets
     ]
 
-    valid_datasubsets = {}
+    if verbose >= 1:
+        logger.info(f"Start searching datasets in root='{root}'.")
+
+    all_found_dsets = {}
     for ds_name, ds_class in data_infos:
         if verbose >= 1:
-            logger.info(f"Searching for {ds_name} in root='{root}'...")
+            logger.info(f"Searching for {ds_name}...")
 
-        valid_subsets = {}
+        found_dsets = {}
         for subset in ds_class.SUBSETS:
             try:
                 ds = ds_class(root, subset, verbose=0)
-                valid_subsets[subset] = len(ds)
+                found_dsets[subset] = ds
 
             except RuntimeError:
                 if verbose >= 2:
                     logger.info(f"Cannot find {ds_name}_{subset}.")
 
-        if len(valid_subsets) > 0:
-            valid_datasubsets[ds_name] = valid_subsets
+        if len(found_dsets) > 0:
+            all_found_dsets[ds_name] = found_dsets
 
-    return valid_datasubsets
+    if verbose >= 1:
+        logger.info(
+            f"Checking if audio files exists for {len(all_found_dsets)} datasets..."
+        )
+
+    for ds_name, dsets in all_found_dsets.items():
+        for subset, ds in dsets.items():
+            fpaths = ds[:, "fpath"]
+            is_valid = [osp.isfile(fpath) for fpath in fpaths]
+            if not all(is_valid):
+                logger.error(f"Cannot find all audio files for {ds_name}.{subset}.")
+            else:
+                logger.info(f"Dataset {ds_name}.{subset} is valid.")
+
+    all_valids_lens = {
+        ds_name: {subset: len(ds) for subset, ds in dsets.items()}
+        for ds_name, dsets in all_found_dsets.items()
+    }
+    return all_valids_lens
 
 
 def _get_main_check_args() -> Namespace:
