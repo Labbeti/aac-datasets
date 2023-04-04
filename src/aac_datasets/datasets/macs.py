@@ -24,7 +24,7 @@ from torch.utils.data.dataset import Dataset
 from aac_datasets.utils.download import validate_file
 
 
-logger = logging.getLogger(__name__)
+pylog = logging.getLogger(__name__)
 
 
 @dataclass
@@ -325,7 +325,7 @@ class MACS(Dataset[Dict[str, Any]]):
         captions_fname = MACS_FILES["captions"]["fname"]
         captions_fpath = osp.join(self.__dpath_data, captions_fname)
         if self._verbose >= 2:
-            logger.debug(f"Reading captions file {captions_fname}...")
+            pylog.debug(f"Reading captions file {captions_fname}...")
 
         with open(captions_fpath, "r") as file:
             caps_data = yaml.safe_load(file)
@@ -333,7 +333,7 @@ class MACS(Dataset[Dict[str, Any]]):
         tau_meta_fname = "meta.csv"
         tau_meta_fpath = osp.join(self.__dpath_tau_meta, tau_meta_fname)
         if self._verbose >= 2:
-            logger.debug(
+            pylog.debug(
                 f"Reading Tau Urban acoustic scene meta file {tau_meta_fname}..."
             )
 
@@ -344,7 +344,7 @@ class MACS(Dataset[Dict[str, Any]]):
         competence_fname = "MACS_competence.csv"
         competence_fpath = osp.join(self.__dpath_data, competence_fname)
         if self._verbose >= 2:
-            logger.debug(f"Reading file {competence_fname}...")
+            pylog.debug(f"Reading file {competence_fname}...")
 
         with open(competence_fpath, "r") as file:
             reader = csv.DictReader(file, delimiter="\t")
@@ -413,7 +413,7 @@ class MACS(Dataset[Dict[str, Any]]):
         self._loaded = True
 
         if self._verbose >= 1:
-            logger.info(f"{repr(self)} has been loaded. (len={len(self)})")
+            pylog.info(f"{repr(self)} has been loaded. (len={len(self)})")
 
     def __prepare_data(self) -> None:
         if not osp.isdir(self._root):
@@ -431,7 +431,7 @@ class MACS(Dataset[Dict[str, Any]]):
 
             if not osp.isfile(fpath) or self.FORCE_PREPARE_DATA:
                 if self._verbose >= 1:
-                    logger.info(f"Downloading captions file '{fname}'...")
+                    pylog.info(f"Downloading captions file '{fname}'...")
 
                 url = file_info["url"]
                 download_url_to_file(
@@ -458,7 +458,7 @@ class MACS(Dataset[Dict[str, Any]]):
 
             if not osp.isfile(zip_fpath) or self.FORCE_PREPARE_DATA:
                 if self._verbose >= 1:
-                    logger.info(
+                    pylog.info(
                         f"Downloading audio zip file '{zip_fpath}'... ({i+1}/{len(MACS_ARCHIVES_FILES)})"
                     )
 
@@ -481,7 +481,7 @@ class MACS(Dataset[Dict[str, Any]]):
             zip_fpath = osp.join(self.__dpath_archives, zip_fname)
 
             if self._verbose >= 2:
-                logger.debug(
+                pylog.debug(
                     f"Check to extract TAU Urban acoustic scenes archive zip_fname={zip_fname}..."
                 )
 
@@ -502,7 +502,7 @@ class MACS(Dataset[Dict[str, Any]]):
                 ]
 
                 if self._verbose >= 1:
-                    logger.info(
+                    pylog.info(
                         f"Extracting {len(members_to_extract)}/{len(file.namelist())} audio files from ZIP file '{zip_fname}'... ({i+1}/{len(MACS_ARCHIVES_FILES)})"
                     )
 
@@ -515,7 +515,7 @@ class MACS(Dataset[Dict[str, Any]]):
 
         if self.CLEAN_ARCHIVES:
             if self._verbose >= 1:
-                logger.info(f"Removing archives files in {self.__dpath_archives}...")
+                pylog.info(f"Removing archives files in {self.__dpath_archives}...")
             shutil.rmtree(self.__dpath_archives, ignore_errors=True)
 
         audio_fnames = [
@@ -524,7 +524,7 @@ class MACS(Dataset[Dict[str, Any]]):
         assert len(audio_fnames) == len(macs_fnames)
 
         if self._verbose >= 1:
-            logger.info(
+            pylog.info(
                 f"{len(audio_fnames)} audio files has been prepared for MACS dataset."
             )
 

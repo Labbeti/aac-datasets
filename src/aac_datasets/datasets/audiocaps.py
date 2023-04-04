@@ -23,7 +23,7 @@ from torch.hub import download_url_to_file
 from torch.utils.data.dataset import Dataset
 
 
-logger = logging.getLogger(__name__)
+pylog = logging.getLogger(__name__)
 
 
 @dataclass
@@ -337,17 +337,17 @@ class AudioCaps(Dataset[Dict[str, Any]]):
             audio, sr = torchaudio.load(fpath)  # type: ignore
         except RuntimeError:
             message = f'Found file "{fpath}" already downloaded but it is invalid (cannot load). It will be removed.'
-            logger.error(message)
+            pylog.error(message)
             return False
 
         if audio.nelement() == 0:
             message = f'Found file "{fpath}" already downloaded but it is invalid (empty audio). It will be removed.'
-            logger.error(message)
+            pylog.error(message)
             return False
 
         if sr != self.SAMPLE_RATE:
             message = f'Found file "{fpath}" already downloaded but it is invalid (invalid sr={sr} != {self.SAMPLE_RATE}). It will be removed.'
-            logger.error(message)
+            pylog.error(message)
             return False
 
         return True
@@ -529,7 +529,7 @@ class AudioCaps(Dataset[Dict[str, Any]]):
         self._loaded = True
 
         if self._verbose >= 1:
-            logger.info(f"{repr(self)} has been loaded. (len={len(self)})")
+            pylog.info(f"{repr(self)} has been loaded. (len={len(self)})")
 
     def __prepare_data(self) -> None:
         if not osp.isdir(self._root):
@@ -542,9 +542,7 @@ class AudioCaps(Dataset[Dict[str, Any]]):
                 stderr=subprocess.DEVNULL,
             )
         except (CalledProcessError, PermissionError, FileNotFoundError) as err:
-            logger.error(
-                f"Cannot use youtube-dl path '{self.YOUTUBE_DL_PATH}'. ({err})"
-            )
+            pylog.error(f"Cannot use youtube-dl path '{self.YOUTUBE_DL_PATH}'. ({err})")
             raise err
 
         try:
@@ -554,7 +552,7 @@ class AudioCaps(Dataset[Dict[str, Any]]):
                 stderr=subprocess.DEVNULL,
             )
         except (CalledProcessError, PermissionError, FileNotFoundError) as err:
-            logger.error(f"Cannot use ffmpeg path '{self.FFMPEG_PATH}'. ({err})")
+            pylog.error(f"Cannot use ffmpeg path '{self.FFMPEG_PATH}'. ({err})")
             raise err
 
         if self.__is_prepared() and not self.FORCE_PREPARE_DATA:
@@ -586,7 +584,7 @@ class AudioCaps(Dataset[Dict[str, Any]]):
                     level=logging.INFO,
                     force=True,
                 )
-            logger.info(f"Start downloading files for {self._subset} AudioCaps split.")
+            pylog.info(f"Start downloading files for {self._subset} AudioCaps split.")
 
         with open(captions_fpath, "r") as file:
             # Download audio files
@@ -625,19 +623,19 @@ class AudioCaps(Dataset[Dict[str, Any]]):
                         valid_file = self.__check_file(fpath)
                         if valid_file:
                             if self._verbose >= 2:
-                                logger.debug(
+                                pylog.debug(
                                     f'[{audiocap_id:6s}] File "{youtube_id}" has been downloaded and verified.'
                                 )
                             n_download_ok += 1
                         else:
                             if self._verbose >= 1:
-                                logger.warning(
+                                pylog.warning(
                                     f'[{audiocap_id:6s}] File "{youtube_id}" has been downloaded but it is not valid and it will be removed.'
                                 )
                             os.remove(fpath)
                             n_download_err += 1
                     else:
-                        logger.error(
+                        pylog.error(
                             f'[{audiocap_id:6s}] Cannot extract audio from "{youtube_id}".'
                         )
                         n_download_err += 1
@@ -646,20 +644,20 @@ class AudioCaps(Dataset[Dict[str, Any]]):
                     valid_file = self.__check_file(fpath)
                     if valid_file:
                         if self._verbose >= 2:
-                            logger.debug(
+                            pylog.debug(
                                 f'[{audiocap_id:6s}] File "{youtube_id}" is already downloaded and has been verified.'
                             )
                         n_already_ok += 1
                     else:
                         if self._verbose >= 1:
-                            logger.warning(
+                            pylog.warning(
                                 f'[{audiocap_id:6s}] File "{youtube_id}" is already downloaded but it is not valid and will be removed.'
                             )
                         os.remove(fpath)
                         n_already_err += 1
                 else:
                     if self._verbose >= 2:
-                        logger.debug(
+                        pylog.debug(
                             f'[{audiocap_id:6s}] File "{youtube_id}" is already downloaded but it is not verified due to self.VERIFY_FILES={self.VERIFY_FILES}.'
                         )
                     n_already_ok += 1
@@ -672,19 +670,19 @@ class AudioCaps(Dataset[Dict[str, Any]]):
                 fpath = osp.join(self.__dpath_data, fname)
                 if not osp.isfile(fpath):
                     if self._verbose >= 1:
-                        logger.info(f"Downloading file '{fname}'...")
+                        pylog.info(f"Downloading file '{fname}'...")
                     download_url_to_file(url, fpath, progress=self._verbose >= 1)
 
         if self._verbose >= 1:
             duration = int(time.perf_counter() - start)
-            logger.info(
+            pylog.info(
                 f'Download and preparation of AudioCaps for subset "{self._subset}" done in {duration}s. '
             )
-            logger.info(f"- {n_download_ok} downloads success,")
-            logger.info(f"- {n_download_err} downloads failed,")
-            logger.info(f"- {n_already_ok} already downloaded,")
-            logger.info(f"- {n_already_err} already downloaded errors,")
-            logger.info(f"- {n_samples} total samples.")
+            pylog.info(f"- {n_download_ok} downloads success,")
+            pylog.info(f"- {n_download_err} downloads failed,")
+            pylog.info(f"- {n_already_ok} already downloaded,")
+            pylog.info(f"- {n_already_err} already downloaded errors,")
+            pylog.info(f"- {n_samples} total samples.")
 
             if self.REDIRECT_LOG:
                 logging.basicConfig(

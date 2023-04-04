@@ -23,7 +23,7 @@ from torch.utils.data.dataset import Dataset
 from aac_datasets.utils.download import validate_file
 
 
-logger = logging.getLogger(__name__)
+pylog = logging.getLogger(__name__)
 
 
 @dataclass
@@ -341,7 +341,7 @@ class Clotho(Dataset[Dict[str, Any]]):
             )
 
         if version == "v2":
-            logger.warning(
+            pylog.warning(
                 f"The version '{version}' of the Clotho dataset contains minor some errors in file names and few corrupted files."
                 f"Please consider using the fixed version 'v2.1'."
             )
@@ -673,7 +673,7 @@ class Clotho(Dataset[Dict[str, Any]]):
         self._loaded = True
 
         if self._verbose >= 1:
-            logger.info(f"{repr(self)} has been loaded. (len={len(self)})")
+            pylog.info(f"{repr(self)} has been loaded. (len={len(self)})")
 
     def __prepare_data(self) -> None:
         if not osp.isdir(self._root):
@@ -684,7 +684,7 @@ class Clotho(Dataset[Dict[str, Any]]):
         os.makedirs(self.__dpath_csv, exist_ok=True)
 
         if self._verbose >= 1:
-            logger.info(f"Start to download files for clotho_{self._subset}...")
+            pylog.info(f"Start to download files for clotho_{self._subset}...")
 
         links = copy.deepcopy(CLOTHO_LINKS[self._version][self._subset])
         extensions = ("7z", "csv", "zip")
@@ -710,7 +710,7 @@ class Clotho(Dataset[Dict[str, Any]]):
             fpath = osp.join(dpath, fname)
             if not osp.isfile(fpath) or self.FORCE_PREPARE_DATA:
                 if self._verbose >= 1:
-                    logger.info(f"Download and check file '{fname}' from url={url}...")
+                    pylog.info(f"Download and check file '{fname}' from url={url}...")
 
                 download_url_to_file(
                     url,
@@ -719,7 +719,7 @@ class Clotho(Dataset[Dict[str, Any]]):
                 )
 
             elif self._verbose >= 1:
-                logger.info(f"File fname={fname} is already extracted.")
+                pylog.info(f"File fname={fname} is already extracted.")
 
             valid = validate_file(fpath, hash_value, hash_type="md5")
             if not valid:
@@ -734,7 +734,7 @@ class Clotho(Dataset[Dict[str, Any]]):
                 fpath = osp.join(self.__dpath_archives, fname)
 
                 if self._verbose >= 1:
-                    logger.info(f"Extract archive file fname={fname}...")
+                    pylog.info(f"Extract archive file fname={fname}...")
 
                 if extension == "7z":
                     archive_file = SevenZipFile(fpath)
@@ -777,7 +777,7 @@ class Clotho(Dataset[Dict[str, Any]]):
                 pass
 
             else:
-                logger.error(
+                pylog.error(
                     f"Found unexpected extension={extension} for downloaded file '{fname}'. Expected one of {extensions}."
                 )
 
@@ -789,7 +789,7 @@ class Clotho(Dataset[Dict[str, Any]]):
                 if extension in ("7z", "zip"):
                     fpath = osp.join(self.__dpath_audio, fname)
                     if self._verbose >= 1:
-                        logger.info(f"Removing archive file {osp.basename(fpath)}...")
+                        pylog.info(f"Removing archive file {osp.basename(fpath)}...")
                     os.remove(fpath)
 
 
