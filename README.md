@@ -66,8 +66,8 @@ Here is the **train** subset statistics for each dataset :
 | | AudioCaps/train | Clotho/dev | MACS/full |
 |:---:|:---:|:---:|:---:|
 | Nb audios | 49,838 | 3,840 | 3,930 |
-| Total audio duration | 136.6h<sup>1</sup> | 24.0h | 10.9h |
-| Audio duration range | 0.5-10s | 15-30s | 10s |
+| Total audio duration (h) | 136.6<sup>1</sup> | 24.0 | 10.9 |
+| Audio duration range (s) | 0.5-10 | 15-30 | 10 |
 | Nb captions per audio | 1 | 5 | 2-5 |
 | Nb captions | 49,838 | 19,195 | 17,275 |
 | Total nb words<sup>2</sup> | 402,482 | 217,362 | 160,006 |
