@@ -157,7 +157,10 @@ class AudioCaps(Dataset[Dict[str, Any]]):
     @property
     def column_names(self) -> List[str]:
         """The name of each column of the dataset."""
-        return [field.name for field in fields(AudioCapsItem)]
+        column_names = [field.name for field in fields(AudioCapsItem)]
+        if not self._with_tags:
+            column_names.remove("tags")
+        return column_names
 
     @property
     def index_to_tagname(self) -> List[str]:
