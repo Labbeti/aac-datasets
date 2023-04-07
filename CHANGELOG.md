@@ -6,10 +6,14 @@ All notable changes to this project will be documented in this file.
 ### Added
 - Script check.py now check if audio files of datasets exists.
 
+### Changed
+- Field `start_end_samples` in Clotho is not evaluated as `optional[tuple[int, int]]`.
+
 ### Fixed
 - Python minimal version in README and pyproject.toml.
 - Transform applied in `getitem` method when argument is not an integer.
 - Incompatibility with `torchaudio>=2.0`.
+- Remove 'tags' from AudioCaps columns when with_tags=False.
 
 ## [0.3.2] 2023-01-30
 ### Added
