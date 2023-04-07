@@ -56,7 +56,7 @@ Here is the statistics for each dataset :
 
 | | AudioCaps | Clotho | MACS |
 |:---:|:---:|:---:|:---:|
-| Subset(s) | train, val, test | dev, val, eval, test, analysis | full |
+| Subsets | train, val, test | dev, val, eval, test, analysis | full |
 | Sample rate (Hz) | 32,000 | 44,100 | 48,000 |
 | Estimated size (GB) | 43 | 27 | 13 |
 | Audio source | AudioSet (YouTube) | Freesound | TAU Urban Acoustic Scenes 2019 |
@@ -103,17 +103,19 @@ dataset = AudioCaps(root=".", download=True)
 ```
 
 ## Download datasets
-To download a dataset, you can use `download=True` argument in dataset construction.
-
-However, if you want to download datasets separately, you can also use the following command :
-```bash
-aac-datasets-download --root "." clotho --subsets "dev"
+To download a dataset, you can use `download` argument in dataset construction :
+```python
+dataset = Clotho(root=".", subset="dev", download=True)
 ```
 Or use the corresponding function in the code :
 ```python
 from aac_datasets.download import download_clotho
 
 download_clotho(root=".", subsets=["dev"])
+```
+However, if you want to download datasets from a script, you can also use the following command :
+```bash
+aac-datasets-download --root "." clotho --subsets "dev"
 ```
 
 ## References
