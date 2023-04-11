@@ -40,8 +40,8 @@ class ClothoItem:
     sr: int = -1
     # Clotho-specific attributes
     keywords: List[str] = field(default_factory=list)
-    sound_id: str = "unknown"
-    sound_link: str = "unknown"
+    sound_id: str = "unknown"  # warning: some files contains "Not found"
+    sound_link: str = "unknown"  # warning: some files contains "NA"
     start_end_samples: Optional[Tuple[int, int]] = None
     manufacturer: str = "unknown"
     license: str = "unknown"
@@ -300,6 +300,9 @@ class Clotho(Dataset[Dict[str, Any]]):
     CAPTIONS_PER_AUDIO = {"dev": 5, "val": 5, "eval": 5, "test": 0, "analysis": 0}
     CLEAN_ARCHIVES: bool = False
     FORCE_PREPARE_DATA: bool = False
+    INVALID_SOUND_ID = "Not found"
+    INVALID_SOUND_LINK = "NA"
+    INVALID_START_END_SAMPLES = None
     SAMPLE_RATE = 44100
     SUBSETS_DICT = {
         version: tuple(links.keys()) for version, links in CLOTHO_LINKS.items()
