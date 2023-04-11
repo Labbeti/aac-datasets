@@ -42,7 +42,7 @@ class ClothoItem:
     keywords: List[str] = field(default_factory=list)
     sound_id: str = "unknown"  # warning: some files contains "Not found"
     sound_link: str = "unknown"  # warning: some files contains "NA"
-    start_end_samples: Optional[Tuple[int, int]] = None
+    start_end_samples: str = "unknown"  # warning: some files contains ""
     manufacturer: str = "unknown"
     license: str = "unknown"
 
@@ -302,7 +302,7 @@ class Clotho(Dataset[Dict[str, Any]]):
     FORCE_PREPARE_DATA: bool = False
     INVALID_SOUND_ID = "Not found"
     INVALID_SOUND_LINK = "NA"
-    INVALID_START_END_SAMPLES = None
+    INVALID_START_END_SAMPLES = ""
     SAMPLE_RATE = 44100
     SUBSETS_DICT = {
         version: tuple(links.keys()) for version, links in CLOTHO_LINKS.items()
@@ -660,34 +660,6 @@ class Clotho(Dataset[Dict[str, Any]]):
                 keywords.split(";") if keywords is not None else []
                 for keywords in all_items["keywords"]
             ]
-
-        if "start_end_samples" in all_items:
-            # Each start_end_samples is a str like "[139264, 1293089]", so we will evaluate them to obtain list[list[int]]
-            start_end_samples = all_items["start_end_samples"]
-            # Replace [] by ()
-            start_end_samples = [f"({s[1:-1]})" for s in start_end_samples]
-            # Note: some files have an empty string
-            start_end_samples = [
-                (s if s != "()" else "None") for s in start_end_samples
-            ]
-
-            start_end_samples_str = "[" + ", ".join(start_end_samples) + "]"
-            start_end_samples_lst = eval(start_end_samples_str)
-            all_items["start_end_samples"] = start_end_samples_lst
-
-            # Sanity check
-            assert all(
-                (
-                    s is None
-                    or (
-                        isinstance(s, tuple)
-                        and len(s) == 2
-                        and isinstance(s[0], int)
-                        and isinstance(s[1], int)
-                    )
-                )
-                for s in start_end_samples_lst
-            )
 
         if self._flat_captions and self.CAPTIONS_PER_AUDIO[self._subset] > 1:
             all_infos_unfolded = {key: [] for key in all_items.keys()}
