@@ -9,17 +9,16 @@ import os.path as osp
 import shutil
 import zipfile
 
-from dataclasses import dataclass, field, fields
 from functools import lru_cache
 from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, Union
 
-import torch
 import torchaudio
 import yaml
 
 from torch import Tensor
 from torch.hub import download_url_to_file
 from torch.utils.data.dataset import Dataset
+from typing_extensions import TypedDict
 
 from aac_datasets.utils.download import validate_file
 
@@ -27,27 +26,44 @@ from aac_datasets.utils.download import validate_file
 pylog = logging.getLogger(__name__)
 
 
-@dataclass
-class MACSItem:
+MACS_ALL_COLUMNS = (
+    # Common attributes
+    "audio",
+    "captions",
+    "dataset",
+    "fname",
+    "index",
+    "subset",
+    "sr",
+    # MACS-specific attributes
+    "annotators_ids",
+    "competences",
+    "identifier",
+    "scene_label",
+    "tags",
+)
+
+
+class MACSItem(TypedDict, total=False):
     """Dataclass representing a single MACS item."""
 
     # Common attributes
-    audio: Tensor = torch.empty((0,))
-    captions: List[str] = field(default_factory=list)
-    dataset: str = "macs"
-    fname: str = "unknown"
-    index: int = -1
-    subset: str = "unknown"
-    sr: int = -1
+    audio: Tensor
+    captions: List[str]
+    dataset: str
+    fname: str
+    index: int
+    subset: str
+    sr: int
     # MACS-specific attributes
-    annotators_ids: List[str] = field(default_factory=list)
-    competences: List[float] = field(default_factory=list)
-    identifier: str = "unknown"
-    scene_label: str = "unknown"
-    tags: List[List[str]] = field(default_factory=list)
+    annotators_ids: List[str]
+    competences: List[float]
+    identifier: str
+    scene_label: str
+    tags: List[List[str]]
 
 
-class MACS(Dataset[Dict[str, Any]]):
+class MACS(Dataset[MACSItem]):
     r"""Unofficial MACS PyTorch dataset.
 
     .. code-block:: text
@@ -131,7 +147,8 @@ class MACS(Dataset[Dict[str, Any]]):
     @property
     def column_names(self) -> List[str]:
         """The name of each column of the dataset."""
-        return [field.name for field in fields(MACSItem)]
+        column_names = list(MACS_ALL_COLUMNS)
+        return column_names
 
     @property
     def info(self) -> Dict[str, Any]:
@@ -260,7 +277,7 @@ class MACS(Dataset[Dict[str, Any]]):
     def __getitem__(
         self,
         idx: Any,
-    ) -> Dict[str, Any]:
+    ) -> MACSItem:
         if (
             isinstance(idx, tuple)
             and len(idx) == 2
@@ -390,15 +407,15 @@ class MACS(Dataset[Dict[str, Any]]):
                     all_items[key][idx] = tau_tags[key]
 
         if self._flat_captions and self.MIN_CAPTIONS_PER_AUDIO[self._subset] > 1:
-            all_infos_unfolded = {key: [] for key in all_items.keys()}
+            all_infos_flatten = {key: [] for key in all_items.keys()}
 
             for i, captions in enumerate(all_items["captions"]):
                 for caption in captions:
                     for key in all_items.keys():
-                        all_infos_unfolded[key].append(all_items[key][i])
-                    all_infos_unfolded["captions"] = [caption]
+                        all_infos_flatten[key].append(all_items[key][i])
+                    all_infos_flatten["captions"] = [caption]
 
-            all_items = all_infos_unfolded
+            all_items = all_infos_flatten
 
         # Sanity checks
         assert all(

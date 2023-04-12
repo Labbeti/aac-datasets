@@ -9,7 +9,6 @@ import subprocess
 import sys
 import time
 
-from dataclasses import dataclass, field, fields
 from functools import lru_cache
 from subprocess import CalledProcessError
 from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, Union
@@ -21,31 +20,48 @@ import tqdm
 from torch import Tensor
 from torch.hub import download_url_to_file
 from torch.utils.data.dataset import Dataset
+from typing_extensions import TypedDict
 
 
 pylog = logging.getLogger(__name__)
 
 
-@dataclass
-class AudioCapsItem:
-    """Dataclass representing a single AudioCaps item."""
+AUDIOCAPS_ALL_COLUMNS = (
+    # Common attributes
+    "audio",
+    "captions",
+    "dataset",
+    "fname",
+    "index",
+    "subset",
+    "sr",
+    # AudioCaps-specific attributes
+    "audiocaps_ids",
+    "start_time",
+    "tags",
+    "youtube_id",
+)
+
+
+class AudioCapsItem(TypedDict, total=False):
+    """Class representing a single MACS item."""
 
     # Common attributes
-    audio: Tensor = torch.empty((0,))
-    captions: List[str] = field(default_factory=list)
-    dataset: str = "audiocaps"
-    fname: str = "unknown"
-    index: int = -1
-    subset: str = "unknown"
-    sr: int = -1
+    audio: Tensor
+    captions: List[str]
+    dataset: str
+    fname: str
+    index: int
+    subset: str
+    sr: int
     # AudioCaps-specific attributes
-    audiocaps_ids: List[int] = field(default_factory=list)
-    start_time: int = -1
-    tags: List[int] = field(default_factory=list)
-    youtube_id: str = "unknown"
+    audiocaps_ids: List[int]
+    start_time: int
+    tags: List[int]
+    youtube_id: str
 
 
-class AudioCaps(Dataset[Dict[str, Any]]):
+class AudioCaps(Dataset[AudioCapsItem]):
     r"""Unofficial AudioCaps PyTorch dataset.
 
     Subsets available are 'train', 'val' and 'test'.
@@ -157,7 +173,7 @@ class AudioCaps(Dataset[Dict[str, Any]]):
     @property
     def column_names(self) -> List[str]:
         """The name of each column of the dataset."""
-        column_names = [field.name for field in fields(AudioCapsItem)]
+        column_names = list(AUDIOCAPS_ALL_COLUMNS)
         if not self._with_tags:
             column_names.remove("tags")
         return column_names
@@ -202,7 +218,7 @@ class AudioCaps(Dataset[Dict[str, Any]]):
             return {column_i: self.at(idx, column_i) for column_i in column}
 
         if isinstance(idx, (int, slice)) and column in self._all_items.keys():
-            return self._all_items[column][idx]
+            return self._all_items[column][idx]  # type: ignore
 
         if isinstance(idx, slice):
             idx = range(len(self))[idx]
@@ -291,7 +307,7 @@ class AudioCaps(Dataset[Dict[str, Any]]):
     def __getitem__(
         self,
         idx: Any,
-    ) -> Dict[str, Any]:
+    ) -> AudioCapsItem:
         if (
             isinstance(idx, tuple)
             and len(idx) == 2
@@ -518,15 +534,15 @@ class AudioCaps(Dataset[Dict[str, Any]]):
         all_items["start_time"] = list(map(int, all_items["start_time"]))
 
         if self._flat_captions and self.CAPTIONS_PER_AUDIO[self._subset] > 1:
-            all_infos_unfolded = {key: [] for key in all_items.keys()}
+            all_infos_flatten = {key: [] for key in all_items.keys()}
 
             for i, captions in enumerate(all_items["captions"]):
                 for caption in captions:
                     for key in all_items.keys():
-                        all_infos_unfolded[key].append(all_items[key][i])
-                    all_infos_unfolded["captions"] = [caption]
+                        all_infos_flatten[key].append(all_items[key][i])
+                    all_infos_flatten["captions"] = [caption]
 
-            all_items = all_infos_unfolded
+            all_items = all_infos_flatten
 
         self._all_items = all_items
         self._loaded = True
