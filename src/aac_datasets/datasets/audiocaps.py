@@ -83,6 +83,7 @@ class AudioCaps(Dataset[AudioCapsItem]):
 
     # Common globals
     AUDIO_N_CHANNELS = 1
+    DATASET_NAME = "audiocaps"
     FORCE_PREPARE_DATA: bool = False
     MAX_AUDIO_SEC = 10.00096876
     MIN_AUDIO_SEC = 0.6501874
@@ -177,7 +178,7 @@ class AudioCaps(Dataset[AudioCapsItem]):
     def info(self) -> Dict[str, Any]:
         """Return the global dataset info."""
         return {
-            "dataset": "audiocaps",
+            "dataset": self.DATASET_NAME,
             "subset": self._subset,
             "with_tags": self._with_tags,
         }
@@ -246,7 +247,7 @@ class AudioCaps(Dataset[AudioCapsItem]):
             return audio_metadata
 
         elif column == "dataset":
-            return "audiocaps"
+            return self.DATASET_NAME
 
         elif column == "fpath":
             fname = self.at(idx, "fname")

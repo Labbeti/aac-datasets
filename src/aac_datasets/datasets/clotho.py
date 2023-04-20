@@ -294,6 +294,7 @@ class Clotho(Dataset[ClothoItem]):
 
     # Common globals
     AUDIO_N_CHANNELS = 1
+    DATASET_NAME = "clotho"
     FORCE_PREPARE_DATA: bool = False
     MAX_AUDIO_SEC = 30.0
     MIN_AUDIO_SEC = 15.0
@@ -391,7 +392,7 @@ class Clotho(Dataset[ClothoItem]):
     def info(self) -> Dict[str, Any]:
         """Return the global dataset info."""
         return {
-            "dataset": "clotho",
+            "dataset": self.DATASET_NAME,
             "subset": self._subset,
             "version": self._version,
         }
@@ -456,7 +457,7 @@ class Clotho(Dataset[ClothoItem]):
             return audio_metadata
 
         elif column == "dataset":
-            return "clotho"
+            return self.DATASET_NAME
 
         elif column == "fpath":
             fname = self.at(idx, "fname")

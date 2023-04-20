@@ -69,6 +69,7 @@ class MACS(Dataset[MACSItem]):
     """
     # Common globals
     AUDIO_N_CHANNELS = 2
+    DATASET_NAME = "macs"
     FORCE_PREPARE_DATA: bool = False
     MAX_AUDIO_SEC = 10.000020833333334
     MIN_AUDIO_SEC = 9.999979166666666
@@ -141,7 +142,7 @@ class MACS(Dataset[MACSItem]):
     def info(self) -> Dict[str, Any]:
         """Return the global dataset info."""
         return {
-            "dataset": "macs",
+            "dataset": self.DATASET_NAME,
             "subset": self._subset,
         }
 
@@ -210,7 +211,7 @@ class MACS(Dataset[MACSItem]):
             return competences
 
         elif column == "dataset":
-            return "macs"
+            return self.DATASET_NAME
 
         elif column == "fpath":
             fname = self.at(idx, "fname")
