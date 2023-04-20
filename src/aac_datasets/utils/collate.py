@@ -19,7 +19,7 @@ class BasicCollate:
     """
 
     def __call__(self, batch_lst: List[Dict[str, Any]]) -> Dict[str, List[Any]]:
-        return _lst_dic_to_dic_lst(batch_lst)
+        return list_dict_to_dict_list(batch_lst)
 
 
 class AdvancedCollate:
@@ -43,7 +43,7 @@ class AdvancedCollate:
         self.fill_values = fill_values
 
     def __call__(self, batch_lst: List[Dict[str, Any]]) -> Dict[str, Any]:
-        batch_dic: Dict[str, Any] = _lst_dic_to_dic_lst(batch_lst)
+        batch_dic: Dict[str, Any] = list_dict_to_dict_list(batch_lst)
         keys = list(batch_dic.keys())
 
         for key in keys:
@@ -100,7 +100,7 @@ def pad_last_dim(tensor: Tensor, target_length: int, pad_value: float) -> Tensor
     return F.pad(tensor, [0, pad_len], value=pad_value)
 
 
-def _lst_dic_to_dic_lst(
+def list_dict_to_dict_list(
     lst: List[Dict[str, T]],
     key_mode: str = "intersect",
 ) -> Dict[str, List[T]]:
