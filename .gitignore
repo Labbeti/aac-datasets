@@ -130,3 +130,5 @@ dmypy.json
 
 # VSCode dir
 .vscode/
+
+examples/CLOTHO_v2.1
