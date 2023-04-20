@@ -61,6 +61,7 @@ Here is the statistics for each dataset :
 | Estimated size (GB) | 43 | 27 | 13 |
 | Audio source | AudioSet (YouTube) | Freesound | TAU Urban Acoustic Scenes 2019 |
 
+For Clotho, the dev subset should be used for training.
 Here is the **train** subset statistics for each dataset :
 
 | | AudioCaps/train | Clotho/dev | MACS/full |

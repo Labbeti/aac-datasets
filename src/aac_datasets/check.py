@@ -8,7 +8,6 @@ import sys
 from argparse import ArgumentParser, Namespace
 from typing import Dict, Iterable
 
-import tqdm
 import yaml
 
 from aac_datasets.datasets.audiocaps import AudioCaps
