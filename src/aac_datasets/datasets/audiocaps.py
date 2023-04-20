@@ -43,8 +43,8 @@ AUDIOCAPS_ALL_COLUMNS = (
 )
 
 
-class AudioCapsItem(TypedDict, total=False):
-    """Class representing a single MACS item."""
+class AudioCapsItem(TypedDict):
+    """Class representing a single AudioCaps item."""
 
     # Common attributes
     audio: Tensor

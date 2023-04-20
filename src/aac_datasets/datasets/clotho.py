@@ -44,8 +44,8 @@ CLOTHO_ALL_COLUMNS = (
 )
 
 
-class ClothoItem(TypedDict, total=False):
-    """Class representing a single MACS item."""
+class ClothoItem(TypedDict):
+    """Class representing a single Clotho item."""
 
     # Common attributes
     audio: Tensor

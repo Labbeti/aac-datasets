@@ -44,7 +44,7 @@ MACS_ALL_COLUMNS = (
 )
 
 
-class MACSItem(TypedDict, total=False):
+class MACSItem(TypedDict):
     """Dataclass representing a single MACS item."""
 
     # Common attributes
