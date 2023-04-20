@@ -59,9 +59,10 @@ Here is the statistics for each dataset :
 | Subsets | train, val, test | dev, val, eval, test, analysis | full |
 | Sample rate (Hz) | 32,000 | 44,100 | 48,000 |
 | Estimated size (GB) | 43 | 27 | 13 |
-| Audio source | AudioSet (YouTube) | Freesound | TAU Urban Acoustic Scenes 2019 |
+| Audio source | AudioSet (YouTube) | FreeSound | TAU Urban Acoustic Scenes 2019 |
 
-For Clotho, the dev subset should be used for training.
+For Clotho, the dev subset should be used for training, val for validation and eval for testing. The test and analysis subsets contains only audio files without labels from the DCASE challenge.
+
 Here is the **train** subset statistics for each dataset :
 
 | | AudioCaps/train | Clotho/dev | MACS/full |
