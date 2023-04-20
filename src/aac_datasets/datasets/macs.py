@@ -95,6 +95,7 @@ class MACS(Dataset[MACSItem]):
     MIN_CAPTIONS_PER_AUDIO = {"full": 2}
     SAMPLE_RATE = 48000  # in Hz
     SUBSETS = ("full",)
+    VERIFY_FILES: bool = True
 
     # Initialization
     def __init__(
@@ -457,10 +458,13 @@ class MACS(Dataset[MACSItem]):
                     progress=self._verbose >= 1,
                 )
 
-            hash_value = file_info["hash_value"]
-            valid = validate_file(fpath, hash_value, hash_type="md5")
-            if not valid:
-                raise RuntimeError(f"Invalid checksum for file {fname}.")
+            if self.VERIFY_FILES:
+                hash_value = file_info["hash_value"]
+                valid = validate_file(fpath, hash_value, hash_type="md5")
+                if not valid:
+                    raise RuntimeError(f"Invalid checksum for file {fname}.")
+                elif self._verbose >= 2:
+                    pylog.debug(f"File '{fname}' has a valid checksum.")
 
         captions_fpath = osp.join(self.__dpath_data, MACS_FILES["captions"]["fname"])
         with open(captions_fpath, "r") as file:
@@ -486,10 +490,13 @@ class MACS(Dataset[MACSItem]):
                     progress=self._verbose >= 1,
                 )
 
-            hash_value = file_info["hash_value"]
-            valid = validate_file(zip_fpath, hash_value, hash_type="md5")
-            if not valid:
-                raise RuntimeError(f"Invalid checksum for file {zip_fname}.")
+            if self.VERIFY_FILES:
+                hash_value = file_info["hash_value"]
+                valid = validate_file(zip_fpath, hash_value, hash_type="md5")
+                if not valid:
+                    raise RuntimeError(f"Invalid checksum for file {zip_fname}.")
+                elif self._verbose >= 2:
+                    pylog.debug(f"File '{zip_fname}' has a valid checksum.")
 
         # Extract files from TAU Urban Sound archives
         macs_fnames = dict.fromkeys(data["filename"] for data in captions_data)
@@ -540,9 +547,9 @@ class MACS(Dataset[MACSItem]):
         ]
         assert len(audio_fnames) == len(macs_fnames)
 
-        if self._verbose >= 1:
-            pylog.info(
-                f"{len(audio_fnames)} audio files has been prepared for MACS dataset."
+        if self._verbose >= 2:
+            pylog.debug(
+                f"Dataset {self.__class__.__name__} ({self._subset}) has been prepared."
             )
 
 

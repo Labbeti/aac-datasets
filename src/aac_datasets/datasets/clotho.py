@@ -325,6 +325,7 @@ class Clotho(Dataset[ClothoItem]):
         version: tuple(links.keys()) for version, links in CLOTHO_LINKS.items()
     }
     SUBSETS = SUBSETS_DICT[CLOTHO_LAST_VERSION]
+    VERIFY_FILES: bool = True
     VERSIONS = tuple(CLOTHO_LINKS.keys())
 
     # Initialization
@@ -709,7 +710,7 @@ class Clotho(Dataset[ClothoItem]):
             pylog.info(f"Start to download files for clotho_{self._subset}...")
 
         links = copy.deepcopy(CLOTHO_LINKS[self._version][self._subset])
-        extensions = ("7z", "csv", "zip")
+        EXTENSIONS = ("7z", "csv", "zip")
 
         # Download csv and 7z files
         for file_info in links.values():
@@ -726,7 +727,7 @@ class Clotho(Dataset[ClothoItem]):
                 dpath = self.__dpath_csv
             else:
                 raise RuntimeError(
-                    f"Found invalid extension={extension}. Must be one of {extensions}."
+                    f"Found invalid extension={extension}. Must be one of {EXTENSIONS}."
                 )
 
             fpath = osp.join(dpath, fname)
@@ -741,78 +742,87 @@ class Clotho(Dataset[ClothoItem]):
                 )
 
             elif self._verbose >= 1:
-                pylog.info(f"File fname={fname} is already extracted.")
+                pylog.info(f"File '{fname}' is already downloaded.")
 
-            valid = validate_file(fpath, hash_value, hash_type="md5")
-            if not valid:
-                raise RuntimeError(f"Invalid checksum for file {fname}.")
+            if self.VERIFY_FILES:
+                valid = validate_file(fpath, hash_value, hash_type="md5")
+                if not valid:
+                    raise RuntimeError(f"Invalid checksum for file {fname}.")
+                elif self._verbose >= 2:
+                    pylog.debug(f"File '{fname}' has a valid checksum.")
 
         # Extract audio files from archives
         for file_info in links.values():
             fname = file_info["fname"]
             extension = fname.split(".")[-1]
 
-            if extension in ("7z", "zip"):
-                fpath = osp.join(self.__dpath_archives, fname)
+            if extension == "csv":
+                continue
 
-                if self._verbose >= 1:
-                    pylog.info(f"Extract archive file fname={fname}...")
-
-                if extension == "7z":
-                    archive_file = SevenZipFile(fpath)
-                    compressed_fnames = [
-                        osp.basename(fname) for fname in archive_file.getnames()
-                    ]
-                elif extension == "zip":
-                    archive_file = ZipFile(fpath)
-                    compressed_fnames = [
-                        osp.basename(file.filename) for file in archive_file.filelist
-                    ]
-                else:
-                    raise RuntimeError(f"Invalid extension '{extension}'.")
-
-                # Ignore dir name from archive file
-                compressed_fnames = [
-                    fname
-                    for fname in compressed_fnames
-                    if fname not in ("", CLOTHO_AUDIO_DNAMES[self._subset])
-                ]
-                extracted_fnames = (
-                    os.listdir(self.__dpath_audio_subset)
-                    if osp.isdir(self.__dpath_audio_subset)
-                    else []
-                )
-
-                if set(extracted_fnames) != set(compressed_fnames):
-                    archive_file.extractall(self.__dpath_audio)
-
-                    # Check if files is good now
-                    extracted_fnames = os.listdir(self.__dpath_audio_subset)
-                    if set(extracted_fnames) != set(compressed_fnames):
-                        raise RuntimeError(
-                            f"Invalid number of audios extracted. (found {len(extracted_fnames)} files but expected the same {len(compressed_fnames)} files)"
-                        )
-
-                archive_file.close()
-
-            elif extension == "csv":
-                pass
-
-            else:
+            if extension not in ("7z", "zip"):
                 pylog.error(
-                    f"Found unexpected extension={extension} for downloaded file '{fname}'. Expected one of {extensions}."
+                    f"Found unexpected extension={extension} for downloaded file '{fname}'. Expected one of {EXTENSIONS}."
                 )
+                continue
+
+            fpath = osp.join(self.__dpath_archives, fname)
+
+            if self._verbose >= 1:
+                pylog.info(f"Extract archive file fname={fname}...")
+
+            if extension == "7z":
+                archive_file = SevenZipFile(fpath)
+                compressed_fnames = [
+                    osp.basename(fname) for fname in archive_file.getnames()
+                ]
+            elif extension == "zip":
+                archive_file = ZipFile(fpath)
+                compressed_fnames = [
+                    osp.basename(file.filename) for file in archive_file.filelist
+                ]
+            else:
+                raise RuntimeError(f"Invalid extension '{extension}'.")
+
+            # Ignore dir name from archive file
+            compressed_fnames = [
+                fname
+                for fname in compressed_fnames
+                if fname not in ("", CLOTHO_AUDIO_DNAMES[self._subset])
+            ]
+            extracted_fnames = (
+                os.listdir(self.__dpath_audio_subset)
+                if osp.isdir(self.__dpath_audio_subset)
+                else []
+            )
+
+            if set(extracted_fnames) != set(compressed_fnames):
+                archive_file.extractall(self.__dpath_audio)
+
+                # Check if files is good now
+                extracted_fnames = os.listdir(self.__dpath_audio_subset)
+                if set(extracted_fnames) != set(compressed_fnames):
+                    raise RuntimeError(
+                        f"Invalid number of audios extracted. (found {len(extracted_fnames)} files but expected the same {len(compressed_fnames)} files)"
+                    )
+
+            archive_file.close()
 
         if self.CLEAN_ARCHIVES:
             for file_info in links.values():
                 fname = file_info["fname"]
                 extension = fname.split(".")[-1]
+                if extension not in ("7z", "zip"):
+                    continue
 
-                if extension in ("7z", "zip"):
-                    fpath = osp.join(self.__dpath_audio, fname)
-                    if self._verbose >= 1:
-                        pylog.info(f"Removing archive file {osp.basename(fpath)}...")
-                    os.remove(fpath)
+                fpath = osp.join(self.__dpath_audio, fname)
+                if self._verbose >= 1:
+                    pylog.info(f"Removing archive file {osp.basename(fpath)}...")
+                os.remove(fpath)
+
+        if self._verbose >= 2:
+            pylog.debug(
+                f"Dataset {self.__class__.__name__} ({self._subset}) has been prepared."
+            )
 
 
 CLOTHO_AUDIO_DNAMES = {

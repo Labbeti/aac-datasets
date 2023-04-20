@@ -710,6 +710,11 @@ class AudioCaps(Dataset[AudioCapsItem]):
                     force=True,
                 )
 
+        if self._verbose >= 2:
+            pylog.debug(
+                f"Dataset {self.__class__.__name__} ({self._subset}) has been prepared."
+            )
+
 
 def _download_and_extract_from_youtube(
     youtube_id: str,
