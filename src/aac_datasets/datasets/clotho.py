@@ -25,25 +25,6 @@ from aac_datasets.utils.download import validate_file
 pylog = logging.getLogger(__name__)
 
 
-CLOTHO_ALL_COLUMNS = (
-    # Common attributes
-    "audio",
-    "captions",
-    "dataset",
-    "fname",
-    "index",
-    "subset",
-    "sr",
-    # Clotho-specific attributes
-    "keywords",
-    "sound_id",  # warning: some files contains "Not found"
-    "sound_link",  # warning: some files contains "NA"
-    "start_end_samples",  # warning: some files contains ""
-    "manufacturer",
-    "license",
-)
-
-
 class ClothoItem(TypedDict):
     """Class representing a single Clotho item."""
 
@@ -57,11 +38,14 @@ class ClothoItem(TypedDict):
     sr: int
     # Clotho-specific attributes
     keywords: List[str]
-    sound_id: str
-    sound_link: str
-    start_end_samples: str
+    sound_id: str  # warning: some files contains "Not found"
+    sound_link: str  # warning: some files contains "NA"
+    start_end_samples: str  # warning: some files contains ""
     manufacturer: str
     license: str
+
+
+CLOTHO_ALL_COLUMNS = tuple(ClothoItem.__required_keys__ | ClothoItem.__optional_keys__)
 
 
 CLOTHO_LINKS = {
@@ -308,24 +292,26 @@ class Clotho(Dataset[ClothoItem]):
 
     """
 
-    # Global
-    AUDIO_MAX_SEC = 30.0
-    AUDIO_MIN_SEC = 15.0
+    # Common globals
     AUDIO_N_CHANNELS = 1
+    FORCE_PREPARE_DATA: bool = False
+    MAX_AUDIO_SEC = 30.0
+    MIN_AUDIO_SEC = 15.0
+    SAMPLE_RATE = 44100
+    SUBSETS = tuple(CLOTHO_LINKS[CLOTHO_LAST_VERSION].keys())
+    VERIFY_FILES: bool = True
+
+    # Clotho-specific globals
     CAPTION_MAX_LENGTH = 20
     CAPTION_MIN_LENGTH = 8
     CAPTIONS_PER_AUDIO = {"dev": 5, "val": 5, "eval": 5, "test": 0, "analysis": 0}
     CLEAN_ARCHIVES: bool = False
-    FORCE_PREPARE_DATA: bool = False
     INVALID_SOUND_ID = "Not found"
     INVALID_SOUND_LINK = "NA"
     INVALID_START_END_SAMPLES = ""
-    SAMPLE_RATE = 44100
     SUBSETS_DICT = {
         version: tuple(links.keys()) for version, links in CLOTHO_LINKS.items()
     }
-    SUBSETS = SUBSETS_DICT[CLOTHO_LAST_VERSION]
-    VERIFY_FILES: bool = True
     VERSIONS = tuple(CLOTHO_LINKS.keys())
 
     # Initialization

@@ -26,23 +26,6 @@ from typing_extensions import TypedDict
 pylog = logging.getLogger(__name__)
 
 
-AUDIOCAPS_ALL_COLUMNS = (
-    # Common attributes
-    "audio",
-    "captions",
-    "dataset",
-    "fname",
-    "index",
-    "subset",
-    "sr",
-    # AudioCaps-specific attributes
-    "audiocaps_ids",
-    "start_time",
-    "tags",
-    "youtube_id",
-)
-
-
 class AudioCapsItem(TypedDict):
     """Class representing a single AudioCaps item."""
 
@@ -59,6 +42,11 @@ class AudioCapsItem(TypedDict):
     start_time: int
     tags: List[int]
     youtube_id: str
+
+
+AUDIOCAPS_ALL_COLUMNS = tuple(
+    AudioCapsItem.__required_keys__ | AudioCapsItem.__optional_keys__
+)
 
 
 class AudioCaps(Dataset[AudioCapsItem]):
@@ -93,22 +81,24 @@ class AudioCaps(Dataset[AudioCapsItem]):
 
     """
 
-    # Global
-    AUDIO_FILE_EXTENSION = "flac"
-    AUDIO_MAX_SEC = 10.00096876  # in seconds
-    AUDIO_MIN_SEC = 0.6501874  # in seconds
+    # Common globals
     AUDIO_N_CHANNELS = 1
-    CAPTION_MAX_LENGTH = 52
-    CAPTION_MIN_LENGTH = 2
-    CAPTIONS_PER_AUDIO = {"train": 1, "val": 5, "test": 5}
-    DNAME_LOG = "logs"
-    FFMPEG_PATH: str = "ffmpeg"
     FORCE_PREPARE_DATA: bool = False
-    N_AUDIOSET_CLASSES: int = 527
-    REDIRECT_LOG = False
+    MAX_AUDIO_SEC = 10.00096876
+    MIN_AUDIO_SEC = 0.6501874
     SAMPLE_RATE = 32000
     SUBSETS = ("train", "val", "test")
     VERIFY_FILES = False
+
+    # AudioCaps-specific globals
+    AUDIO_FILE_EXTENSION = "flac"
+    CAPTIONS_PER_AUDIO = {"train": 1, "val": 5, "test": 5}
+    DNAME_LOG = "logs"
+    FFMPEG_PATH: str = "ffmpeg"
+    MAX_CAPTION_LENGTH = 52
+    MIN_CAPTION_LENGTH = 2
+    N_AUDIOSET_CLASSES: int = 527
+    REDIRECT_LOG = False
     YOUTUBE_DL_PATH: str = "youtube-dl"
 
     # Initialization
@@ -632,7 +622,7 @@ class AudioCaps(Dataset[AudioCapsItem]):
                         youtube_id,
                         fpath,
                         start_time,
-                        duration=self.AUDIO_MAX_SEC,
+                        duration=self.MAX_AUDIO_SEC,
                         sr=self.SAMPLE_RATE,
                         youtube_dl_path=self.YOUTUBE_DL_PATH,
                         ffmpeg_path=self.FFMPEG_PATH,

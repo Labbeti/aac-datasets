@@ -26,24 +26,6 @@ from aac_datasets.utils.download import validate_file
 pylog = logging.getLogger(__name__)
 
 
-MACS_ALL_COLUMNS = (
-    # Common attributes
-    "audio",
-    "captions",
-    "dataset",
-    "fname",
-    "index",
-    "subset",
-    "sr",
-    # MACS-specific attributes
-    "annotators_ids",
-    "competences",
-    "identifier",
-    "scene_label",
-    "tags",
-)
-
-
 class MACSItem(TypedDict):
     """Dataclass representing a single MACS item."""
 
@@ -61,6 +43,9 @@ class MACSItem(TypedDict):
     identifier: str
     scene_label: str
     tags: List[List[str]]
+
+
+MACS_ALL_COLUMNS = tuple(MACSItem.__required_keys__ | MACSItem.__optional_keys__)
 
 
 class MACS(Dataset[MACSItem]):
@@ -82,20 +67,21 @@ class MACS(Dataset[MACSItem]):
                 ├── fold1_train.csv
                 └── meta.csv
     """
-
-    # Global
-    AUDIO_MAX_SEC = 10.000020833333334
-    AUDIO_MAX_SIZE = 480001
-    AUDIO_MIN_SEC = 9.999979166666666
-    AUDIO_MIN_SIZE = 479999
+    # Common globals
     AUDIO_N_CHANNELS = 2
-    CLEAN_ARCHIVES: bool = False
     FORCE_PREPARE_DATA: bool = False
-    MAX_CAPTIONS_PER_AUDIO = {"full": 5}
-    MIN_CAPTIONS_PER_AUDIO = {"full": 2}
+    MAX_AUDIO_SEC = 10.000020833333334
+    MIN_AUDIO_SEC = 9.999979166666666
     SAMPLE_RATE = 48000  # in Hz
     SUBSETS = ("full",)
     VERIFY_FILES: bool = True
+
+    # MACS-specific globals
+    AUDIO_MAX_SIZE = 480001
+    AUDIO_MIN_SIZE = 479999
+    CLEAN_ARCHIVES: bool = False
+    MAX_CAPTIONS_PER_AUDIO = {"full": 5}
+    MIN_CAPTIONS_PER_AUDIO = {"full": 2}
 
     # Initialization
     def __init__(
