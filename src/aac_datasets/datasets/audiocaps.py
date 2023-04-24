@@ -73,11 +73,11 @@ class AudioCaps(Dataset[AudioCapsItem]):
             ├── test.csv
             └── audio
                 ├── train
-                │    └── (46231/49838 flac files, ~42G for 32KHz)
+                │    └── (46231/49838 flac files, ~42G for 32kHz)
                 ├── val
-                │    └── (465/495 flac files, ~425M for 32KHz)
+                │    └── (465/495 flac files, ~425M for 32kHz)
                 └── test
-                    └── (913/975 flac files, ~832M for 32KHz)
+                    └── (913/975 flac files, ~832M for 32kHz)
 
     """
 
