@@ -251,7 +251,7 @@ class AudioCaps(Dataset[AudioCapsItem]):
 
         elif column == "fpath":
             fname = self.at(idx, "fname")
-            fpath = osp.join(self.__dpath_audio_subset, fname)
+            fpath = osp.join(self.__audio_subset_root, fname)
             return fpath
 
         elif column == "index":
@@ -364,7 +364,7 @@ class AudioCaps(Dataset[AudioCapsItem]):
 
     @property
     @lru_cache()
-    def __dpath_audio_subset(self) -> str:
+    def __audio_subset_root(self) -> str:
         return osp.join(
             self.__audiocaps_root,
             "audio",
@@ -380,7 +380,7 @@ class AudioCaps(Dataset[AudioCapsItem]):
         links = AUDIOCAPS_LINKS[self._subset]
         captions_fname = links["captions"]["fname"]
         captions_fpath = osp.join(self.__audiocaps_root, captions_fname)
-        return osp.isdir(self.__dpath_audio_subset) and osp.isfile(captions_fpath)
+        return osp.isdir(self.__audio_subset_root) and osp.isfile(captions_fpath)
 
     def __load_data(self) -> None:
         if not self.__is_prepared():
@@ -430,7 +430,7 @@ class AudioCaps(Dataset[AudioCapsItem]):
             f"{line['youtube_id']}_{line['start_time']}.{self.AUDIO_FILE_EXTENSION}"
             for line in captions_data
         )
-        audio_fnames_on_disk = dict.fromkeys(os.listdir(self.__dpath_audio_subset))
+        audio_fnames_on_disk = dict.fromkeys(os.listdir(self.__audio_subset_root))
         if self._exclude_removed_audio:
             fnames_lst = [
                 fname for fname in fnames_dic if fname in audio_fnames_on_disk
@@ -572,7 +572,7 @@ class AudioCaps(Dataset[AudioCapsItem]):
         captions_fname = links["captions"]["fname"]
         captions_fpath = osp.join(self.__audiocaps_root, captions_fname)
 
-        os.makedirs(self.__dpath_audio_subset, exist_ok=True)
+        os.makedirs(self.__audio_subset_root, exist_ok=True)
 
         if not osp.isfile(captions_fpath):
             url = links["captions"]["url"]
@@ -609,7 +609,7 @@ class AudioCaps(Dataset[AudioCapsItem]):
                     line[key] for key in ("audiocap_id", "youtube_id", "start_time")
                 ]
                 fpath = osp.join(
-                    self.__dpath_audio_subset,
+                    self.__audio_subset_root,
                     f"{youtube_id}_{start_time}.{self.AUDIO_FILE_EXTENSION}",
                 )
                 if not start_time.isdigit():
