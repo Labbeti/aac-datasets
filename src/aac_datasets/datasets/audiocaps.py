@@ -366,20 +366,20 @@ class AudioCaps(Dataset[AudioCapsItem]):
     @lru_cache()
     def __dpath_audio_subset(self) -> str:
         return osp.join(
-            self.__dpath_data,
+            self.__audiocaps_root,
             "audio",
             self._subset,
         )
 
     @property
     @lru_cache()
-    def __dpath_data(self) -> str:
+    def __audiocaps_root(self) -> str:
         return osp.join(self._root, f"AUDIOCAPS_{AudioCaps.SAMPLE_RATE}Hz")
 
     def __is_prepared(self) -> bool:
         links = AUDIOCAPS_LINKS[self._subset]
         captions_fname = links["captions"]["fname"]
-        captions_fpath = osp.join(self.__dpath_data, captions_fname)
+        captions_fpath = osp.join(self.__audiocaps_root, captions_fname)
         return osp.isdir(self.__dpath_audio_subset) and osp.isfile(captions_fpath)
 
     def __load_data(self) -> None:
@@ -391,17 +391,17 @@ class AudioCaps(Dataset[AudioCapsItem]):
         links = AUDIOCAPS_LINKS[self._subset]
 
         captions_fname = links["captions"]["fname"]
-        captions_fpath = osp.join(self.__dpath_data, captions_fname)
+        captions_fpath = osp.join(self.__audiocaps_root, captions_fname)
         with open(captions_fpath, "r") as file:
             reader = csv.DictReader(file)
             captions_data = list(reader)
 
         if self._with_tags:
             class_labels_indices_fpath = osp.join(
-                self.__dpath_data, AUDIOSET_LINKS["class_labels_indices"]["fname"]
+                self.__audiocaps_root, AUDIOSET_LINKS["class_labels_indices"]["fname"]
             )
             unbal_tags_fpath = osp.join(
-                self.__dpath_data, AUDIOSET_LINKS["unbalanced"]["fname"]
+                self.__audiocaps_root, AUDIOSET_LINKS["unbalanced"]["fname"]
             )
 
             if not all(map(osp.isfile, (class_labels_indices_fpath, unbal_tags_fpath))):
@@ -570,7 +570,7 @@ class AudioCaps(Dataset[AudioCapsItem]):
 
         links = AUDIOCAPS_LINKS[self._subset]
         captions_fname = links["captions"]["fname"]
-        captions_fpath = osp.join(self.__dpath_data, captions_fname)
+        captions_fpath = osp.join(self.__audiocaps_root, captions_fname)
 
         os.makedirs(self.__dpath_audio_subset, exist_ok=True)
 
@@ -583,7 +583,7 @@ class AudioCaps(Dataset[AudioCapsItem]):
             n_samples = len(file.readlines())
 
         if self._verbose >= 1:
-            log_dpath = osp.join(self.__dpath_data, self.DNAME_LOG)
+            log_dpath = osp.join(self.__audiocaps_root, self.DNAME_LOG)
             if not osp.isdir(log_dpath):
                 os.makedirs(log_dpath)
 
@@ -677,7 +677,7 @@ class AudioCaps(Dataset[AudioCapsItem]):
                 infos = AUDIOSET_LINKS[key]
                 url = infos["url"]
                 fname = infos["fname"]
-                fpath = osp.join(self.__dpath_data, fname)
+                fpath = osp.join(self.__audiocaps_root, fname)
                 if not osp.isfile(fpath):
                     if self._verbose >= 1:
                         pylog.info(f"Downloading file '{fname}'...")
