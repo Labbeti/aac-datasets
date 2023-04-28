@@ -54,7 +54,7 @@ class AudioCaps(Dataset[AudioCapsItem]):
 
     Subsets available are 'train', 'val' and 'test'.
 
-    Audio is a waveform tensor of shape (1, n_times) of 10 seconds max, sampled at 32KHz.
+    Audio is a waveform tensor of shape (1, n_times) of 10 seconds max, sampled at 32kHz.
     Target is a list of strings containing the captions.
     The 'train' subset has only 1 caption per sample and 'val' and 'test' have 5 captions.
 
@@ -759,7 +759,7 @@ def _download_and_extract_from_youtube(
         str(start_time),
         "-t",
         str(duration),
-        # Resample to 16 KHz
+        # Resample to 16 kHz
         "-ar",
         str(sr),
         # Compute mean of 2 channels
