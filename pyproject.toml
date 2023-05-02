@@ -33,10 +33,10 @@ dependencies = [
 dynamic = ["version"]
 
 [project.urls]
-homepage = "https://pypi.org/project/aac-datasets/"
-documentation = "https://aac-datasets.readthedocs.io/"
-repository = "https://github.com//Labbeti/aac-datasets.git"
-changelog = "https://github.com/Labbeti/aac-datasets/blob/main/CHANGELOG.md"
+Homepage = "https://pypi.org/project/aac-datasets/"
+Documentation = "https://aac-datasets.readthedocs.io/"
+Repository = "https://github.com//Labbeti/aac-datasets.git"
+Changelog = "https://github.com/Labbeti/aac-datasets/blob/main/CHANGELOG.md"
 
 [project.scripts]
 aac-datasets = "aac_datasets.__main__:_print_usage"
