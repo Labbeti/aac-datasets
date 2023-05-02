@@ -26,7 +26,7 @@ pylog = logging.getLogger(__name__)
 
 
 class ClothoItem(TypedDict):
-    """Class representing a single Clotho item."""
+    r"""Class representing a single Clotho item."""
 
     # Common attributes
     audio: Tensor
@@ -255,8 +255,8 @@ METADATA_KEYS = (
 
 
 class Clotho(Dataset[ClothoItem]):
-    r"""
-    Unofficial Clotho PyTorch dataset.
+    r"""Unofficial Clotho PyTorch dataset.
+
     Subsets available are 'train', 'val', 'eval', 'test' and 'analysis'.
 
     Audio are waveform sounds of 15 to 30 seconds, sampled at 44100 Hz.

@@ -27,7 +27,7 @@ pylog = logging.getLogger(__name__)
 
 
 class MACSItem(TypedDict):
-    """Dataclass representing a single MACS item."""
+    r"""Dataclass representing a single MACS item."""
 
     # Common attributes
     audio: Tensor

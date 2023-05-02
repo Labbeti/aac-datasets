@@ -27,7 +27,7 @@ pylog = logging.getLogger(__name__)
 
 
 class AudioCapsItem(TypedDict):
-    """Class representing a single AudioCaps item."""
+    r"""Class representing a single AudioCaps item."""
 
     # Common attributes
     audio: Tensor
