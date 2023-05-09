@@ -122,6 +122,9 @@ def list_dict_to_dict_list(
         for item in lst[1:]:
             keys = keys.intersection(item.keys())
     else:
-        raise ValueError(f"Invalid argument key_mode={key_mode}.")
+        KEY_MODES = ("same", "intersect")
+        raise ValueError(
+            f"Invalid argument key_mode={key_mode}. (expected one of {KEY_MODES})"
+        )
 
     return {key: [item[key] for item in lst] for key in keys}

@@ -83,6 +83,20 @@ class AudioCaps(Dataset[AudioCapsItem]):
 
     # Common globals
     AUDIO_N_CHANNELS = 1
+    CITATION: str = r"""
+    @inproceedings{kim_etal_2019_audiocaps,
+        title        = {{A}udio{C}aps: Generating Captions for Audios in The Wild},
+        author       = {Kim, Chris Dongjoo  and Kim, Byeongchang  and Lee, Hyunmin  and Kim, Gunhee},
+        year         = 2019,
+        month        = jun,
+        booktitle    = {Proceedings of the 2019 Conference of the North {A}merican Chapter of the Association for Computational Linguistics: Human Language Technologies, Volume 1 (Long and Short Papers)},
+        publisher    = {Association for Computational Linguistics},
+        address      = {Minneapolis, Minnesota},
+        pages        = {119--132},
+        doi          = {10.18653/v1/N19-1011},
+        url          = {https://aclanthology.org/N19-1011},
+    }
+    """
     DATASET_NAME = "audiocaps"
     FORCE_PREPARE_DATA: bool = False
     MAX_AUDIO_SEC = 10.00096876

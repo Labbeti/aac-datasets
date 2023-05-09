@@ -69,6 +69,21 @@ class MACS(Dataset[MACSItem]):
     """
     # Common globals
     AUDIO_N_CHANNELS = 2
+    CITATION: str = r"""
+    @inproceedings{Martin2021b,
+        title        = {Diversity and Bias in Audio Captioning Datasets},
+        author       = {Martin, Irene and Mesaros, Annamaria},
+        year         = 2021,
+        month        = {November},
+        booktitle    = {Proceedings of the 6th Detection and Classification of Acoustic Scenes and Events 2021 Workshop (DCASE2021)},
+        address      = {Barcelona, Spain},
+        pages        = {90--94},
+        isbn         = {978-84-09-36072-7},
+        url          = {https://dcase.community/documents/workshop2021/proceedings/DCASE2021Workshop_Martin_34.pdf},
+        abstract     = {Describing soundscapes in sentences allows better understanding of the acoustic scene than a single label indicating the acoustic scene class or a set of audio tags indicating the sound events active in the audio clip. In addition, the richness of natural language allows a range of possible descriptions for the same acoustic scene. In this work, we address the diversity obtained when collecting descriptions of soundscapes using crowdsourcing. We study how much the collection of audio captions can be guided by the instructions given in the annotation task, by analysing the possible bias introduced by auxiliary information provided in the annotation process. Our study shows that even when given hints on the audio content, different annotators describe the same soundscape using different vocabulary. In automatic captioning, hints provided as audio tags represent grounding textual information that facilitates guiding the captioning output towards specific concepts. We also release a new dataset of audio captions and audio tags produced by multiple annotators for a subset of the TAU Urban Acoustic Scenes 2018 dataset, suitable for studying guided captioning.},
+        doi.         = {10.5281/zenodo.5770113}
+    }
+    """
     DATASET_NAME = "macs"
     FORCE_PREPARE_DATA: bool = False
     MAX_AUDIO_SEC = 10.000020833333334
