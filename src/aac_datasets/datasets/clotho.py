@@ -254,7 +254,7 @@ METADATA_KEYS = (
 )
 
 
-class Clotho(Dataset):
+class Clotho(Dataset[Dict[str, Any]]):
     r"""Unofficial Clotho PyTorch dataset.
 
     Subsets available are 'train', 'val', 'eval', 'test' and 'analysis'.

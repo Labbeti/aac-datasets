@@ -48,7 +48,7 @@ class MACSItem(TypedDict):
 MACS_ALL_COLUMNS = tuple(MACSItem.__required_keys__ | MACSItem.__optional_keys__)
 
 
-class MACS(Dataset):
+class MACS(Dataset[Dict[str, Any]]):
     r"""Unofficial MACS PyTorch dataset.
 
     .. code-block:: text

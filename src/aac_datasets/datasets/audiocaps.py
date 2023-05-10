@@ -49,7 +49,7 @@ AUDIOCAPS_ALL_COLUMNS = tuple(
 )
 
 
-class AudioCaps(Dataset):
+class AudioCaps(Dataset[Dict[str, Any]]):
     r"""Unofficial AudioCaps PyTorch dataset.
 
     Subsets available are 'train', 'val' and 'test'.
