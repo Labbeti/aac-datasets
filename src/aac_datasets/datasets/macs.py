@@ -143,8 +143,8 @@ class MACS(Dataset[MACSItem]):
         self._loaded = False
 
         if self._download:
-            self.__prepare_data()
-        self.__load_data()
+            self._prepare_dataset()
+        self._load_dataset()
 
     # Properties
     @property
@@ -335,7 +335,7 @@ class MACS(Dataset[MACSItem]):
         fnames = os.listdir(self.__dpath_audio)
         return len(data) == len(fnames)
 
-    def __load_data(self) -> None:
+    def _load_dataset(self) -> None:
         if not self.__is_prepared():
             raise RuntimeError(
                 f"Cannot load data: macs is not prepared in data root={self._root}. Please use download=True in dataset constructor."
@@ -435,7 +435,7 @@ class MACS(Dataset[MACSItem]):
         if self._verbose >= 1:
             pylog.info(f"{repr(self)} has been loaded. (len={len(self)})")
 
-    def __prepare_data(self) -> None:
+    def _prepare_dataset(self) -> None:
         if not osp.isdir(self._root):
             raise RuntimeError(f"Cannot find root directory '{self._root}'.")
 
