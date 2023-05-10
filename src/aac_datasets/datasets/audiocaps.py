@@ -11,7 +11,7 @@ import time
 
 from functools import lru_cache
 from subprocess import CalledProcessError
-from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, Union
+from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, Union, overload
 
 import torch
 import torchaudio
@@ -49,7 +49,7 @@ AUDIOCAPS_ALL_COLUMNS = tuple(
 )
 
 
-class AudioCaps(Dataset[AudioCapsItem]):
+class AudioCaps(Dataset):
     r"""Unofficial AudioCaps PyTorch dataset.
 
     Subsets available are 'train', 'val' and 'test'.
@@ -309,10 +309,19 @@ class AudioCaps(Dataset[AudioCapsItem]):
         self._transform = transform
 
     # Magic methods
-    def __getitem__(
-        self,
-        idx: Any,
-    ) -> AudioCapsItem:
+    @overload
+    def __getitem__(self, idx: int) -> AudioCapsItem:
+        ...
+
+    @overload
+    def __getitem__(self, idx: Union[Iterable[int], slice, None]) -> dict[str, list]:
+        ...
+
+    @overload
+    def __getitem__(self, idx: Any) -> Any:
+        ...
+
+    def __getitem__(self, idx: Any) -> Any:
         if (
             isinstance(idx, tuple)
             and len(idx) == 2

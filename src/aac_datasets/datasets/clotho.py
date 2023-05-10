@@ -8,7 +8,7 @@ import os
 import os.path as osp
 
 from functools import lru_cache
-from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, Union
+from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, Union, overload
 from zipfile import ZipFile
 
 import torchaudio
@@ -254,7 +254,7 @@ METADATA_KEYS = (
 )
 
 
-class Clotho(Dataset[ClothoItem]):
+class Clotho(Dataset):
     r"""Unofficial Clotho PyTorch dataset.
 
     Subsets available are 'train', 'val', 'eval', 'test' and 'analysis'.
@@ -509,10 +509,19 @@ class Clotho(Dataset[ClothoItem]):
         self._transform = transform
 
     # Magic methods
-    def __getitem__(
-        self,
-        idx: Any,
-    ) -> ClothoItem:
+    @overload
+    def __getitem__(self, idx: int) -> ClothoItem:
+        ...
+
+    @overload
+    def __getitem__(self, idx: Union[Iterable[int], slice, None]) -> dict[str, list]:
+        ...
+
+    @overload
+    def __getitem__(self, idx: Any) -> Any:
+        ...
+
+    def __getitem__(self, idx: Any) -> Any:
         if (
             isinstance(idx, tuple)
             and len(idx) == 2

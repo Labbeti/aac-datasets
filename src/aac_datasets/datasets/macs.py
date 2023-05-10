@@ -10,7 +10,7 @@ import shutil
 import zipfile
 
 from functools import lru_cache
-from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, Union
+from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, Union, overload
 
 import torchaudio
 import yaml
@@ -48,7 +48,7 @@ class MACSItem(TypedDict):
 MACS_ALL_COLUMNS = tuple(MACSItem.__required_keys__ | MACSItem.__optional_keys__)
 
 
-class MACS(Dataset[MACSItem]):
+class MACS(Dataset):
     r"""Unofficial MACS PyTorch dataset.
 
     .. code-block:: text
@@ -277,10 +277,19 @@ class MACS(Dataset[MACSItem]):
         self._transform = transform
 
     # Magic methods
-    def __getitem__(
-        self,
-        idx: Any,
-    ) -> MACSItem:
+    @overload
+    def __getitem__(self, idx: int) -> MACSItem:
+        ...
+
+    @overload
+    def __getitem__(self, idx: Union[Iterable[int], slice, None]) -> dict[str, list]:
+        ...
+
+    @overload
+    def __getitem__(self, idx: Any) -> Any:
+        ...
+
+    def __getitem__(self, idx: Any) -> Any:
         if (
             isinstance(idx, tuple)
             and len(idx) == 2
