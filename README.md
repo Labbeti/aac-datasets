@@ -138,10 +138,10 @@ If you use this software, please consider cite it as below :
     Labbe_aac-datasets_2022,
     author = {Labbé, Etienne},
     license = {MIT},
-    month = {01},
+    month = {05},
     title = {{aac-datasets}},
     url = {https://github.com/Labbeti/aac-datasets/},
-    version = {0.3.2},
+    version = {0.3.3},
     year = {2023}
 }
 ```

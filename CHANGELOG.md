@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.3.3] UNRELEASED
+## [0.3.3] 2023-05-11
 ### Added
 - Script check.py now check if the audio files exists.
 - Option `VERIFY_FILES` for Clotho and MACS datasets to validate checksums.
