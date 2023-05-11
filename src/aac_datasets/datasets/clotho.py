@@ -413,6 +413,18 @@ class Clotho(Dataset[Dict[str, Any]]):
         return len(self), len(self.column_names)
 
     # Public methods
+    @overload
+    def at(self, idx: int) -> ClothoItem:
+        ...
+
+    @overload
+    def at(self, idx: Union[Iterable[int], slice, None]) -> Dict[str, List]:
+        ...
+
+    @overload
+    def at(self, idx: Any, column: Any) -> Any:
+        ...
+
     def at(
         self,
         idx: Union[int, Iterable[int], None, slice] = None,
@@ -514,7 +526,7 @@ class Clotho(Dataset[Dict[str, Any]]):
         ...
 
     @overload
-    def __getitem__(self, idx: Union[Iterable[int], slice, None]) -> dict[str, list]:
+    def __getitem__(self, idx: Union[Iterable[int], slice, None]) -> Dict[str, List]:
         ...
 
     @overload
