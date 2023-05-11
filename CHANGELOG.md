@@ -4,9 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## [0.3.3] UNRELEASED
 ### Added
-- Script check.py now check if audio files of datasets exists.
+- Script check.py now check if the audio files exists.
 - Option `VERIFY_FILES` for Clotho and MACS datasets to validate checksums.
 - `CITATION` global constant for each dataset.
+
+### Changed
+- Methods `at` and `getitem` now use correct typing when passing an integer, list, slice or None values.
 
 ### Fixed
 - Python minimal version in README and pyproject.toml.
