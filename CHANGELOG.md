@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.3] 2023-05-11
+### Added
+- Script check.py now check if the audio files exists.
+- Option `VERIFY_FILES` for Clotho and MACS datasets to validate checksums.
+- `CITATION` global constant for each dataset.
+
+### Changed
+- Methods `at` and `getitem` now use correct typing when passing an integer, list, slice or None values.
+
+### Fixed
+- Python minimal version in README and pyproject.toml.
+- Transform applied in `getitem` method when argument is not an integer.
+- Incompatibility with `torchaudio>=2.0`.
+- Remove 'tags' from AudioCaps columns when with_tags=False.
+
 ## [0.3.2] 2023-01-30
 ### Added
 - `AudioCaps.load_class_labels_indices` to load AudioSet classes map externally.

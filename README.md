@@ -4,10 +4,13 @@
 
 # Audio Captioning datasets for PyTorch
 
-<a href="https://www.python.org/"><img alt="Python" src="https://img.shields.io/badge/-Python 3.8+-blue?style=for-the-badge&logo=python&logoColor=white"></a>
+<a href="https://www.python.org/"><img alt="Python" src="https://img.shields.io/badge/-Python 3.7+-blue?style=for-the-badge&logo=python&logoColor=white"></a>
 <a href="https://pytorch.org/get-started/locally/"><img alt="PyTorch" src="https://img.shields.io/badge/-PyTorch 1.10.1+-ee4c2c?style=for-the-badge&logo=pytorch&logoColor=white"></a>
 <a href="https://black.readthedocs.io/en/stable/"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-black.svg?style=for-the-badge&labelColor=gray"></a>
 <a href="https://github.com/Labbeti/aac-datasets/actions"><img alt="Build" src="https://img.shields.io/github/actions/workflow/status/Labbeti/aac-datasets/python-package-pip.yaml?branch=main&style=for-the-badge&logo=github"></a>
+<a href='https://aac-datasets.readthedocs.io/en/stable/?badge=stable'>
+    <img src='https://readthedocs.org/projects/aac-datasets/badge/?version=stable&style=for-the-badge' alt='Documentation Status' />
+</a>
 
 Audio Captioning unofficial datasets source code for **AudioCaps** [[1]](#audiocaps), **Clotho** [[2]](#clotho), and **MACS** [[3]](#macs), designed for PyTorch.
 
@@ -53,21 +56,23 @@ Here is the statistics for each dataset :
 
 | | AudioCaps | Clotho | MACS |
 |:---:|:---:|:---:|:---:|
-| Subset(s) | train, val, test | dev, val, eval, test, analysis | full |
-| Sample rate | 32000 | 44100 | 48000 |
-| Estimated size | 43GB | 27GB | 13GB |
-| Audio source | AudioSet (youtube) | Freesound | TAU Urban Acoustic Scenes 2019 |
+| Subsets | train, val, test | dev, val, eval, test, analysis | full |
+| Sample rate (Hz) | 32,000 | 44,100 | 48,000 |
+| Estimated size (GB) | 43 | 27 | 13 |
+| Audio source | AudioSet (YouTube) | FreeSound | TAU Urban Acoustic Scenes 2019 |
+
+For Clotho, the dev subset should be used for training, val for validation and eval for testing. The test and analysis subsets contains only audio files without labels from the DCASE challenge.
 
 Here is the **train** subset statistics for each dataset :
 
 | | AudioCaps/train | Clotho/dev | MACS/full |
 |:---:|:---:|:---:|:---:|
-| Nb audios | 49838 | 3840 | 3930 |
-| Total audio duration | 136.6h<sup>1</sup> | 24.0h | 10.9h |
-| Audio duration range | 0.5-10s | 15-30s | 10s |
+| Nb audios | 49,838 | 3,840 | 3,930 |
+| Total audio duration (h) | 136.6<sup>1</sup> | 24.0 | 10.9 |
+| Audio duration range (s) | 0.5-10 | 15-30 | 10 |
 | Nb captions per audio | 1 | 5 | 2-5 |
-| Nb captions | 49838 | 19195 | 17275 |
-| Total nb words<sup>2</sup> | 402482 | 217362 | 160006 |
+| Nb captions | 49,838 | 19,195 | 17,275 |
+| Total nb words<sup>2</sup> | 402,482 | 217,362 | 160,006 |
 | Sentence size<sup>2</sup> | 2-52 | 8-20 | 5-40 |
 
 <sup>1</sup> This duration is estimated on the total duration of 46230/49838 files of 126.7h.
@@ -100,17 +105,19 @@ dataset = AudioCaps(root=".", download=True)
 ```
 
 ## Download datasets
-To download a dataset, you can use `download=True` argument in dataset construction.
-
-However, if you want to download datasets separately, you can also use the following command :
-```bash
-aac-datasets-download --root "." clotho --subsets "dev"
+To download a dataset, you can use `download` argument in dataset construction :
+```python
+dataset = Clotho(root=".", subset="dev", download=True)
 ```
 Or use the corresponding function in the code :
 ```python
 from aac_datasets.download import download_clotho
 
 download_clotho(root=".", subsets=["dev"])
+```
+However, if you want to download datasets from a script, you can also use the following command :
+```bash
+aac-datasets-download --root "." clotho --subsets "dev"
 ```
 
 ## References
@@ -131,10 +138,10 @@ If you use this software, please consider cite it as below :
     Labbe_aac-datasets_2022,
     author = {Labbé, Etienne},
     license = {MIT},
-    month = {01},
+    month = {05},
     title = {{aac-datasets}},
     url = {https://github.com/Labbeti/aac-datasets/},
-    version = {0.3.2},
+    version = {0.3.3},
     year = {2023}
 }
 ```

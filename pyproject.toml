@@ -1,0 +1,62 @@
+[project]
+name = "aac-datasets"
+authors = [
+    {name = "Etienne Labbé (Labbeti)", email = "labbeti.pub@gmail.com"},
+]
+description = "Audio Captioning datasets for PyTorch."
+readme = "README.md"
+requires-python = ">=3.7"
+keywords = ["audio", "deep-learning", "pytorch", "dataset", "caption", "datasets", "captioning", "audio-captioning"]
+license = {file = "LICENSE"}
+classifiers = [
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+maintainers = [
+    {name = "Etienne Labbé (Labbeti)", email = "labbeti.pub@gmail.com"},
+]
+dependencies = [
+    "torch>=1.10.1",
+    "torchaudio>=0.10.1",
+    "py7zr>=0.17.2",
+    "pyyaml>=6.0",
+    "tqdm>=4.64.0",
+]
+dynamic = ["version"]
+
+[project.urls]
+Homepage = "https://pypi.org/project/aac-datasets/"
+Documentation = "https://aac-datasets.readthedocs.io/"
+Repository = "https://github.com//Labbeti/aac-datasets.git"
+Changelog = "https://github.com/Labbeti/aac-datasets/blob/main/CHANGELOG.md"
+
+[project.scripts]
+aac-datasets = "aac_datasets.__main__:_print_usage"
+aac-datasets-check = "aac_datasets.check:_main_check"
+aac-datasets-download = "aac_datasets.download:_main_download"
+aac-datasets-info = "aac_datasets.info:print_install_info"
+
+[project.optional-dependencies]
+dev = [
+  "pytest==6.2.5",
+  "flake8==4.0.1",
+  "click==8.0.4",
+  "black==22.10.0",
+  "ipykernel==6.9.1",
+  "twine==4.0.1",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]  # list of folders that contain the packages (["."] by default)
+include = ["aac_datasets*"]  # package names should match these glob patterns (["*"] by default)
+
+[tool.setuptools.dynamic]
+version = {attr = "aac_datasets.__version__"}

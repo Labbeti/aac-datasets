@@ -1,12 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, TypeVar, Union
 
 import torch
 
 from torch import Tensor
 from torch.nn import functional as F
+
+
+T = TypeVar("T")
 
 
 class BasicCollate:
@@ -16,7 +19,7 @@ class BasicCollate:
     """
 
     def __call__(self, batch_lst: List[Dict[str, Any]]) -> Dict[str, List[Any]]:
-        return _lst_dic_to_dic_lst(batch_lst)
+        return list_dict_to_dict_list(batch_lst)
 
 
 class AdvancedCollate:
@@ -40,7 +43,7 @@ class AdvancedCollate:
         self.fill_values = fill_values
 
     def __call__(self, batch_lst: List[Dict[str, Any]]) -> Dict[str, Any]:
-        batch_dic: Dict[str, Any] = _lst_dic_to_dic_lst(batch_lst)
+        batch_dic: Dict[str, Any] = list_dict_to_dict_list(batch_lst)
         keys = list(batch_dic.keys())
 
         for key in keys:
@@ -55,10 +58,11 @@ class AdvancedCollate:
             if key in self.fill_values:
                 values = list(map(torch.as_tensor, values))
 
-            are_tensors = [isinstance(value, Tensor) for value in values]
-            if not all(are_tensors):
-                batch_dic[key] = values
-                continue
+            else:
+                are_tensors = [isinstance(value, Tensor) for value in values]
+                if not all(are_tensors):
+                    batch_dic[key] = values
+                    continue
 
             are_stackables = [value.shape == values[0].shape for value in values]
             if all(are_stackables):
@@ -96,9 +100,10 @@ def pad_last_dim(tensor: Tensor, target_length: int, pad_value: float) -> Tensor
     return F.pad(tensor, [0, pad_len], value=pad_value)
 
 
-def _lst_dic_to_dic_lst(
-    lst: List[Dict[str, Any]], key_mode: str = "intersect"
-) -> Dict[str, List[Any]]:
+def list_dict_to_dict_list(
+    lst: List[Dict[str, T]],
+    key_mode: str = "intersect",
+) -> Dict[str, List[T]]:
     """Convert list of dicts to dict of lists.
 
     :param lst: The list of dict to merge.
@@ -117,6 +122,9 @@ def _lst_dic_to_dic_lst(
         for item in lst[1:]:
             keys = keys.intersection(item.keys())
     else:
-        raise ValueError(f"Invalid argument key_mode={key_mode}.")
+        KEY_MODES = ("same", "intersect")
+        raise ValueError(
+            f"Invalid argument key_mode={key_mode}. (expected one of {KEY_MODES})"
+        )
 
     return {key: [item[key] for item in lst] for key in keys}

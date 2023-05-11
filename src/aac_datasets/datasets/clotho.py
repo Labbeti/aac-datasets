@@ -7,43 +7,45 @@ import logging
 import os
 import os.path as osp
 
-from dataclasses import dataclass, field, fields
 from functools import lru_cache
-from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, Union
+from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, Union, overload
 from zipfile import ZipFile
 
-import torch
 import torchaudio
 
 from py7zr import SevenZipFile
 from torch import Tensor
 from torch.hub import download_url_to_file
 from torch.utils.data.dataset import Dataset
-from torchaudio.datasets.utils import validate_file
+from typing_extensions import TypedDict
+
+from aac_datasets.utils.download import validate_file
 
 
-logger = logging.getLogger(__name__)
+pylog = logging.getLogger(__name__)
 
 
-@dataclass
-class ClothoItem:
-    """Dataclass representing a single Clotho item."""
+class ClothoItem(TypedDict):
+    r"""Class representing a single Clotho item."""
 
     # Common attributes
-    audio: Tensor = torch.empty((0,))
-    captions: List[str] = field(default_factory=list)
-    dataset: str = "clotho"
-    fname: str = "unknown"
-    index: int = -1
-    subset: str = "unknown"
-    sr: int = -1
+    audio: Tensor
+    captions: List[str]
+    dataset: str
+    fname: str
+    index: int
+    subset: str
+    sr: int
     # Clotho-specific attributes
-    keywords: List[str] = field(default_factory=list)
-    sound_id: str = "unknown"
-    sound_link: str = "unknown"
-    start_end_samples: str = "unknown"
-    manufacturer: str = "unknown"
-    license: str = "unknown"
+    keywords: List[str]
+    sound_id: str  # warning: some files contains "Not found"
+    sound_link: str  # warning: some files contains "NA"
+    start_end_samples: str  # warning: some files contains ""
+    manufacturer: str
+    license: str
+
+
+CLOTHO_ALL_COLUMNS = tuple(ClothoItem.__required_keys__ | ClothoItem.__optional_keys__)
 
 
 CLOTHO_LINKS = {
@@ -113,23 +115,6 @@ CLOTHO_LINKS = {
                 "hash_value": "5fdc51b4c4f3468ff7d251ea563588c9",
             },
         },
-        "eval": {
-            "audio_archive": {
-                "fname": "clotho_audio_evaluation.7z",
-                "url": "https://zenodo.org/record/4743815/files/clotho_audio_evaluation.7z?download=1",
-                "hash_value": "4569624ccadf96223f19cb59fe4f849f",
-            },
-            "captions": {
-                "fname": "clotho_captions_evaluation.csv",
-                "url": "https://zenodo.org/record/4743815/files/clotho_captions_evaluation.csv?download=1",
-                "hash_value": "1b16b9e57cf7bdb7f13a13802aeb57e2",
-            },
-            "metadata": {
-                "fname": "clotho_metadata_evaluation.csv",
-                "url": "https://zenodo.org/record/4743815/files/clotho_metadata_evaluation.csv?download=1",
-                "hash_value": "13946f054d4e1bf48079813aac61bf77",
-            },
-        },
         "val": {
             "audio_archive": {
                 "fname": "clotho_audio_validation.7z",
@@ -145,6 +130,23 @@ CLOTHO_LINKS = {
                 "fname": "clotho_metadata_validation.csv",
                 "url": "https://zenodo.org/record/4743815/files/clotho_metadata_validation.csv?download=1",
                 "hash_value": "f69cfacebcd47c4d8d30d968f9865475",
+            },
+        },
+        "eval": {
+            "audio_archive": {
+                "fname": "clotho_audio_evaluation.7z",
+                "url": "https://zenodo.org/record/4743815/files/clotho_audio_evaluation.7z?download=1",
+                "hash_value": "4569624ccadf96223f19cb59fe4f849f",
+            },
+            "captions": {
+                "fname": "clotho_captions_evaluation.csv",
+                "url": "https://zenodo.org/record/4743815/files/clotho_captions_evaluation.csv?download=1",
+                "hash_value": "1b16b9e57cf7bdb7f13a13802aeb57e2",
+            },
+            "metadata": {
+                "fname": "clotho_metadata_evaluation.csv",
+                "url": "https://zenodo.org/record/4743815/files/clotho_metadata_evaluation.csv?download=1",
+                "hash_value": "13946f054d4e1bf48079813aac61bf77",
             },
         },
         "test": {
@@ -178,23 +180,6 @@ CLOTHO_LINKS = {
                 "hash_value": "170d20935ecfdf161ce1bb154118cda5",
             },
         },
-        "eval": {
-            "audio_archive": {
-                "fname": "clotho_audio_evaluation.7z",
-                "url": "https://zenodo.org/record/4783391/files/clotho_audio_evaluation.7z?download=1",
-                "hash_value": "4569624ccadf96223f19cb59fe4f849f",
-            },
-            "captions": {
-                "fname": "clotho_captions_evaluation.csv",
-                "url": "https://zenodo.org/record/4783391/files/clotho_captions_evaluation.csv?download=1",
-                "hash_value": "1b16b9e57cf7bdb7f13a13802aeb57e2",
-            },
-            "metadata": {
-                "fname": "clotho_metadata_evaluation.csv",
-                "url": "https://zenodo.org/record/4783391/files/clotho_metadata_evaluation.csv?download=1",
-                "hash_value": "13946f054d4e1bf48079813aac61bf77",
-            },
-        },
         "val": {
             "audio_archive": {
                 "fname": "clotho_audio_validation.7z",
@@ -210,6 +195,23 @@ CLOTHO_LINKS = {
                 "fname": "clotho_metadata_validation.csv",
                 "url": "https://zenodo.org/record/4783391/files/clotho_metadata_validation.csv?download=1",
                 "hash_value": "2e010427c56b1ce6008b0f03f41048ce",
+            },
+        },
+        "eval": {
+            "audio_archive": {
+                "fname": "clotho_audio_evaluation.7z",
+                "url": "https://zenodo.org/record/4783391/files/clotho_audio_evaluation.7z?download=1",
+                "hash_value": "4569624ccadf96223f19cb59fe4f849f",
+            },
+            "captions": {
+                "fname": "clotho_captions_evaluation.csv",
+                "url": "https://zenodo.org/record/4783391/files/clotho_captions_evaluation.csv?download=1",
+                "hash_value": "1b16b9e57cf7bdb7f13a13802aeb57e2",
+            },
+            "metadata": {
+                "fname": "clotho_metadata_evaluation.csv",
+                "url": "https://zenodo.org/record/4783391/files/clotho_metadata_evaluation.csv?download=1",
+                "hash_value": "13946f054d4e1bf48079813aac61bf77",
             },
         },
         "test": {
@@ -253,8 +255,8 @@ METADATA_KEYS = (
 
 
 class Clotho(Dataset[Dict[str, Any]]):
-    r"""
-    Unofficial Clotho PyTorch dataset.
+    r"""Unofficial Clotho PyTorch dataset.
+
     Subsets available are 'train', 'val', 'eval', 'test' and 'analysis'.
 
     Audio are waveform sounds of 15 to 30 seconds, sampled at 44100 Hz.
@@ -290,20 +292,37 @@ class Clotho(Dataset[Dict[str, Any]]):
 
     """
 
-    # Global
-    AUDIO_MAX_SEC = 30.0
-    AUDIO_MIN_SEC = 15.0
+    # Common globals
     AUDIO_N_CHANNELS = 1
+    CITATION: str = r"""
+    @inproceedings{Drossos_2020_icassp,
+        author = "Drossos, Konstantinos and Lipping, Samuel and Virtanen, Tuomas",
+        title = "Clotho: an Audio Captioning Dataset",
+        booktitle = "Proc. IEEE Int. Conf. Acoustic., Speech and Signal Process. (ICASSP)",
+        year = "2020",
+        pages = "736-740",
+        abstract = "Audio captioning is the novel task of general audio content description using free text. It is an intermodal translation task (not speech-to-text), where a system accepts as an input an audio signal and outputs the textual description (i.e. the caption) of that signal. In this paper we present Clotho, a dataset for audio captioning consisting of 4981 audio samples of 15 to 30 seconds duration and 24 905 captions of eight to 20 words length, and a baseline method to provide initial results. Clotho is built with focus on audio content and caption diversity, and the splits of the data are not hampering the training or evaluation of methods. All sounds are from the Freesound platform, and captions are crowdsourced using Amazon Mechanical Turk and annotators from English speaking countries. Unique words, named entities, and speech transcription are removed with post-processing. Clotho is freely available online (https://zenodo.org/record/3490684)."
+    }
+    """
+    DATASET_NAME = "clotho"
+    FORCE_PREPARE_DATA: bool = False
+    MAX_AUDIO_SEC = 30.0
+    MIN_AUDIO_SEC = 15.0
+    SAMPLE_RATE = 44100
+    SUBSETS = tuple(CLOTHO_LINKS[CLOTHO_LAST_VERSION].keys())
+    VERIFY_FILES: bool = True
+
+    # Clotho-specific globals
     CAPTION_MAX_LENGTH = 20
     CAPTION_MIN_LENGTH = 8
     CAPTIONS_PER_AUDIO = {"dev": 5, "val": 5, "eval": 5, "test": 0, "analysis": 0}
     CLEAN_ARCHIVES: bool = False
-    FORCE_PREPARE_DATA: bool = False
-    SAMPLE_RATE = 44100
+    INVALID_SOUND_ID = "Not found"
+    INVALID_SOUND_LINK = "NA"
+    INVALID_START_END_SAMPLES = ""
     SUBSETS_DICT = {
         version: tuple(links.keys()) for version, links in CLOTHO_LINKS.items()
     }
-    SUBSETS = SUBSETS_DICT[CLOTHO_LAST_VERSION]
     VERSIONS = tuple(CLOTHO_LINKS.keys())
 
     # Initialization
@@ -339,6 +358,12 @@ class Clotho(Dataset[Dict[str, Any]]):
                 f"Invalid Clotho argument version={version}. Must be one of {Clotho.VERSIONS}."
             )
 
+        if version == "v2":
+            pylog.warning(
+                f"The version '{version}' of the Clotho dataset contains minor some errors in file names and few corrupted files."
+                f"Please consider using the fixed version 'v2.1'."
+            )
+
         subsets = tuple(CLOTHO_LINKS[version].keys())
         if subset not in subsets:
             raise ValueError(
@@ -358,24 +383,26 @@ class Clotho(Dataset[Dict[str, Any]]):
         self._loaded = False
 
         if self._download:
-            self.__prepare_data()
-        self.__load_data()
+            self._prepare_dataset()
+        self._load_dataset()
 
     # Properties
     @property
     def column_names(self) -> List[str]:
         """The name of each column of the dataset."""
-        return [
-            field_.name
-            for field_ in fields(ClothoItem)
-            if field_.name in self._all_items or field_.name not in METADATA_KEYS
+        column_names = list(CLOTHO_ALL_COLUMNS)
+        column_names = [
+            name
+            for name in column_names
+            if name in self._all_items or name not in METADATA_KEYS
         ]
+        return column_names
 
     @property
     def info(self) -> Dict[str, Any]:
         """Return the global dataset info."""
         return {
-            "dataset": "clotho",
+            "dataset": self.DATASET_NAME,
             "subset": self._subset,
             "version": self._version,
         }
@@ -386,6 +413,18 @@ class Clotho(Dataset[Dict[str, Any]]):
         return len(self), len(self.column_names)
 
     # Public methods
+    @overload
+    def at(self, idx: int) -> ClothoItem:
+        ...
+
+    @overload
+    def at(self, idx: Union[Iterable[int], slice, None]) -> Dict[str, List]:
+        ...
+
+    @overload
+    def at(self, idx: Any, column: Any) -> Any:
+        ...
+
     def at(
         self,
         idx: Union[int, Iterable[int], None, slice] = None,
@@ -440,7 +479,7 @@ class Clotho(Dataset[Dict[str, Any]]):
             return audio_metadata
 
         elif column == "dataset":
-            return "clotho"
+            return self.DATASET_NAME
 
         elif column == "fpath":
             fname = self.at(idx, "fname")
@@ -482,10 +521,19 @@ class Clotho(Dataset[Dict[str, Any]]):
         self._transform = transform
 
     # Magic methods
-    def __getitem__(
-        self,
-        idx: Any,
-    ) -> Dict[str, Any]:
+    @overload
+    def __getitem__(self, idx: int) -> ClothoItem:
+        ...
+
+    @overload
+    def __getitem__(self, idx: Union[Iterable[int], slice, None]) -> Dict[str, List]:
+        ...
+
+    @overload
+    def __getitem__(self, idx: Any) -> Any:
+        ...
+
+    def __getitem__(self, idx: Any) -> Any:
         if (
             isinstance(idx, tuple)
             and len(idx) == 2
@@ -496,7 +544,7 @@ class Clotho(Dataset[Dict[str, Any]]):
             column = None
 
         item = self.at(idx, column)
-        if self._transform is not None:
+        if isinstance(idx, int) and column is None and self._transform is not None:
             item = self._transform(item)
         return item
 
@@ -554,7 +602,7 @@ class Clotho(Dataset[Dict[str, Any]]):
             lines = list(reader)
         return len(lines) == len(os.listdir(self.__dpath_audio_subset))
 
-    def __load_data(self) -> None:
+    def _load_dataset(self) -> None:
         if not self.__is_prepared():
             raise RuntimeError(
                 f"Cannot load data: clotho_{self._subset} is not prepared in data root={self._root}. Please use download=True in dataset constructor."
@@ -652,23 +700,23 @@ class Clotho(Dataset[Dict[str, Any]]):
             ]
 
         if self._flat_captions and self.CAPTIONS_PER_AUDIO[self._subset] > 1:
-            all_infos_unfolded = {key: [] for key in all_items.keys()}
+            all_infos_flatten = {key: [] for key in all_items.keys()}
 
             for i, captions in enumerate(all_items["captions"]):
                 for caption in captions:
                     for key in all_items.keys():
-                        all_infos_unfolded[key].append(all_items[key][i])
-                    all_infos_unfolded["captions"] = [caption]
+                        all_infos_flatten[key].append(all_items[key][i])
+                    all_infos_flatten["captions"] = [caption]
 
-            all_items = all_infos_unfolded
+            all_items = all_infos_flatten
 
         self._all_items = all_items
         self._loaded = True
 
         if self._verbose >= 1:
-            logger.info(f"{repr(self)} has been loaded. (len={len(self)})")
+            pylog.info(f"{repr(self)} has been loaded. (len={len(self)})")
 
-    def __prepare_data(self) -> None:
+    def _prepare_dataset(self) -> None:
         if not osp.isdir(self._root):
             raise RuntimeError(f"Cannot find root directory '{self._root}'.")
 
@@ -677,10 +725,10 @@ class Clotho(Dataset[Dict[str, Any]]):
         os.makedirs(self.__dpath_csv, exist_ok=True)
 
         if self._verbose >= 1:
-            logger.info(f"Start to download files for clotho_{self._subset}...")
+            pylog.info(f"Start to download files for clotho_{self._subset}...")
 
         links = copy.deepcopy(CLOTHO_LINKS[self._version][self._subset])
-        extensions = ("7z", "csv", "zip")
+        EXTENSIONS = ("7z", "csv", "zip")
 
         # Download csv and 7z files
         for file_info in links.values():
@@ -697,13 +745,13 @@ class Clotho(Dataset[Dict[str, Any]]):
                 dpath = self.__dpath_csv
             else:
                 raise RuntimeError(
-                    f"Found invalid extension={extension}. Must be one of {extensions}."
+                    f"Found invalid extension={extension}. Must be one of {EXTENSIONS}."
                 )
 
             fpath = osp.join(dpath, fname)
             if not osp.isfile(fpath) or self.FORCE_PREPARE_DATA:
                 if self._verbose >= 1:
-                    logger.info(f"Download and check file '{fname}' from url={url}...")
+                    pylog.info(f"Download and check file '{fname}' from url={url}...")
 
                 download_url_to_file(
                     url,
@@ -712,79 +760,87 @@ class Clotho(Dataset[Dict[str, Any]]):
                 )
 
             elif self._verbose >= 1:
-                logger.info(f"File fname={fname} is already extracted.")
+                pylog.info(f"File '{fname}' is already downloaded.")
 
-            with open(fpath, "rb") as file:
-                valid = validate_file(file, hash_value, hash_type="md5")
-            if not valid:
-                raise RuntimeError(f"Invalid checksum for file {fname}.")
+            if self.VERIFY_FILES:
+                valid = validate_file(fpath, hash_value, hash_type="md5")
+                if not valid:
+                    raise RuntimeError(f"Invalid checksum for file {fname}.")
+                elif self._verbose >= 2:
+                    pylog.debug(f"File '{fname}' has a valid checksum.")
 
         # Extract audio files from archives
         for file_info in links.values():
             fname = file_info["fname"]
             extension = fname.split(".")[-1]
 
-            if extension in ("7z", "zip"):
-                fpath = osp.join(self.__dpath_archives, fname)
+            if extension == "csv":
+                continue
 
-                if self._verbose >= 1:
-                    logger.info(f"Extract archive file fname={fname}...")
+            if extension not in ("7z", "zip"):
+                pylog.error(
+                    f"Found unexpected extension={extension} for downloaded file '{fname}'. Expected one of {EXTENSIONS}."
+                )
+                continue
 
-                if extension == "7z":
-                    archive_file = SevenZipFile(fpath)
-                    compressed_fnames = [
-                        osp.basename(fname) for fname in archive_file.getnames()
-                    ]
-                elif extension == "zip":
-                    archive_file = ZipFile(fpath)
-                    compressed_fnames = [
-                        osp.basename(file.filename) for file in archive_file.filelist
-                    ]
-                else:
-                    raise RuntimeError(f"Invalid extension '{extension}'.")
+            fpath = osp.join(self.__dpath_archives, fname)
 
-                # Ignore dir name from archive file
+            if self._verbose >= 1:
+                pylog.info(f"Extract archive file fname={fname}...")
+
+            if extension == "7z":
+                archive_file = SevenZipFile(fpath)
                 compressed_fnames = [
-                    fname
-                    for fname in compressed_fnames
-                    if fname not in ("", CLOTHO_AUDIO_DNAMES[self._subset])
+                    osp.basename(fname) for fname in archive_file.getnames()
                 ]
-                extracted_fnames = (
-                    os.listdir(self.__dpath_audio_subset)
-                    if osp.isdir(self.__dpath_audio_subset)
-                    else []
-                )
-
-                if set(extracted_fnames) != set(compressed_fnames):
-                    archive_file.extractall(self.__dpath_audio)
-
-                    # Check if files is good now
-                    extracted_fnames = os.listdir(self.__dpath_audio_subset)
-                    if set(extracted_fnames) != set(compressed_fnames):
-                        raise RuntimeError(
-                            f"Invalid number of audios extracted. (found {len(extracted_fnames)} files but expected the same {len(compressed_fnames)} files)"
-                        )
-
-                archive_file.close()
-
-            elif extension == "csv":
-                pass
-
+            elif extension == "zip":
+                archive_file = ZipFile(fpath)
+                compressed_fnames = [
+                    osp.basename(file.filename) for file in archive_file.filelist
+                ]
             else:
-                logger.error(
-                    f"Found unexpected extension={extension} for downloaded file '{fname}'. Expected one of {extensions}."
-                )
+                raise RuntimeError(f"Invalid extension '{extension}'.")
+
+            # Ignore dir name from archive file
+            compressed_fnames = [
+                fname
+                for fname in compressed_fnames
+                if fname not in ("", CLOTHO_AUDIO_DNAMES[self._subset])
+            ]
+            extracted_fnames = (
+                os.listdir(self.__dpath_audio_subset)
+                if osp.isdir(self.__dpath_audio_subset)
+                else []
+            )
+
+            if set(extracted_fnames) != set(compressed_fnames):
+                archive_file.extractall(self.__dpath_audio)
+
+                # Check if files is good now
+                extracted_fnames = os.listdir(self.__dpath_audio_subset)
+                if set(extracted_fnames) != set(compressed_fnames):
+                    raise RuntimeError(
+                        f"Invalid number of audios extracted. (found {len(extracted_fnames)} files but expected the same {len(compressed_fnames)} files)"
+                    )
+
+            archive_file.close()
 
         if self.CLEAN_ARCHIVES:
             for file_info in links.values():
                 fname = file_info["fname"]
                 extension = fname.split(".")[-1]
+                if extension not in ("7z", "zip"):
+                    continue
 
-                if extension in ("7z", "zip"):
-                    fpath = osp.join(self.__dpath_audio, fname)
-                    if self._verbose >= 1:
-                        logger.info(f"Removing archive file {osp.basename(fpath)}...")
-                    os.remove(fpath)
+                fpath = osp.join(self.__dpath_audio, fname)
+                if self._verbose >= 1:
+                    pylog.info(f"Removing archive file {osp.basename(fpath)}...")
+                os.remove(fpath)
+
+        if self._verbose >= 2:
+            pylog.debug(
+                f"Dataset {self.__class__.__name__} ({self._subset}) has been prepared."
+            )
 
 
 CLOTHO_AUDIO_DNAMES = {

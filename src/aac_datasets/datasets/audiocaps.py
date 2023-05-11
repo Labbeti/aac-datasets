@@ -9,10 +9,9 @@ import subprocess
 import sys
 import time
 
-from dataclasses import dataclass, field, fields
 from functools import lru_cache
 from subprocess import CalledProcessError
-from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, Union
+from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, Union, overload
 
 import torch
 import torchaudio
@@ -21,28 +20,33 @@ import tqdm
 from torch import Tensor
 from torch.hub import download_url_to_file
 from torch.utils.data.dataset import Dataset
+from typing_extensions import TypedDict
 
 
-logger = logging.getLogger(__name__)
+pylog = logging.getLogger(__name__)
 
 
-@dataclass
-class AudioCapsItem:
-    """Dataclass representing a single AudioCaps item."""
+class AudioCapsItem(TypedDict):
+    r"""Class representing a single AudioCaps item."""
 
     # Common attributes
-    audio: Tensor = torch.empty((0,))
-    captions: List[str] = field(default_factory=list)
-    dataset: str = "audiocaps"
-    fname: str = "unknown"
-    index: int = -1
-    subset: str = "unknown"
-    sr: int = -1
+    audio: Tensor
+    captions: List[str]
+    dataset: str
+    fname: str
+    index: int
+    subset: str
+    sr: int
     # AudioCaps-specific attributes
-    audiocaps_ids: List[int] = field(default_factory=list)
-    start_time: int = -1
-    tags: List[int] = field(default_factory=list)
-    youtube_id: str = "unknown"
+    audiocaps_ids: List[int]
+    start_time: int
+    tags: List[int]
+    youtube_id: str
+
+
+AUDIOCAPS_ALL_COLUMNS = tuple(
+    AudioCapsItem.__required_keys__ | AudioCapsItem.__optional_keys__
+)
 
 
 class AudioCaps(Dataset[Dict[str, Any]]):
@@ -50,7 +54,7 @@ class AudioCaps(Dataset[Dict[str, Any]]):
 
     Subsets available are 'train', 'val' and 'test'.
 
-    Audio is a waveform tensor of shape (1, n_times) of 10 seconds max, sampled at 32KHz.
+    Audio is a waveform tensor of shape (1, n_times) of 10 seconds max, sampled at 32kHz.
     Target is a list of strings containing the captions.
     The 'train' subset has only 1 caption per sample and 'val' and 'test' have 5 captions.
 
@@ -69,30 +73,47 @@ class AudioCaps(Dataset[Dict[str, Any]]):
             ├── test.csv
             └── audio
                 ├── train
-                │    └── (46231/49838 flac files, ~42G for 32KHz)
+                │    └── (46231/49838 flac files, ~42G for 32kHz)
                 ├── val
-                │    └── (465/495 flac files, ~425M for 32KHz)
+                │    └── (465/495 flac files, ~425M for 32kHz)
                 └── test
-                    └── (913/975 flac files, ~832M for 32KHz)
+                    └── (913/975 flac files, ~832M for 32kHz)
 
     """
 
-    # Global
-    AUDIO_FILE_EXTENSION = "flac"
-    AUDIO_MAX_SEC = 10.00096876  # in seconds
-    AUDIO_MIN_SEC = 0.6501874  # in seconds
+    # Common globals
     AUDIO_N_CHANNELS = 1
-    CAPTION_MAX_LENGTH = 52
-    CAPTION_MIN_LENGTH = 2
-    CAPTIONS_PER_AUDIO = {"train": 1, "val": 5, "test": 5}
-    DNAME_LOG = "logs"
-    FFMPEG_PATH: str = "ffmpeg"
+    CITATION: str = r"""
+    @inproceedings{kim_etal_2019_audiocaps,
+        title        = {{A}udio{C}aps: Generating Captions for Audios in The Wild},
+        author       = {Kim, Chris Dongjoo  and Kim, Byeongchang  and Lee, Hyunmin  and Kim, Gunhee},
+        year         = 2019,
+        month        = jun,
+        booktitle    = {Proceedings of the 2019 Conference of the North {A}merican Chapter of the Association for Computational Linguistics: Human Language Technologies, Volume 1 (Long and Short Papers)},
+        publisher    = {Association for Computational Linguistics},
+        address      = {Minneapolis, Minnesota},
+        pages        = {119--132},
+        doi          = {10.18653/v1/N19-1011},
+        url          = {https://aclanthology.org/N19-1011},
+    }
+    """
+    DATASET_NAME = "audiocaps"
     FORCE_PREPARE_DATA: bool = False
-    N_AUDIOSET_CLASSES: int = 527
-    REDIRECT_LOG = False
+    MAX_AUDIO_SEC = 10.00096876
+    MIN_AUDIO_SEC = 0.6501874
     SAMPLE_RATE = 32000
     SUBSETS = ("train", "val", "test")
     VERIFY_FILES = False
+
+    # AudioCaps-specific globals
+    AUDIO_FILE_EXTENSION = "flac"
+    CAPTIONS_PER_AUDIO = {"train": 1, "val": 5, "test": 5}
+    DNAME_LOG = "logs"
+    FFMPEG_PATH: str = "ffmpeg"
+    MAX_CAPTION_LENGTH = 52
+    MIN_CAPTION_LENGTH = 2
+    N_AUDIOSET_CLASSES: int = 527
+    REDIRECT_LOG = False
     YOUTUBE_DL_PATH: str = "youtube-dl"
 
     # Initialization
@@ -121,7 +142,7 @@ class AudioCaps(Dataset[Dict[str, Any]]):
             defaults to True.
         :param verbose: Verbose level.
             defaults to 0.
-        :param exclude_removed_audio: If True, the dataset will return exclude from the dataset the audio not downloaded from youtube (i.e. not present on disk).
+        :param exclude_removed_audio: If True, the dataset will exclude from the dataset the audio not downloaded from youtube (i.e. not present on disk).
             If False, invalid audios will return an empty tensor of shape (0,).
             defaults to True.
         :param with_tags: If True, load the tags from AudioSet dataset.
@@ -150,14 +171,17 @@ class AudioCaps(Dataset[Dict[str, Any]]):
         self._index_to_tagname: List[str] = []
 
         if self._download:
-            self.__prepare_data()
-        self.__load_data()
+            self._prepare_dataset()
+        self._load_dataset()
 
     # Properties
     @property
     def column_names(self) -> List[str]:
         """The name of each column of the dataset."""
-        return [field.name for field in fields(AudioCapsItem)]
+        column_names = list(AUDIOCAPS_ALL_COLUMNS)
+        if not self._with_tags:
+            column_names.remove("tags")
+        return column_names
 
     @property
     def index_to_tagname(self) -> List[str]:
@@ -168,7 +192,7 @@ class AudioCaps(Dataset[Dict[str, Any]]):
     def info(self) -> Dict[str, Any]:
         """Return the global dataset info."""
         return {
-            "dataset": "audiocaps",
+            "dataset": self.DATASET_NAME,
             "subset": self._subset,
             "with_tags": self._with_tags,
         }
@@ -179,6 +203,18 @@ class AudioCaps(Dataset[Dict[str, Any]]):
         return len(self), len(self.column_names)
 
     # Public methods
+    @overload
+    def at(self, idx: int) -> AudioCapsItem:
+        ...
+
+    @overload
+    def at(self, idx: Union[Iterable[int], slice, None]) -> Dict[str, List]:
+        ...
+
+    @overload
+    def at(self, idx: Any, column: Any) -> Any:
+        ...
+
     def at(
         self,
         idx: Union[int, Iterable[int], None, slice] = None,
@@ -199,7 +235,7 @@ class AudioCaps(Dataset[Dict[str, Any]]):
             return {column_i: self.at(idx, column_i) for column_i in column}
 
         if isinstance(idx, (int, slice)) and column in self._all_items.keys():
-            return self._all_items[column][idx]
+            return self._all_items[column][idx]  # type: ignore
 
         if isinstance(idx, slice):
             idx = range(len(self))[idx]
@@ -237,11 +273,11 @@ class AudioCaps(Dataset[Dict[str, Any]]):
             return audio_metadata
 
         elif column == "dataset":
-            return "audiocaps"
+            return self.DATASET_NAME
 
         elif column == "fpath":
             fname = self.at(idx, "fname")
-            fpath = osp.join(self.__dpath_audio_subset, fname)
+            fpath = osp.join(self.__audio_subset_root, fname)
             return fpath
 
         elif column == "index":
@@ -285,10 +321,19 @@ class AudioCaps(Dataset[Dict[str, Any]]):
         self._transform = transform
 
     # Magic methods
-    def __getitem__(
-        self,
-        idx: Any,
-    ) -> Dict[str, Any]:
+    @overload
+    def __getitem__(self, idx: int) -> AudioCapsItem:
+        ...
+
+    @overload
+    def __getitem__(self, idx: Union[Iterable[int], slice, None]) -> Dict[str, List]:
+        ...
+
+    @overload
+    def __getitem__(self, idx: Any) -> Any:
+        ...
+
+    def __getitem__(self, idx: Any) -> Any:
         if (
             isinstance(idx, tuple)
             and len(idx) == 2
@@ -299,7 +344,7 @@ class AudioCaps(Dataset[Dict[str, Any]]):
             column = None
 
         item = self.at(idx, column)
-        if self._transform is not None:
+        if isinstance(idx, int) and column is None and self._transform is not None:
             item = self._transform(item)
         return item
 
@@ -320,6 +365,12 @@ class AudioCaps(Dataset[Dict[str, Any]]):
             f"AUDIOCAPS_{AudioCaps.SAMPLE_RATE}Hz",
             AUDIOSET_LINKS["class_labels_indices"]["fname"],
         )
+        if not osp.isfile(class_labels_indices_fpath):
+            raise ValueError(
+                f"Cannot find class_labels_indices file in root='{root}'."
+                f"Maybe use AudioCaps(root, download=True, with_tags=True) before or use a different root directory."
+            )
+
         with open(class_labels_indices_fpath, "r") as file:
             reader = csv.DictReader(file)
             audioset_classes_data = list(reader)
@@ -331,42 +382,42 @@ class AudioCaps(Dataset[Dict[str, Any]]):
             audio, sr = torchaudio.load(fpath)  # type: ignore
         except RuntimeError:
             message = f'Found file "{fpath}" already downloaded but it is invalid (cannot load). It will be removed.'
-            logger.error(message)
+            pylog.error(message)
             return False
 
         if audio.nelement() == 0:
             message = f'Found file "{fpath}" already downloaded but it is invalid (empty audio). It will be removed.'
-            logger.error(message)
+            pylog.error(message)
             return False
 
         if sr != self.SAMPLE_RATE:
             message = f'Found file "{fpath}" already downloaded but it is invalid (invalid sr={sr} != {self.SAMPLE_RATE}). It will be removed.'
-            logger.error(message)
+            pylog.error(message)
             return False
 
         return True
 
     @property
     @lru_cache()
-    def __dpath_audio_subset(self) -> str:
+    def __audio_subset_root(self) -> str:
         return osp.join(
-            self.__dpath_data,
+            self.__audiocaps_root,
             "audio",
             self._subset,
         )
 
     @property
     @lru_cache()
-    def __dpath_data(self) -> str:
+    def __audiocaps_root(self) -> str:
         return osp.join(self._root, f"AUDIOCAPS_{AudioCaps.SAMPLE_RATE}Hz")
 
     def __is_prepared(self) -> bool:
         links = AUDIOCAPS_LINKS[self._subset]
         captions_fname = links["captions"]["fname"]
-        captions_fpath = osp.join(self.__dpath_data, captions_fname)
-        return osp.isdir(self.__dpath_audio_subset) and osp.isfile(captions_fpath)
+        captions_fpath = osp.join(self.__audiocaps_root, captions_fname)
+        return osp.isdir(self.__audio_subset_root) and osp.isfile(captions_fpath)
 
-    def __load_data(self) -> None:
+    def _load_dataset(self) -> None:
         if not self.__is_prepared():
             raise RuntimeError(
                 f"Cannot load data: audiocaps_{self._subset} is not prepared in data root={self._root}. Please use download=True in dataset constructor."
@@ -375,17 +426,17 @@ class AudioCaps(Dataset[Dict[str, Any]]):
         links = AUDIOCAPS_LINKS[self._subset]
 
         captions_fname = links["captions"]["fname"]
-        captions_fpath = osp.join(self.__dpath_data, captions_fname)
+        captions_fpath = osp.join(self.__audiocaps_root, captions_fname)
         with open(captions_fpath, "r") as file:
             reader = csv.DictReader(file)
             captions_data = list(reader)
 
         if self._with_tags:
             class_labels_indices_fpath = osp.join(
-                self.__dpath_data, AUDIOSET_LINKS["class_labels_indices"]["fname"]
+                self.__audiocaps_root, AUDIOSET_LINKS["class_labels_indices"]["fname"]
             )
             unbal_tags_fpath = osp.join(
-                self.__dpath_data, AUDIOSET_LINKS["unbalanced"]["fname"]
+                self.__audiocaps_root, AUDIOSET_LINKS["unbalanced"]["fname"]
             )
 
             if not all(map(osp.isfile, (class_labels_indices_fpath, unbal_tags_fpath))):
@@ -414,7 +465,7 @@ class AudioCaps(Dataset[Dict[str, Any]]):
             f"{line['youtube_id']}_{line['start_time']}.{self.AUDIO_FILE_EXTENSION}"
             for line in captions_data
         )
-        audio_fnames_on_disk = dict.fromkeys(os.listdir(self.__dpath_audio_subset))
+        audio_fnames_on_disk = dict.fromkeys(os.listdir(self.__audio_subset_root))
         if self._exclude_removed_audio:
             fnames_lst = [
                 fname for fname in fnames_dic if fname in audio_fnames_on_disk
@@ -509,23 +560,23 @@ class AudioCaps(Dataset[Dict[str, Any]]):
         all_items["start_time"] = list(map(int, all_items["start_time"]))
 
         if self._flat_captions and self.CAPTIONS_PER_AUDIO[self._subset] > 1:
-            all_infos_unfolded = {key: [] for key in all_items.keys()}
+            all_infos_flatten = {key: [] for key in all_items.keys()}
 
             for i, captions in enumerate(all_items["captions"]):
                 for caption in captions:
                     for key in all_items.keys():
-                        all_infos_unfolded[key].append(all_items[key][i])
-                    all_infos_unfolded["captions"] = [caption]
+                        all_infos_flatten[key].append(all_items[key][i])
+                    all_infos_flatten["captions"] = [caption]
 
-            all_items = all_infos_unfolded
+            all_items = all_infos_flatten
 
         self._all_items = all_items
         self._loaded = True
 
         if self._verbose >= 1:
-            logger.info(f"{repr(self)} has been loaded. (len={len(self)})")
+            pylog.info(f"{repr(self)} has been loaded. (len={len(self)})")
 
-    def __prepare_data(self) -> None:
+    def _prepare_dataset(self) -> None:
         if not osp.isdir(self._root):
             raise RuntimeError(f"Cannot find root directory '{self._root}'.")
 
@@ -536,9 +587,7 @@ class AudioCaps(Dataset[Dict[str, Any]]):
                 stderr=subprocess.DEVNULL,
             )
         except (CalledProcessError, PermissionError, FileNotFoundError) as err:
-            logger.error(
-                f"Cannot use youtube-dl path '{self.YOUTUBE_DL_PATH}'. ({err})"
-            )
+            pylog.error(f"Cannot use youtube-dl path '{self.YOUTUBE_DL_PATH}'. ({err})")
             raise err
 
         try:
@@ -548,7 +597,7 @@ class AudioCaps(Dataset[Dict[str, Any]]):
                 stderr=subprocess.DEVNULL,
             )
         except (CalledProcessError, PermissionError, FileNotFoundError) as err:
-            logger.error(f"Cannot use ffmpeg path '{self.FFMPEG_PATH}'. ({err})")
+            pylog.error(f"Cannot use ffmpeg path '{self.FFMPEG_PATH}'. ({err})")
             raise err
 
         if self.__is_prepared() and not self.FORCE_PREPARE_DATA:
@@ -556,9 +605,9 @@ class AudioCaps(Dataset[Dict[str, Any]]):
 
         links = AUDIOCAPS_LINKS[self._subset]
         captions_fname = links["captions"]["fname"]
-        captions_fpath = osp.join(self.__dpath_data, captions_fname)
+        captions_fpath = osp.join(self.__audiocaps_root, captions_fname)
 
-        os.makedirs(self.__dpath_audio_subset, exist_ok=True)
+        os.makedirs(self.__audio_subset_root, exist_ok=True)
 
         if not osp.isfile(captions_fpath):
             url = links["captions"]["url"]
@@ -569,7 +618,7 @@ class AudioCaps(Dataset[Dict[str, Any]]):
             n_samples = len(file.readlines())
 
         if self._verbose >= 1:
-            log_dpath = osp.join(self.__dpath_data, self.DNAME_LOG)
+            log_dpath = osp.join(self.__audiocaps_root, self.DNAME_LOG)
             if not osp.isdir(log_dpath):
                 os.makedirs(log_dpath)
 
@@ -580,7 +629,7 @@ class AudioCaps(Dataset[Dict[str, Any]]):
                     level=logging.INFO,
                     force=True,
                 )
-            logger.info(f"Start downloading files for {self._subset} AudioCaps split.")
+            pylog.info(f"Start downloading files for {self._subset} AudioCaps split.")
 
         with open(captions_fpath, "r") as file:
             # Download audio files
@@ -595,7 +644,7 @@ class AudioCaps(Dataset[Dict[str, Any]]):
                     line[key] for key in ("audiocap_id", "youtube_id", "start_time")
                 ]
                 fpath = osp.join(
-                    self.__dpath_audio_subset,
+                    self.__audio_subset_root,
                     f"{youtube_id}_{start_time}.{self.AUDIO_FILE_EXTENSION}",
                 )
                 if not start_time.isdigit():
@@ -609,7 +658,7 @@ class AudioCaps(Dataset[Dict[str, Any]]):
                         youtube_id,
                         fpath,
                         start_time,
-                        duration=self.AUDIO_MAX_SEC,
+                        duration=self.MAX_AUDIO_SEC,
                         sr=self.SAMPLE_RATE,
                         youtube_dl_path=self.YOUTUBE_DL_PATH,
                         ffmpeg_path=self.FFMPEG_PATH,
@@ -619,19 +668,19 @@ class AudioCaps(Dataset[Dict[str, Any]]):
                         valid_file = self.__check_file(fpath)
                         if valid_file:
                             if self._verbose >= 2:
-                                logger.debug(
+                                pylog.debug(
                                     f'[{audiocap_id:6s}] File "{youtube_id}" has been downloaded and verified.'
                                 )
                             n_download_ok += 1
                         else:
                             if self._verbose >= 1:
-                                logger.warning(
+                                pylog.warning(
                                     f'[{audiocap_id:6s}] File "{youtube_id}" has been downloaded but it is not valid and it will be removed.'
                                 )
                             os.remove(fpath)
                             n_download_err += 1
                     else:
-                        logger.error(
+                        pylog.error(
                             f'[{audiocap_id:6s}] Cannot extract audio from "{youtube_id}".'
                         )
                         n_download_err += 1
@@ -640,20 +689,20 @@ class AudioCaps(Dataset[Dict[str, Any]]):
                     valid_file = self.__check_file(fpath)
                     if valid_file:
                         if self._verbose >= 2:
-                            logger.debug(
+                            pylog.debug(
                                 f'[{audiocap_id:6s}] File "{youtube_id}" is already downloaded and has been verified.'
                             )
                         n_already_ok += 1
                     else:
                         if self._verbose >= 1:
-                            logger.warning(
+                            pylog.warning(
                                 f'[{audiocap_id:6s}] File "{youtube_id}" is already downloaded but it is not valid and will be removed.'
                             )
                         os.remove(fpath)
                         n_already_err += 1
                 else:
                     if self._verbose >= 2:
-                        logger.debug(
+                        pylog.debug(
                             f'[{audiocap_id:6s}] File "{youtube_id}" is already downloaded but it is not verified due to self.VERIFY_FILES={self.VERIFY_FILES}.'
                         )
                     n_already_ok += 1
@@ -663,22 +712,22 @@ class AudioCaps(Dataset[Dict[str, Any]]):
                 infos = AUDIOSET_LINKS[key]
                 url = infos["url"]
                 fname = infos["fname"]
-                fpath = osp.join(self.__dpath_data, fname)
+                fpath = osp.join(self.__audiocaps_root, fname)
                 if not osp.isfile(fpath):
                     if self._verbose >= 1:
-                        logger.info(f"Downloading file '{fname}'...")
+                        pylog.info(f"Downloading file '{fname}'...")
                     download_url_to_file(url, fpath, progress=self._verbose >= 1)
 
         if self._verbose >= 1:
             duration = int(time.perf_counter() - start)
-            logger.info(
+            pylog.info(
                 f'Download and preparation of AudioCaps for subset "{self._subset}" done in {duration}s. '
             )
-            logger.info(f"- {n_download_ok} downloads success,")
-            logger.info(f"- {n_download_err} downloads failed,")
-            logger.info(f"- {n_already_ok} already downloaded,")
-            logger.info(f"- {n_already_err} already downloaded errors,")
-            logger.info(f"- {n_samples} total samples.")
+            pylog.info(f"- {n_download_ok} downloads success,")
+            pylog.info(f"- {n_download_err} downloads failed,")
+            pylog.info(f"- {n_already_ok} already downloaded,")
+            pylog.info(f"- {n_already_err} already downloaded errors,")
+            pylog.info(f"- {n_samples} total samples.")
 
             if self.REDIRECT_LOG:
                 logging.basicConfig(
@@ -686,6 +735,11 @@ class AudioCaps(Dataset[Dict[str, Any]]):
                     level=logging.INFO,
                     force=True,
                 )
+
+        if self._verbose >= 2:
+            pylog.debug(
+                f"Dataset {self.__class__.__name__} ({self._subset}) has been prepared."
+            )
 
 
 def _download_and_extract_from_youtube(
@@ -740,7 +794,7 @@ def _download_and_extract_from_youtube(
         str(start_time),
         "-t",
         str(duration),
-        # Resample to 16 KHz
+        # Resample to 16 kHz
         "-ar",
         str(sr),
         # Compute mean of 2 channels
