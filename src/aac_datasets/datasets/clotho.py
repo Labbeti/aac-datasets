@@ -877,14 +877,11 @@ class Clotho(Dataset[Dict[str, Any]]):
                 else:
                     target_dpath = self.__dpath_audio
 
-                # archive_file.extractall(target_dpath)
+                archive_file.extractall(target_dpath)
 
                 if self._subset == "test_retrieval_audio":
                     extracted_dpath = osp.join(target_dpath, "test")
-                    print(f"{len(os.listdir(extracted_dpath))=}")
                     for fname in os.listdir(extracted_dpath):
-                        if self._verbose >= 2:
-                            print(f"Moving {fname} to {target_dpath}...")
                         os.rename(
                             osp.join(extracted_dpath, fname),
                             osp.join(target_dpath, fname),
