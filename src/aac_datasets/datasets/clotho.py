@@ -757,6 +757,18 @@ class Clotho(Dataset[Dict[str, Any]]):
                 for keywords in all_items["keywords"]
             ]
 
+        if self._subset == "test_retrieval_audio":
+            # Temporary patch to avoid file loading errors
+            # indexes: 53, 521, 677
+            replaces = {
+                "raindrops on metal: police background.wav": "raindrops on metal_police background.wav",
+                "Intersection Wet : Metro Pass.wav": "Intersection Wet_Metro Pass.wav",
+                "Kitchen Roomtone w: Dripping Faucet_1-2.wav": "Kitchen Roomtone w_Dripping Faucet_1-2.wav",
+            }
+            all_items["fname"] = [
+                replaces.get(fname, fname) for fname in all_items["fname"]
+            ]
+
         if self._flat_captions and self.CAPTIONS_PER_AUDIO[self._subset] > 1:
             all_infos_flatten = {key: [] for key in all_items.keys()}
 
