@@ -344,7 +344,15 @@ class Clotho(Dataset[Dict[str, Any]]):
     # Clotho-specific globals
     CAPTION_MAX_LENGTH = 20
     CAPTION_MIN_LENGTH = 8
-    CAPTIONS_PER_AUDIO = {"dev": 5, "val": 5, "eval": 5, "test": 0, "analysis": 0, "test_retrieval_audio": 0, "test_retrieval_captions": 1}
+    CAPTIONS_PER_AUDIO = {
+        "dev": 5,
+        "val": 5,
+        "eval": 5,
+        "test": 0,
+        "analysis": 0,
+        "test_retrieval_audio": 0,
+        "test_retrieval_captions": 1,
+    }
     CLEAN_ARCHIVES: bool = False
     INVALID_SOUND_ID = "Not found"
     INVALID_SOUND_LINK = "NA"
@@ -425,9 +433,16 @@ class Clotho(Dataset[Dict[str, Any]]):
             for name in column_names
             if name in self._all_items or name not in METADATA_KEYS
         ]
-        if self._subset == "test_retrieval_captions":
-            for name in ("audio", "sr"):
-                column_names.remove(name)
+
+        if self._subset in ("test", "test_retrieval_audio", "analysis"):
+            removed_columns = ("captions",)
+        elif self._subset == "test_retrieval_captions":
+            removed_columns = ("audio", "sr", "fname")
+        else:
+            removed_columns = ()
+        for name in removed_columns:
+            column_names.remove(name)
+
         return column_names
 
     @property
@@ -656,7 +671,10 @@ class Clotho(Dataset[Dict[str, Any]]):
                 captions_data = list(reader)
 
             if self._subset == "test_retrieval_captions":
-                captions_data = [data | {"file_name": f"no_fname_{i}"} for i, data in enumerate(captions_data)]
+                captions_data = [
+                    data | {"file_name": f"no_fname_{i}"}
+                    for i, data in enumerate(captions_data)
+                ]
 
         else:
             captions_data = []
@@ -843,9 +861,7 @@ class Clotho(Dataset[Dict[str, Any]]):
 
             # Ignore dir name from archive file
             compressed_fnames = [
-                fname
-                for fname in compressed_fnames
-                if fname.endswith(".wav")
+                fname for fname in compressed_fnames if fname.endswith(".wav")
             ]
             extracted_fnames = (
                 os.listdir(self.__dpath_audio_subset)
@@ -869,14 +885,21 @@ class Clotho(Dataset[Dict[str, Any]]):
                     for fname in os.listdir(extracted_dpath):
                         if self._verbose >= 2:
                             print(f"Moving {fname} to {target_dpath}...")
-                        os.rename(osp.join(extracted_dpath, fname), osp.join(target_dpath, fname))
+                        os.rename(
+                            osp.join(extracted_dpath, fname),
+                            osp.join(target_dpath, fname),
+                        )
                     os.rmdir(extracted_dpath)
 
                 # Check if files is good now
                 extracted_fnames = os.listdir(self.__dpath_audio_subset)
                 if set(extracted_fnames) != set(compressed_fnames):
-                    found_but_not_expected = len(set(extracted_fnames).difference(set(compressed_fnames)))
-                    expected_but_not_found = len(set(compressed_fnames).difference(set(extracted_fnames)))
+                    found_but_not_expected = len(
+                        set(extracted_fnames).difference(set(compressed_fnames))
+                    )
+                    expected_but_not_found = len(
+                        set(compressed_fnames).difference(set(extracted_fnames))
+                    )
 
                     raise RuntimeError(
                         f"Invalid number of audios extracted. (found {len(extracted_fnames)} files but expected the same {len(compressed_fnames)} files. With {found_but_not_expected=} and {expected_but_not_found=})"
