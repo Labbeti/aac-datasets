@@ -233,9 +233,38 @@ CLOTHO_LINKS = {
                 "hash_value": "7e8fa4762cc3a7c5546606680b958d08",
             },
         },
+        "test_retrieval_audio": {
+            "audio_archive": {
+                "fname": "retrieval_audio.7z",
+                "url": "https://zenodo.org/record/6590983/files/retrieval_audio.7z?download=1",
+                "hash_value": "24102395fd757c462421a483fba5c407",
+            },
+            "metadata": {
+                "fname": "retrieval_audio_metadata.csv",
+                "url": "https://zenodo.org/record/6590983/files/retrieval_audio_metadata.csv?download=1",
+                "hash_value": "1301db07acbf1e4fabc467eb54e0d353",
+            },
+        },
+        "test_retrieval_captions": {
+            "captions": {
+                "fname": "retrieval_captions.csv",
+                "url": "https://zenodo.org/record/6590983/files/retrieval_captions.csv?download=1",
+                "hash_value": "f9e810118be00c64ea8cd7557816d4fe",
+            },
+        },
     },
 }
 CLOTHO_LAST_VERSION = "v2.1"
+
+CLOTHO_AUDIO_DNAMES = {
+    "dev": "development",
+    "eval": "evaluation",
+    "val": "validation",
+    "test": "test",
+    "analysis": "clotho_analysis",
+    "test_retrieval_audio": "test_retrieval_audio",
+    "test_retrieval_captions": "test_retrieval_captions",
+}
 
 CAPTIONS_KEYS = (
     "caption_1",
@@ -315,7 +344,15 @@ class Clotho(Dataset[Dict[str, Any]]):
     # Clotho-specific globals
     CAPTION_MAX_LENGTH = 20
     CAPTION_MIN_LENGTH = 8
-    CAPTIONS_PER_AUDIO = {"dev": 5, "val": 5, "eval": 5, "test": 0, "analysis": 0}
+    CAPTIONS_PER_AUDIO = {
+        "dev": 5,
+        "val": 5,
+        "eval": 5,
+        "test": 0,
+        "analysis": 0,
+        "test_retrieval_audio": 0,
+        "test_retrieval_captions": 1,
+    }
     CLEAN_ARCHIVES: bool = False
     INVALID_SOUND_ID = "Not found"
     INVALID_SOUND_LINK = "NA"
@@ -588,7 +625,7 @@ class Clotho(Dataset[Dict[str, Any]]):
         return osp.join(self._root, f"CLOTHO_{self._version}")
 
     def __is_prepared(self) -> bool:
-        if not all(map(osp.isdir, (self.__dpath_audio_subset, self.__dpath_csv))):
+        if not all(map(osp.isdir, (self.__dpath_audio, self.__dpath_csv))):
             return False
 
         if Clotho.CAPTIONS_PER_AUDIO[self._subset] == 0:
@@ -613,7 +650,7 @@ class Clotho(Dataset[Dict[str, Any]]):
         dpath_audio_subset = self.__dpath_audio_subset
 
         if not osp.isdir(dpath_audio_subset):
-            raise RuntimeError(f'Cannot find directory "{dpath_audio_subset}".')
+            raise RuntimeError(f"Cannot find directory {dpath_audio_subset}.")
 
         # Read Clotho files
         if "captions" in links.keys():
@@ -841,12 +878,3 @@ class Clotho(Dataset[Dict[str, Any]]):
             pylog.debug(
                 f"Dataset {self.__class__.__name__} ({self._subset}) has been prepared."
             )
-
-
-CLOTHO_AUDIO_DNAMES = {
-    "dev": "development",
-    "eval": "evaluation",
-    "test": "test",
-    "val": "validation",
-    "analysis": "clotho_analysis",
-}
