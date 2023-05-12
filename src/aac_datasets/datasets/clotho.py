@@ -263,7 +263,7 @@ CLOTHO_AUDIO_DNAMES = {
     "test": "test",
     "analysis": "clotho_analysis",
     "test_retrieval_audio": "test_retrieval_audio",
-    "test_retrieval_captions": "test_retrieval_captions",
+    "test_retrieval_captions": None,
 }
 
 CAPTIONS_KEYS = (
@@ -344,15 +344,7 @@ class Clotho(Dataset[Dict[str, Any]]):
     # Clotho-specific globals
     CAPTION_MAX_LENGTH = 20
     CAPTION_MIN_LENGTH = 8
-    CAPTIONS_PER_AUDIO = {
-        "dev": 5,
-        "val": 5,
-        "eval": 5,
-        "test": 0,
-        "analysis": 0,
-        "test_retrieval_audio": 0,
-        "test_retrieval_captions": 1,
-    }
+    CAPTIONS_PER_AUDIO = {"dev": 5, "val": 5, "eval": 5, "test": 0, "analysis": 0, "test_retrieval_audio": 0, "test_retrieval_captions": 1}
     CLEAN_ARCHIVES: bool = False
     INVALID_SOUND_ID = "Not found"
     INVALID_SOUND_LINK = "NA"
@@ -433,6 +425,9 @@ class Clotho(Dataset[Dict[str, Any]]):
             for name in column_names
             if name in self._all_items or name not in METADATA_KEYS
         ]
+        if self._subset == "test_retrieval_captions":
+            for name in ("audio", "sr"):
+                column_names.remove(name)
         return column_names
 
     @property
@@ -630,6 +625,8 @@ class Clotho(Dataset[Dict[str, Any]]):
 
         if Clotho.CAPTIONS_PER_AUDIO[self._subset] == 0:
             return True
+        if CLOTHO_AUDIO_DNAMES[self._subset] is None:
+            return True
 
         links = CLOTHO_LINKS[self._version][self._subset]
         captions_fname = links["captions"]["fname"]
@@ -647,10 +644,6 @@ class Clotho(Dataset[Dict[str, Any]]):
 
         # Read fpath of .wav audio files
         links = CLOTHO_LINKS[self._version][self._subset]
-        dpath_audio_subset = self.__dpath_audio_subset
-
-        if not osp.isdir(dpath_audio_subset):
-            raise RuntimeError(f"Cannot find directory {dpath_audio_subset}.")
 
         # Read Clotho files
         if "captions" in links.keys():
@@ -661,6 +654,10 @@ class Clotho(Dataset[Dict[str, Any]]):
             with open(captions_fpath, "r") as file:
                 reader = csv.DictReader(file)
                 captions_data = list(reader)
+
+            if self._subset == "test_retrieval_captions":
+                captions_data = [data | {"file_name": f"no_fname_{i}"} for i, data in enumerate(captions_data)]
+
         else:
             captions_data = []
 
@@ -690,7 +687,7 @@ class Clotho(Dataset[Dict[str, Any]]):
         else:
             # note 1: for "analysis" subset which do not have any CSV file
             # note 2: force sorted list to have the same order on all OS
-            fnames_lst = list(sorted(os.listdir(dpath_audio_subset)))
+            fnames_lst = list(sorted(os.listdir(self.__dpath_audio_subset)))
 
         idx_to_fname = {i: fname for i, fname in enumerate(fnames_lst)}
         fname_to_idx = {fname: i for i, fname in idx_to_fname.items()}
@@ -703,10 +700,16 @@ class Clotho(Dataset[Dict[str, Any]]):
             subset_metadata_keys = []
 
         all_captions_lst = [[] for _ in range(dataset_size)]
+
+        if self._subset != "test_retrieval_captions":
+            captions_keys = CAPTIONS_KEYS
+        else:
+            captions_keys = ("caption",)
+
         for line in captions_data:
             fname = line["file_name"]
             idx = fname_to_idx[fname]
-            all_captions_lst[idx] = [line[caption_key] for caption_key in CAPTIONS_KEYS]
+            all_captions_lst[idx] = [line[caption_key] for caption_key in captions_keys]
 
         all_metadata_dic: Dict[str, List[Any]] = {
             key: [None for _ in range(dataset_size)] for key in subset_metadata_keys
@@ -842,7 +845,7 @@ class Clotho(Dataset[Dict[str, Any]]):
             compressed_fnames = [
                 fname
                 for fname in compressed_fnames
-                if fname not in ("", CLOTHO_AUDIO_DNAMES[self._subset])
+                if fname.endswith(".wav")
             ]
             extracted_fnames = (
                 os.listdir(self.__dpath_audio_subset)
@@ -851,13 +854,32 @@ class Clotho(Dataset[Dict[str, Any]]):
             )
 
             if set(extracted_fnames) != set(compressed_fnames):
-                archive_file.extractall(self.__dpath_audio)
+                # For test_retrieval_audio subset, the name of the audio dname is also "test", so we need to move the audio files to another folder named "test_retrieval_audio".
+                if self._subset == "test_retrieval_audio":
+                    target_dpath = self.__dpath_audio_subset
+                    os.makedirs(target_dpath, exist_ok=True)
+                else:
+                    target_dpath = self.__dpath_audio
+
+                # archive_file.extractall(target_dpath)
+
+                if self._subset == "test_retrieval_audio":
+                    extracted_dpath = osp.join(target_dpath, "test")
+                    print(f"{len(os.listdir(extracted_dpath))=}")
+                    for fname in os.listdir(extracted_dpath):
+                        if self._verbose >= 2:
+                            print(f"Moving {fname} to {target_dpath}...")
+                        os.rename(osp.join(extracted_dpath, fname), osp.join(target_dpath, fname))
+                    os.rmdir(extracted_dpath)
 
                 # Check if files is good now
                 extracted_fnames = os.listdir(self.__dpath_audio_subset)
                 if set(extracted_fnames) != set(compressed_fnames):
+                    found_but_not_expected = len(set(extracted_fnames).difference(set(compressed_fnames)))
+                    expected_but_not_found = len(set(compressed_fnames).difference(set(extracted_fnames)))
+
                     raise RuntimeError(
-                        f"Invalid number of audios extracted. (found {len(extracted_fnames)} files but expected the same {len(compressed_fnames)} files)"
+                        f"Invalid number of audios extracted. (found {len(extracted_fnames)} files but expected the same {len(compressed_fnames)} files. With {found_but_not_expected=} and {expected_but_not_found=})"
                     )
 
             archive_file.close()
