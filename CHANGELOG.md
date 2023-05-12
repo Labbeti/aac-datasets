@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.4.0] UNRELEASED
+### Added
+- New subsets `test_retrieval_audio` and `test_retrieval_captions` for Clotho dataset.
+
 ## [0.3.3] 2023-05-11
 ### Added
 - Script check.py now check if the audio files exists.
