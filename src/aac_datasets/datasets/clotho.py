@@ -911,7 +911,8 @@ class Clotho(Dataset[Dict[str, Any]]):
                     )
 
                     raise RuntimeError(
-                        f"Invalid number of audios extracted. (found {len(extracted_fnames)} files but expected the same {len(compressed_fnames)} files. With {found_but_not_expected=} and {expected_but_not_found=})"
+                        f"Invalid number of audios extracted, found {len(extracted_fnames)} files but expected the same {len(compressed_fnames)} files. "
+                        f"(with found_but_not_expected={found_but_not_expected} and expected_but_not_found={expected_but_not_found})"
                     )
 
             archive_file.close()
