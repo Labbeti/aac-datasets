@@ -299,17 +299,21 @@ class Clotho(Dataset[Dict[str, Any]]):
 
         {root}
         └── CLOTHO_v2.1
+            ├── archives
+            |   └── (5 7z files, ~8.9GB)
             ├── clotho_audio_files
             │   ├── clotho_analysis
             │   │    └── (8360 wav files, ~19GB)
             │   ├── development
-            │   │    └── (3840 wav files, ~7.1GB)
+            │   │    └── (3839 wav files, ~7.1GB)
             │   ├── evaluation
             │   │    └── (1045 wav files, ~2.0GB)
-            │   ├── validation
-            │   │    └── (1046 wav files, ~2.0GB)
-            │   └── test
-            │        └── (1044 wav files, ~2.0GB)
+            │   ├── test
+            │   |    └── (1043 wav files, ~2.0GB)
+            │   ├── test_retrieval_audio
+            │   |    └── (1000 wav files, ~2.0GB)
+            │   └── validation
+            │        └── (1045 wav files, ~2.0GB)
             └── clotho_csv_files
                 ├── clotho_captions_development.csv
                 ├── clotho_captions_evaluation.csv
@@ -317,7 +321,9 @@ class Clotho(Dataset[Dict[str, Any]]):
                 ├── clotho_metadata_development.csv
                 ├── clotho_metadata_evaluation.csv
                 ├── clotho_metadata_test.csv
-                └── clotho_metadata_validation.csv
+                ├── clotho_metadata_validation.csv
+                ├── retrieval_audio_metadata.csv
+                └── retrieval_captions.csv
 
     """
 
