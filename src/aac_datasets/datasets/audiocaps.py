@@ -102,12 +102,12 @@ class AudioCaps(Dataset[Dict[str, Any]]):
     MAX_AUDIO_SEC = 10.00096876
     MIN_AUDIO_SEC = 0.6501874
     SAMPLE_RATE = 32000
-    SUBSETS = ("train", "val", "test")
+    SUBSETS = ("train", "val", "test", "train_fr", "val_fr", "test_fr")
     VERIFY_FILES = False
 
     # AudioCaps-specific globals
     AUDIO_FILE_EXTENSION = "flac"
-    CAPTIONS_PER_AUDIO = {"train": 1, "val": 5, "test": 5}
+    CAPTIONS_PER_AUDIO = {"train": 1, "val": 5, "test": 5, "train_fr": 1, "val_fr": 5, "test_fr": 5}
     DNAME_LOG = "logs"
     FFMPEG_PATH: str = "ffmpeg"
     MAX_CAPTION_LENGTH = 52
@@ -826,6 +826,24 @@ AUDIOCAPS_LINKS = {
         "captions": {
             "url": "https://raw.githubusercontent.com/cdjkim/audiocaps/master/dataset/test.csv",
             "fname": "test.csv",
+        },
+    },
+    "train_fr": {
+        "captions": {
+            "url": None,
+            "fname": "train_fr.csv",
+        },
+    },
+    "val_fr": {
+        "captions": {
+            "url": None,
+            "fname": "val_fr.csv",
+        },
+    },
+    "test_fr": {
+        "captions": {
+            "url": None,
+            "fname": "test_fr.csv",
         },
     },
 }
