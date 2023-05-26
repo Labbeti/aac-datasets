@@ -86,6 +86,7 @@ class MACS(Dataset[Dict[str, Any]]):
     """
     DATASET_NAME = "macs"
     FORCE_PREPARE_DATA: bool = False
+    HOMEPAGE = "https://zenodo.org/record/5114771"
     MAX_AUDIO_SEC = 10.000020833333334
     MIN_AUDIO_SEC = 9.999979166666666
     SAMPLE_RATE = 48000  # in Hz

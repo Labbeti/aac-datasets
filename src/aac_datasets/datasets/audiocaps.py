@@ -99,6 +99,7 @@ class AudioCaps(Dataset[Dict[str, Any]]):
     """
     DATASET_NAME = "audiocaps"
     FORCE_PREPARE_DATA: bool = False
+    HOMEPAGE = "https://audiocaps.github.io/"
     MAX_AUDIO_SEC = 10.00096876
     MIN_AUDIO_SEC = 0.6501874
     SAMPLE_RATE = 32000

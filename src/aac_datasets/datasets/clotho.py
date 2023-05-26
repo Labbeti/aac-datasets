@@ -341,6 +341,7 @@ class Clotho(Dataset[Dict[str, Any]]):
     """
     DATASET_NAME = "clotho"
     FORCE_PREPARE_DATA: bool = False
+    HOMEPAGE = "https://zenodo.org/record/3490684"
     MAX_AUDIO_SEC = 30.0
     MIN_AUDIO_SEC = 15.0
     SAMPLE_RATE = 44100
