@@ -29,8 +29,9 @@ jobs:
         cache: 'pip'
 
     - name: Install package
+      # note: ${GITHUB_REF##*/} gives the branch name
       run: |
-        python -m pip install -e .[dev]
+        python -m pip install "aac-datasets[dev] @ git+https://github.com/Labbeti/aac-datasets@${GITHUB_REF##*/}"
 
     - name: Install soundfile for torchaudio
       run: |
