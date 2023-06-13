@@ -73,6 +73,7 @@ class ClothoCard(DatasetCard):
     }
     homepage: str = "https://zenodo.org/record/3490684"
     language: tuple[str, ...] = ("en",)
+    default_version: str = "v2.1"
     name: str = "clotho"
     n_channels: int = 1
     pretty_name: str = "Clotho"
@@ -152,13 +153,13 @@ class Clotho(AACDataset[ClothoItem]):
         transform: Optional[Callable] = None,
         flat_captions: bool = False,
         verbose: int = 0,
-        version: str = "v2.1",
+        version: str = ClothoCard.default_version,
     ) -> None:
         """
         :param root: The parent of the dataset root directory.
             Note: The data is stored in the 'CLOTHO_{version}' subdirectory.
             defaults to ".".
-        :param subset: The subset of Clotho to use. Can be one of :attr:`~Clotho.SUBSETS`.
+        :param subset: The subset of Clotho to use. Can be one of :attr:`~ClothoCard.subsets`.
             defaults to "dev".
         :param download: Download the dataset if download=True and if the dataset is not already downloaded.
             defaults to False.
@@ -299,7 +300,7 @@ def _load_clotho_dataset(
     version: str,
     subset: str,
     verbose: int,
-) -> dict[str, list[Any]]:
+) -> Dict[str, List[Any]]:
     if not _is_prepared(root, version, subset):
         raise RuntimeError(
             f"Cannot load data: clotho_{subset} is not prepared in data root={root}. Please use download=True in dataset constructor."
@@ -401,7 +402,7 @@ def _load_clotho_dataset(
     raw_data.update(all_metadata_dic)
 
     if "keywords" in raw_data:
-        # Split keywords into list[str]
+        # Split keywords into List[str]
         raw_data["keywords"] = [
             keywords.split(";") if keywords is not None else []
             for keywords in raw_data["keywords"]

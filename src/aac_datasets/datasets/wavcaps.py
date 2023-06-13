@@ -9,7 +9,7 @@ import subprocess
 import zipfile
 
 from dataclasses import dataclass
-from typing import Any, Callable, ClassVar, Optional
+from typing import Any, Callable, ClassVar, Dict, List, Optional
 
 import tqdm
 
@@ -34,7 +34,7 @@ pylog = logging.getLogger(__name__)
 class WavCapsItem(TypedDict):
     # Common attributes
     audio: Tensor
-    captions: list[str]
+    captions: List[str]
     dataset: str
     fname: str
     index: int
@@ -47,7 +47,7 @@ class WavCapsItem(TypedDict):
     href: Optional[str]  # FSD and SB only
     id: str
     source: str
-    tags: list[str]  # FSD only
+    tags: List[str]  # FSD only
 
 
 @dataclass(init=False, frozen=True)
@@ -60,6 +60,7 @@ class WavCapsCard(DatasetCard):
         year={2023}
     }
     """
+    default_revision: str = "85a0c21e26fa7696a5a74ce54fada99a9b43c6de"
     description = "WavCaps: A ChatGPT-Assisted Weakly-Labelled Audio Captioning Dataset for Audio-Language Multimodal Research."
     homepage = "https://huggingface.co/datasets/cvssp/WavCaps"
     language: tuple[str, ...] = ("en",)
@@ -121,7 +122,8 @@ class WavCaps(AACDataset[WavCapsItem]):
     VERIFY_FILES: ClassVar[bool] = False
 
     # WavCaps-specific globals
-    EXPECTED_SIZES: ClassVar[dict[str, int]] = {
+    CLEAN_ARCHIVES: ClassVar[bool] = False
+    EXPECTED_SIZES: ClassVar[Dict[str, int]] = {
         "AudioSet_SL": 108317,
         "BBC_Sound_Effects": 31201,
         "FreeSound": 262300,
@@ -139,7 +141,7 @@ class WavCaps(AACDataset[WavCapsItem]):
         download: bool = False,
         transform: Optional[Callable] = None,
         hf_cache_dir: Optional[str] = None,
-        revision: Optional[str] = "85a0c21e26fa7696a5a74ce54fada99a9b43c6de",
+        revision: Optional[str] = WavCapsCard.default_revision,
         verbose: int = 1,
     ) -> None:
         self._hf_cache_dir = hf_cache_dir
@@ -154,6 +156,7 @@ class WavCaps(AACDataset[WavCapsItem]):
                 WavCaps.RESUME_DL,
                 WavCaps.FORCE_PREPARE_DATA,
                 WavCaps.VERIFY_FILES,
+                WavCaps.CLEAN_ARCHIVES,
                 WavCaps.ZIP_PATH,
                 verbose,
             )
@@ -263,7 +266,7 @@ def _load_wavcaps_dataset(
     hf_cache_dir: Optional[str],
     revision: Optional[str],
     subset: str,
-) -> dict[str, list[Any]]:
+) -> Dict[str, List[Any]]:
     json_dpath = _get_json_dpath(root, hf_cache_dir, revision)
     json_paths = [
         ("AudioSet_SL", osp.join(json_dpath, "AudioSet_SL", "as_final.json")),
@@ -328,7 +331,7 @@ def _load_wavcaps_dataset(
     raw_data.pop("file_name")
     raw_data["captions"] = raw_data.pop("caption")
 
-    # Convert str -> list[str] for captions to match other datasets captions type
+    # Convert str -> List[str] for captions to match other datasets captions type
     raw_data["captions"] = [[caption] for caption in raw_data["captions"]]
     # Force floating-point precision for duration
     raw_data["duration"] = list(map(float, raw_data["duration"]))
@@ -343,6 +346,7 @@ def _prepare_wavcaps_dataset(
     resume_dl: bool,
     force: bool,
     verify_files: bool,
+    clean_archives: bool,
     zip_path: str,
     verbose: int,
 ) -> None:
@@ -411,18 +415,22 @@ def _prepare_wavcaps_dataset(
         ("FreeSound", True),
         ("SoundBible", False),
     ]
-    source_and_splitted = [
-        (source, is_splitted)
+    source_and_splitted = {
+        source: is_splitted
         for source, is_splitted in source_and_splitted
         if _use_source(source, subset)
-    ]
+    }
 
     archives_dpath = _get_archives_dpath(root, hf_cache_dir, revision)
-    for source, is_splitted in source_and_splitted:
-        main_zip_fpath = osp.join(archives_dpath, source, f"{source}.zip")
+    for source, is_splitted in source_and_splitted.items():
+        main_zip_fpath = osp.join(
+            archives_dpath, _WAVCAPS_ARCHIVE_DNAMES[source], f"{source}.zip"
+        )
 
         if is_splitted:
-            merged_zip_fpath = osp.join(archives_dpath, source, f"{source}_merged.zip")
+            merged_zip_fpath = osp.join(
+                archives_dpath, _WAVCAPS_ARCHIVE_DNAMES[source], f"{source}_merged.zip"
+            )
         else:
             merged_zip_fpath = main_zip_fpath
 
@@ -519,8 +527,23 @@ def _prepare_wavcaps_dataset(
 
         safe_rmdir(audio_subset_dpath, rm_root=False, error_on_non_empty_dir=True)
 
+    if clean_archives:
+        used_sources = source_and_splitted.keys()
+        for source in used_sources:
+            archive_source_dpath = osp.join(
+                archives_dpath, _WAVCAPS_ARCHIVE_DNAMES[source]
+            )
+            archives_names = os.listdir(archive_source_dpath)
+            for name in archives_names:
+                if not name.endswith(".zip") and ".z" not in name:
+                    continue
+                fpath = osp.join(archive_source_dpath, name)
+                if verbose >= 1:
+                    pylog.info(f"Removing archive file {name} for source={source}...")
+                os.remove(fpath)
 
-def _load_json(fpath: str) -> tuple[dict[str, Any], int]:
+
+def _load_json(fpath: str) -> tuple[Dict[str, Any], int]:
     with open(fpath, "r") as file:
         data = json.load(file)
     data = data["data"]
@@ -541,7 +564,7 @@ class _WavCapsRawItem(TypedDict):
     download_link: Optional[str]
     file_name: Optional[str]
     href: Optional[str]
-    tags: Optional[list[str]]
+    tags: Optional[List[str]]
 
 
 _DEFAULT_VALUES = {
@@ -557,6 +580,14 @@ _WAVCAPS_RAW_COLUMNS = tuple(
 )
 
 _WAVCAPS_AUDIO_DNAMES = {
+    # Source name to audio directory name
+    "AudioSet_SL": "AudioSet_SL",
+    "BBC_Sound_Effects": "BBC_Sound_Effects",
+    "FreeSound": "FreeSound",
+    "SoundBible": "SoundBible",
+}
+
+_WAVCAPS_ARCHIVE_DNAMES = {
     # Source name to audio directory name
     "AudioSet_SL": "AudioSet_SL",
     "BBC_Sound_Effects": "BBC_Sound_Effects",

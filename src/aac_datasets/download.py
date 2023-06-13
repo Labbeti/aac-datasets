@@ -9,9 +9,10 @@ from typing import Dict, Iterable, Optional
 
 import yaml
 
-from aac_datasets.datasets.audiocaps import AudioCaps
-from aac_datasets.datasets.clotho import Clotho, CLOTHO_LAST_VERSION
-from aac_datasets.datasets.macs import MACS
+from aac_datasets.datasets.audiocaps import AudioCaps, AudioCapsCard
+from aac_datasets.datasets.clotho import Clotho, ClothoCard
+from aac_datasets.datasets.macs import MACS, MACSCard
+from aac_datasets.datasets.wavcaps import WavCaps, WavCapsCard, HUGGINGFACE_HUB_CACHE
 
 
 pylog = logging.getLogger(__name__)
@@ -25,7 +26,7 @@ def download_audiocaps(
     ffmpeg: str = "ffmpeg",
     youtube_dl: str = "youtube-dl",
     with_tags: bool = False,
-    subsets: Iterable[str] = AudioCaps.SUBSETS,
+    subsets: Iterable[str] = AudioCapsCard.subsets,
 ) -> Dict[str, AudioCaps]:
     """Download :class:`~aac_datasets.datasets.audiocaps.AudioCaps` dataset subsets."""
     AudioCaps.FORCE_PREPARE_DATA = force
@@ -47,11 +48,18 @@ def download_clotho(
     download: bool = True,
     version: str = "v2.1",
     clean_archives: bool = False,
-    subsets: Optional[Iterable[str]] = None,
+    subsets: Iterable[str] = ClothoCard.subsets,
 ) -> Dict[str, Clotho]:
     """Download :class:`~aac_datasets.datasets.clotho.Clotho` dataset subsets."""
-    if subsets is None:
-        subsets = Clotho.SUBSETS_DICT[version]
+    subsets = list(subsets)
+    if version == "v1":
+        if "val" in subsets:
+            if verbose >= 0:
+                pylog.warning(
+                    f"Excluding val subset since it did not exists for version '{version}'."
+                )
+            subsets = [subset for subset in subsets if subset != "val"]
+
     Clotho.FORCE_PREPARE_DATA = force
     Clotho.CLEAN_ARCHIVES = clean_archives
 
@@ -75,8 +83,35 @@ def download_macs(
     MACS.CLEAN_ARCHIVES = clean_archives
 
     datasets = {}
-    for subset in MACS.SUBSETS:
+    for subset in MACSCard.subsets:
         datasets[subset] = MACS(root, download=download, verbose=verbose)
+    return datasets
+
+
+def download_wavcaps(
+    root: str = ".",
+    verbose: int = 1,
+    force: bool = False,
+    download: bool = True,
+    clean_archives: bool = False,
+    subsets: Iterable[str] = WavCapsCard.subsets,
+    hf_cache_dir: Optional[str] = HUGGINGFACE_HUB_CACHE,
+    revision: Optional[str] = WavCapsCard.default_revision,
+) -> Dict[str, WavCaps]:
+    """Download :class:`~aac_datasets.datasets.wavcaps.WavCaps` dataset."""
+
+    WavCaps.FORCE_PREPARE_DATA = force
+    WavCaps.CLEAN_ARCHIVES = clean_archives
+
+    datasets = {}
+    for subset in subsets:
+        datasets[subset] = WavCaps(
+            root,
+            download=download,
+            hf_cache_dir=hf_cache_dir,
+            revision=revision,
+            verbose=verbose,
+        )
     return datasets
 
 
@@ -121,7 +156,7 @@ def _get_main_download_args() -> Namespace:
         description="The dataset to download.",
     )
 
-    audiocaps_subparser = subparsers.add_parser("audiocaps")
+    audiocaps_subparser = subparsers.add_parser(AudioCapsCard.name)
     audiocaps_subparser.add_argument(
         "--ffmpeg",
         type=str,
@@ -144,18 +179,18 @@ def _get_main_download_args() -> Namespace:
     audiocaps_subparser.add_argument(
         "--subsets",
         type=str,
-        default=AudioCaps.SUBSETS,
+        default=AudioCapsCard.subsets,
         nargs="+",
-        choices=AudioCaps.SUBSETS,
+        choices=AudioCapsCard.subsets,
         help="AudioCaps subsets to download.",
     )
 
-    clotho_subparser = subparsers.add_parser("clotho")
+    clotho_subparser = subparsers.add_parser(ClothoCard.name)
     clotho_subparser.add_argument(
         "--version",
         type=str,
-        default=CLOTHO_LAST_VERSION,
-        choices=Clotho.VERSIONS,
+        default=ClothoCard.default_version,
+        choices=ClothoCard.versions,
         help="The version of the Clotho dataset.",
     )
     clotho_subparser.add_argument(
@@ -168,13 +203,13 @@ def _get_main_download_args() -> Namespace:
     clotho_subparser.add_argument(
         "--subsets",
         type=str,
-        default=Clotho.SUBSETS,
+        default=ClothoCard.subsets,
         nargs="+",
-        choices=Clotho.SUBSETS,
+        choices=ClothoCard.subsets,
         help="Clotho subsets to download. Available subsets depends of the Clotho version used.",
     )
 
-    macs_subparser = subparsers.add_parser("macs")
+    macs_subparser = subparsers.add_parser(MACSCard.name)
     macs_subparser.add_argument(
         "--clean_archives",
         type=_to_bool,
@@ -183,6 +218,35 @@ def _get_main_download_args() -> Namespace:
         help="Remove archives files after extraction.",
     )
     # Note : MACS only have 1 subset, so we do not add MACS subsets arg
+
+    wavcaps_subparser = subparsers.add_parser(WavCapsCard.name)
+    wavcaps_subparser.add_argument(
+        "--clean_archives",
+        type=_to_bool,
+        default=False,
+        choices=(False, True),
+        help="Remove archives files after extraction.",
+    )
+    wavcaps_subparser.add_argument(
+        "--subsets",
+        type=str,
+        default=WavCapsCard.subsets,
+        nargs="+",
+        choices=WavCapsCard.subsets,
+        help="WavCaps subsets to download.",
+    )
+    wavcaps_subparser.add_argument(
+        "--hf_cache_dir",
+        type=str,
+        default=HUGGINGFACE_HUB_CACHE,
+        help="Hugging face cache dir.",
+    )
+    wavcaps_subparser.add_argument(
+        "--revision",
+        type=str,
+        default=WavCapsCard.default_revision,
+        help="Revision of the WavCaps dataset.",
+    )
 
     args = parser.parse_args()
     return args
@@ -201,7 +265,7 @@ def _main_download() -> None:
     if args.verbose >= 2:
         pylog.debug(yaml.dump({"Arguments": args.__dict__}, sort_keys=False))
 
-    if args.dataset == "audiocaps":
+    if args.dataset == AudioCapsCard.name:
         download_audiocaps(
             root=args.root,
             verbose=args.verbose,
@@ -213,7 +277,7 @@ def _main_download() -> None:
             subsets=args.subsets,
         )
 
-    elif args.dataset == "clotho":
+    elif args.dataset == ClothoCard.name:
         download_clotho(
             root=args.root,
             verbose=args.verbose,
@@ -224,13 +288,25 @@ def _main_download() -> None:
             subsets=args.subsets,
         )
 
-    elif args.dataset == "macs":
+    elif args.dataset == MACSCard.name:
         download_macs(
             root=args.root,
             verbose=args.verbose,
             force=args.force,
             download=True,
             clean_archives=args.clean_archives,
+        )
+
+    elif args.dataset == WavCapsCard.name:
+        download_wavcaps(
+            root=args.root,
+            verbose=args.verbose,
+            force=args.force,
+            download=True,
+            clean_archives=args.clean_archives,
+            subsets=args.subsets,
+            hf_cache_dir=args.hf_cache_dir,
+            revision=args.revision,
         )
 
     else:

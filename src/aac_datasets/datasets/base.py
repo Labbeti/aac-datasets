@@ -52,7 +52,7 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
     # Initialization
     def __init__(
         self,
-        raw_data: dict[str, list[Any]],
+        raw_data: Dict[str, List[Any]],
         transform: Optional[Callable],
         column_names: Iterable[str],
         flat_captions: bool,
@@ -241,7 +241,7 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
     def add_column(
         self,
         column_name: str,
-        column: list[Any],
+        column: List[Any],
         allow_replace: bool = False,
     ) -> None:
         if not allow_replace and column_name in self._raw_data:
@@ -252,7 +252,7 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
             raise ValueError(f"Invalid number of rows in column '{column_name}'.")
         self._raw_data[column_name] = column
 
-    def remove_column(self, column_name: str) -> list[Any]:
+    def remove_column(self, column_name: str) -> List[Any]:
         if column_name not in self._raw_data:
             raise ValueError(f"Column '{column_name}' does not exists in data.")
         column = self._raw_data.pop(column_name, [])
@@ -314,7 +314,7 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
         return f"{self.__class__.__name__}({repr_str})"
 
     # Private methods
-    def _check_column_names(self, column_names: list[str]) -> None:
+    def _check_column_names(self, column_names: List[str]) -> None:
         expected_column_names = dict.fromkeys(self.all_column_names)
         invalid_column_names = [
             name for name in column_names if name not in expected_column_names
@@ -393,9 +393,9 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
 
 
 def _flat_raw_data(
-    raw_data: dict[str, List[Any]],
+    raw_data: Dict[str, List[Any]],
     caps_column_name: str = "captions",
-) -> dict[str, List[Any]]:
+) -> Dict[str, List[Any]]:
     if caps_column_name not in raw_data:
         raise ValueError(f"Cannot flat raw data without '{caps_column_name}' column.")
 

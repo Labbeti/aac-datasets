@@ -226,7 +226,7 @@ def _is_prepared(root: str) -> bool:
 
 def _load_macs_dataset(
     root: str, subset: str, verbose: int
-) -> tuple[dict[str, list[Any]], dict[int, float]]:
+) -> tuple[Dict[str, List[Any]], Dict[int, float]]:
     if not _is_prepared(root):
         raise RuntimeError(
             f"Cannot load data: macs is not prepared in data root={root}. Please use download=True in dataset constructor."

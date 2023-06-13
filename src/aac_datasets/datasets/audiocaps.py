@@ -141,7 +141,7 @@ class AudioCaps(AACDataset[AudioCapsItem]):
         :param root: Dataset root directory.
             The data will be stored in the 'AUDIOCAPS_{SAMPLE_RATE}' subdirectory.
             defaults to ".".
-        :param subset: The subset of AudioCaps to use. Can be one of :attr:`~AudioCaps.SUBSETS`.
+        :param subset: The subset of AudioCaps to use. Can be one of :attr:`~AudioCapsCard.subsets`.
             defaults to "train".
         :param download: Download the dataset if download=True and if the dataset is not already downloaded.
             defaults to False.
@@ -223,7 +223,7 @@ class AudioCaps(AACDataset[AudioCapsItem]):
         return self._exclude_removed_audio
 
     @property
-    def index_to_tagname(self) -> list[str]:
+    def index_to_tagname(self) -> List[str]:
         return self._index_to_tagname
 
     @property
@@ -331,7 +331,7 @@ def _load_audiocaps_dataset(
     exclude_removed_audio: bool,
     verbose: int,
     audio_format: str = "flac",
-) -> tuple[dict[str, list[Any]], list[str]]:
+) -> tuple[Dict[str, List[Any]], List[str]]:
     if not _is_prepared(root, subset, sr):
         raise RuntimeError(
             f"Cannot load data: audiocaps_{subset} is not prepared in data root={root}. Please use download=True in dataset constructor."

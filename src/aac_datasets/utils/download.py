@@ -5,7 +5,7 @@ import hashlib
 import os
 
 from pathlib import Path
-from typing import Union
+from typing import List, Union
 
 
 HASH_TYPES = ("sha256", "md5")
@@ -16,7 +16,7 @@ def safe_rmdir(
     root: str,
     rm_root: bool = True,
     error_on_non_empty_dir: bool = True,
-) -> list[str]:
+) -> List[str]:
     """Remove all empty sub-directories.
 
     :param rm_root: If True, remove the root directory. defaults to True.
