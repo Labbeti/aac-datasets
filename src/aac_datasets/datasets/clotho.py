@@ -53,7 +53,16 @@ class ClothoItem(TypedDict, total=True):
 
 @dataclass(init=False, frozen=True)
 class ClothoCard(DatasetCard):
-    citation: str = r"""
+    CAPTIONS_PER_AUDIO = {
+        "dev": 5,
+        "val": 5,
+        "eval": 5,
+        "dcase_captioning_test": 0,
+        "dcase_captioning_analysis": 0,
+        "dcase_retrieval_audio": 0,
+        "dcase_retrieval_captions": 1,
+    }
+    CITATION: str = r"""
     @inproceedings{Drossos_2020_icassp,
         author = "Drossos, Konstantinos and Lipping, Samuel and Virtanen, Tuomas",
         title = "Clotho: an Audio Captioning Dataset",
@@ -63,23 +72,14 @@ class ClothoCard(DatasetCard):
         abstract = "Audio captioning is the novel task of general audio content description using free text. It is an intermodal translation task (not speech-to-text), where a system accepts as an input an audio signal and outputs the textual description (i.e. the caption) of that signal. In this paper we present Clotho, a dataset for audio captioning consisting of 4981 audio samples of 15 to 30 seconds duration and 24 905 captions of eight to 20 words length, and a baseline method to provide initial results. Clotho is built with focus on audio content and caption diversity, and the splits of the data are not hampering the training or evaluation of methods. All sounds are from the Freesound platform, and captions are crowdsourced using Amazon Mechanical Turk and annotators from English speaking countries. Unique words, named entities, and speech transcription are removed with post-processing. Clotho is freely available online (https://zenodo.org/record/3490684)."
     }
     """
-    captions_per_audio = {
-        "dev": 5,
-        "val": 5,
-        "eval": 5,
-        "dcase_captioning_test": 0,
-        "dcase_captioning_analysis": 0,
-        "dcase_retrieval_audio": 0,
-        "dcase_retrieval_captions": 1,
-    }
-    homepage: str = "https://zenodo.org/record/3490684"
-    language: Tuple[str, ...] = ("en",)
-    default_version: str = "v2.1"
-    name: str = "clotho"
-    n_channels: int = 1
-    pretty_name: str = "Clotho"
-    sample_rate: int = 44_100  # Hz
-    subsets: Tuple[str, ...] = (
+    HOMEPAGE: str = "https://zenodo.org/record/3490684"
+    LANGUAGE: Tuple[str, ...] = ("en",)
+    DEFAULT_VERSION: str = "v2.1"
+    NAME: str = "clotho"
+    N_CHANNELS: int = 1
+    PRETTY_NAME: str = "Clotho"
+    SAMPLE_RATE: int = 44_100  # Hz
+    SUBSETS: Tuple[str, ...] = (
         "dev",
         "val",
         "eval",
@@ -88,7 +88,7 @@ class ClothoCard(DatasetCard):
         "dcase_retrieval_audio",
         "dcase_retrieval_captions",
     )
-    versions: Tuple[str, ...] = ("v1", "v2", "v2.1")
+    VERSIONS: Tuple[str, ...] = ("v1", "v2", "v2.1")
 
 
 class Clotho(AACDataset[ClothoItem]):
@@ -154,7 +154,7 @@ class Clotho(AACDataset[ClothoItem]):
         transform: Optional[Callable] = None,
         flat_captions: bool = False,
         verbose: int = 0,
-        version: str = ClothoCard.default_version,
+        version: str = ClothoCard.DEFAULT_VERSION,
     ) -> None:
         """
         :param root: The parent of the dataset root directory.
@@ -173,9 +173,9 @@ class Clotho(AACDataset[ClothoItem]):
         :param version: The version of the dataset. Can be one of :attr:`~ClothoCard.versions`.
             defaults to 'v2.1'.
         """
-        if version not in ClothoCard.versions:
+        if version not in ClothoCard.VERSIONS:
             raise ValueError(
-                f"Invalid Clotho argument version={version}. Must be one of {ClothoCard.versions}."
+                f"Invalid Clotho argument version={version}. Must be one of {ClothoCard.VERSIONS}."
             )
 
         if version == "v2":
@@ -205,7 +205,7 @@ class Clotho(AACDataset[ClothoItem]):
 
         audio_subset_dpath = _get_audio_subset_dpath(root, version, subset)
         size = len(next(iter(raw_data.values())))
-        raw_data["dataset"] = [ClothoCard.name] * size
+        raw_data["dataset"] = [ClothoCard.NAME] * size
         raw_data["subset"] = [subset] * size
         raw_data["fpath"] = [
             osp.join(audio_subset_dpath, fname) for fname in raw_data["fname"]
@@ -232,7 +232,7 @@ class Clotho(AACDataset[ClothoItem]):
             transform=transform,
             column_names=column_names,
             flat_captions=flat_captions,
-            sr=ClothoCard.sample_rate,
+            sr=ClothoCard.SAMPLE_RATE,
             verbose=verbose,
         )
         self._root = root
@@ -249,7 +249,7 @@ class Clotho(AACDataset[ClothoItem]):
             "version": self._version,
         }
         repr_str = ", ".join(f"{k}={v}" for k, v in repr_dic.items())
-        return f"{ClothoCard.pretty_name}({repr_str})"
+        return f"{ClothoCard.PRETTY_NAME}({repr_str})"
 
 
 def _get_clotho_dpath(root: str, version: str) -> str:
@@ -282,7 +282,7 @@ def _is_prepared(root: str, version: str, subset: str) -> bool:
     if not all(map(osp.isdir, (audio_subset_dpath, csv_dpath))):
         return False
 
-    if ClothoCard.captions_per_audio[subset] == 0:
+    if ClothoCard.CAPTIONS_PER_AUDIO[subset] == 0:
         return True
     if _CLOTHO_AUDIO_DNAMES[subset] is None:
         return True
@@ -421,7 +421,7 @@ def _load_clotho_dataset(
 
     if verbose >= 1:
         pylog.info(
-            f"Dataset {ClothoCard.pretty_name} ({subset}) has been loaded. (size={len(next(iter(raw_data.values())))})"
+            f"Dataset {ClothoCard.PRETTY_NAME} ({subset}) has been loaded. (size={len(next(iter(raw_data.values())))})"
         )
     return raw_data
 
@@ -581,7 +581,7 @@ def _prepare_clotho_dataset(
             os.remove(fpath)
 
     if verbose >= 2:
-        pylog.debug(f"Dataset {ClothoCard.pretty_name} ({subset}) has been prepared.")
+        pylog.debug(f"Dataset {ClothoCard.PRETTY_NAME} ({subset}) has been prepared.")
 
 
 # Audio directory names per subset

@@ -54,7 +54,7 @@ class MACSItem(TypedDict):
 
 @dataclass(init=False, frozen=True)
 class MACSCard(DatasetCard):
-    citation: str = r"""
+    CITATION: str = r"""
     @inproceedings{Martin2021b,
         title        = {Diversity and Bias in Audio Captioning Datasets},
         author       = {Martin, Irene and Mesaros, Annamaria},
@@ -69,15 +69,15 @@ class MACSCard(DatasetCard):
         doi.         = {10.5281/zenodo.5770113}
     }
     """
-    homepage: str = "https://zenodo.org/record/5114771"
-    language: Tuple[str, ...] = ("en",)
-    max_captions_per_audio: Dict[str, int] = {"full": 5}
-    min_captions_per_audio: Dict[str, int] = {"full": 2}
-    name: str = "macs"
-    n_channels: int = 2
-    pretty_name: str = "MACS"
-    sample_rate: int = 48_000  # Hz
-    subsets: Tuple[str, ...] = ("full",)
+    HOMEPAGE: str = "https://zenodo.org/record/5114771"
+    LANGUAGE: Tuple[str, ...] = ("en",)
+    MAX_CAPTIONS_PER_AUDIO: Dict[str, int] = {"full": 5}
+    MIN_CAPTIONS_PER_AUDIO: Dict[str, int] = {"full": 2}
+    NAME: str = "macs"
+    N_CHANNELS: int = 2
+    PRETTY_NAME: str = "MACS"
+    SAMPLE_RATE: int = 48_000  # Hz
+    SUBSETS: Tuple[str, ...] = ("full",)
 
 
 class MACS(AACDataset[MACSItem]):
@@ -132,9 +132,9 @@ class MACS(AACDataset[MACSItem]):
         :param verbose: Verbose level to use. Can be 0 or 1.
             defaults to 0.
         """
-        if subset not in MACSCard.subsets:
+        if subset not in MACSCard.SUBSETS:
             raise ValueError(
-                f"Invalid argument subset={subset} for MACS. (expected one of {MACSCard.subsets})"
+                f"Invalid argument subset={subset} for MACS. (expected one of {MACSCard.SUBSETS})"
             )
 
         if download:
@@ -150,7 +150,7 @@ class MACS(AACDataset[MACSItem]):
 
         audio_dpath = _get_audio_dpath(root)
         size = len(next(iter(raw_data.values())))
-        raw_data["dataset"] = [MACSCard.name] * size
+        raw_data["dataset"] = [MACSCard.NAME] * size
         raw_data["subset"] = [subset] * size
         raw_data["fpath"] = [
             osp.join(audio_dpath, fname) for fname in raw_data["fname"]
@@ -162,7 +162,7 @@ class MACS(AACDataset[MACSItem]):
             transform=transform,
             column_names=MACSItem.__required_keys__,
             flat_captions=flat_captions,
-            sr=MACSCard.sample_rate,
+            sr=MACSCard.SAMPLE_RATE,
             verbose=verbose,
         )
         self._root = root
@@ -191,7 +191,7 @@ class MACS(AACDataset[MACSItem]):
             "num_columns": len(self.column_names),
         }
         repr_str = ", ".join(f"{k}={v}" for k, v in repr_dic.items())
-        return f"{MACSCard.pretty_name}({repr_str})"
+        return f"{MACSCard.PRETTY_NAME}({repr_str})"
 
 
 def _get_macs_dpath(root: str) -> str:
@@ -310,7 +310,7 @@ def _load_macs_dataset(
 
     if verbose >= 1:
         pylog.info(
-            f"Dataset {MACSCard.pretty_name} ({subset}) has been loaded. (len={len(next(iter(raw_data.values())))})"
+            f"Dataset {MACSCard.PRETTY_NAME} ({subset}) has been loaded. (len={len(next(iter(raw_data.values())))})"
         )
 
     return raw_data, annotator_id_to_competence
@@ -439,7 +439,7 @@ def _prepare_macs_dataset(
     assert len(audio_fnames) == len(macs_fnames)
 
     if verbose >= 2:
-        pylog.debug(f"Dataset {MACSCard.pretty_name} ({subset}) has been prepared.")
+        pylog.debug(f"Dataset {MACSCard.PRETTY_NAME} ({subset}) has been prepared.")
 
 
 # MACS-specific files links.

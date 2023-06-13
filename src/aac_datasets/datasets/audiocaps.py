@@ -55,12 +55,12 @@ class AudioCapsItem(TypedDict, total=True):
 
 @dataclass(init=False, frozen=True)
 class AudioCapsCard(DatasetCard):
-    captions_per_audio = {
+    CAPTIONS_PER_AUDIO = {
         "train": 1,
         "val": 5,
         "test": 5,
     }
-    citation: str = r"""
+    CITATION: str = r"""
     @inproceedings{kim_etal_2019_audiocaps,
         title        = {{A}udio{C}aps: Generating Captions for Audios in The Wild},
         author       = {Kim, Chris Dongjoo  and Kim, Byeongchang  and Lee, Hyunmin  and Kim, Gunhee},
@@ -74,12 +74,11 @@ class AudioCapsCard(DatasetCard):
         url          = {https://aclanthology.org/N19-1011},
     }
     """
-    homepage: str = "https://audiocaps.github.io/"
-    language: Tuple[str, ...] = ("en",)
-    name: str = "audiocaps"
-    pretty_name: str = "AudioCaps"
-    source: str = "YouTube"
-    subsets: Tuple[str, ...] = ("train", "val", "test")
+    HOMEPAGE: str = "https://audiocaps.github.io/"
+    LANGUAGE: Tuple[str, ...] = ("en",)
+    NAME: str = "audiocaps"
+    PRETTY_NAME: str = "AudioCaps"
+    SUBSETS: Tuple[str, ...] = ("train", "val", "test")
 
 
 class AudioCaps(AACDataset[AudioCapsItem]):
@@ -159,9 +158,9 @@ class AudioCaps(AACDataset[AudioCapsItem]):
             Note: tags needs to be downloaded with download=True & with_tags=True before being used.
             defaults to False.
         """
-        if subset not in AudioCapsCard.subsets:
+        if subset not in AudioCapsCard.SUBSETS:
             raise ValueError(
-                f"Invalid argument subset={subset} for AudioCaps. (expected one of {AudioCapsCard.subsets})"
+                f"Invalid argument subset={subset} for AudioCaps. (expected one of {AudioCapsCard.SUBSETS})"
             )
 
         if download:
@@ -191,7 +190,7 @@ class AudioCaps(AACDataset[AudioCapsItem]):
         )
         audio_subset_dpath = _get_audio_subset_dpath(root, subset, sr)
         size = len(next(iter(raw_data.values())))
-        raw_data["dataset"] = [AudioCapsCard.name] * size
+        raw_data["dataset"] = [AudioCapsCard.NAME] * size
         raw_data["subset"] = [subset] * size
         raw_data["fpath"] = [
             osp.join(audio_subset_dpath, fname) for fname in raw_data["fname"]
@@ -275,7 +274,7 @@ class AudioCaps(AACDataset[AudioCapsItem]):
             "exclude_removed_audio": self._exclude_removed_audio,
         }
         repr_str = ", ".join(f"{k}={v}" for k, v in repr_dic.items())
-        return f"{AudioCapsCard.pretty_name}({repr_str})"
+        return f"{AudioCapsCard.PRETTY_NAME}({repr_str})"
 
     # Private methods
     def _load_audio(self, idx: int) -> Tensor:
@@ -476,7 +475,7 @@ def _load_audiocaps_dataset(
 
     if verbose >= 1:
         pylog.info(
-            f"{AudioCapsCard.pretty_name}(subset={subset}) has been loaded. (len={len(fnames_lst)})"
+            f"{AudioCapsCard.PRETTY_NAME}(subset={subset}) has been loaded. (len={len(fnames_lst)})"
         )
 
     return raw_data, index_to_tagname
@@ -645,7 +644,7 @@ def _prepare_audiocaps_dataset(
 
     if verbose >= 2:
         pylog.debug(
-            f"Dataset {AudioCapsCard.pretty_name} (subset={subset}) has been prepared."
+            f"Dataset {AudioCapsCard.PRETTY_NAME} (subset={subset}) has been prepared."
         )
 
 

@@ -32,10 +32,10 @@ def check_directory(
     :returns: A dictionary of datanames containing the length of each subset.
     """
     data_infos = [
-        (AudioCapsCard.name, AudioCaps),
-        (ClothoCard.name, Clotho),
-        (MACSCard.name, MACS),
-        (WavCapsCard.name, WavCaps),
+        (AudioCapsCard.NAME, AudioCaps),
+        (ClothoCard.NAME, Clotho),
+        (MACSCard.NAME, MACS),
+        (WavCapsCard.NAME, WavCaps),
     ]
     data_infos = [
         (ds_name, class_) for ds_name, class_ in data_infos if ds_name in datasets
@@ -102,7 +102,7 @@ def _get_main_check_args() -> Namespace:
         "--datasets",
         type=str,
         nargs="+",
-        default=(AudioCapsCard.name, ClothoCard.name, MACSCard.name, WavCapsCard.name),
+        default=(AudioCapsCard.NAME, ClothoCard.NAME, MACSCard.NAME, WavCapsCard.NAME),
         help="The datasets to check in root directory.",
     )
 

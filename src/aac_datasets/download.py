@@ -26,7 +26,7 @@ def download_audiocaps(
     ffmpeg: str = "ffmpeg",
     youtube_dl: str = "youtube-dl",
     with_tags: bool = False,
-    subsets: Iterable[str] = AudioCapsCard.subsets,
+    subsets: Iterable[str] = AudioCapsCard.SUBSETS,
 ) -> Dict[str, AudioCaps]:
     """Download :class:`~aac_datasets.datasets.audiocaps.AudioCaps` dataset subsets."""
     AudioCaps.FORCE_PREPARE_DATA = force
@@ -48,7 +48,7 @@ def download_clotho(
     download: bool = True,
     version: str = "v2.1",
     clean_archives: bool = False,
-    subsets: Iterable[str] = ClothoCard.subsets,
+    subsets: Iterable[str] = ClothoCard.SUBSETS,
 ) -> Dict[str, Clotho]:
     """Download :class:`~aac_datasets.datasets.clotho.Clotho` dataset subsets."""
     subsets = list(subsets)
@@ -83,7 +83,7 @@ def download_macs(
     MACS.CLEAN_ARCHIVES = clean_archives
 
     datasets = {}
-    for subset in MACSCard.subsets:
+    for subset in MACSCard.SUBSETS:
         datasets[subset] = MACS(root, download=download, verbose=verbose)
     return datasets
 
@@ -94,9 +94,9 @@ def download_wavcaps(
     force: bool = False,
     download: bool = True,
     clean_archives: bool = False,
-    subsets: Iterable[str] = WavCapsCard.subsets,
+    subsets: Iterable[str] = WavCapsCard.SUBSETS,
     hf_cache_dir: Optional[str] = HUGGINGFACE_HUB_CACHE,
-    revision: Optional[str] = WavCapsCard.default_revision,
+    revision: Optional[str] = WavCapsCard.DEFAULT_REVISION,
 ) -> Dict[str, WavCaps]:
     """Download :class:`~aac_datasets.datasets.wavcaps.WavCaps` dataset."""
 
@@ -156,7 +156,7 @@ def _get_main_download_args() -> Namespace:
         description="The dataset to download.",
     )
 
-    audiocaps_subparser = subparsers.add_parser(AudioCapsCard.name)
+    audiocaps_subparser = subparsers.add_parser(AudioCapsCard.NAME)
     audiocaps_subparser.add_argument(
         "--ffmpeg",
         type=str,
@@ -179,18 +179,18 @@ def _get_main_download_args() -> Namespace:
     audiocaps_subparser.add_argument(
         "--subsets",
         type=str,
-        default=AudioCapsCard.subsets,
+        default=AudioCapsCard.SUBSETS,
         nargs="+",
-        choices=AudioCapsCard.subsets,
+        choices=AudioCapsCard.SUBSETS,
         help="AudioCaps subsets to download.",
     )
 
-    clotho_subparser = subparsers.add_parser(ClothoCard.name)
+    clotho_subparser = subparsers.add_parser(ClothoCard.NAME)
     clotho_subparser.add_argument(
         "--version",
         type=str,
-        default=ClothoCard.default_version,
-        choices=ClothoCard.versions,
+        default=ClothoCard.DEFAULT_VERSION,
+        choices=ClothoCard.VERSIONS,
         help="The version of the Clotho dataset.",
     )
     clotho_subparser.add_argument(
@@ -203,13 +203,13 @@ def _get_main_download_args() -> Namespace:
     clotho_subparser.add_argument(
         "--subsets",
         type=str,
-        default=ClothoCard.subsets,
+        default=ClothoCard.SUBSETS,
         nargs="+",
-        choices=ClothoCard.subsets,
+        choices=ClothoCard.SUBSETS,
         help="Clotho subsets to download. Available subsets depends of the Clotho version used.",
     )
 
-    macs_subparser = subparsers.add_parser(MACSCard.name)
+    macs_subparser = subparsers.add_parser(MACSCard.NAME)
     macs_subparser.add_argument(
         "--clean_archives",
         type=_to_bool,
@@ -219,7 +219,7 @@ def _get_main_download_args() -> Namespace:
     )
     # Note : MACS only have 1 subset, so we do not add MACS subsets arg
 
-    wavcaps_subparser = subparsers.add_parser(WavCapsCard.name)
+    wavcaps_subparser = subparsers.add_parser(WavCapsCard.NAME)
     wavcaps_subparser.add_argument(
         "--clean_archives",
         type=_to_bool,
@@ -230,9 +230,9 @@ def _get_main_download_args() -> Namespace:
     wavcaps_subparser.add_argument(
         "--subsets",
         type=str,
-        default=WavCapsCard.subsets,
+        default=WavCapsCard.SUBSETS,
         nargs="+",
-        choices=WavCapsCard.subsets,
+        choices=WavCapsCard.SUBSETS,
         help="WavCaps subsets to download.",
     )
     wavcaps_subparser.add_argument(
@@ -244,7 +244,7 @@ def _get_main_download_args() -> Namespace:
     wavcaps_subparser.add_argument(
         "--revision",
         type=str,
-        default=WavCapsCard.default_revision,
+        default=WavCapsCard.DEFAULT_REVISION,
         help="Revision of the WavCaps dataset.",
     )
 
@@ -265,7 +265,7 @@ def _main_download() -> None:
     if args.verbose >= 2:
         pylog.debug(yaml.dump({"Arguments": args.__dict__}, sort_keys=False))
 
-    if args.dataset == AudioCapsCard.name:
+    if args.dataset == AudioCapsCard.NAME:
         download_audiocaps(
             root=args.root,
             verbose=args.verbose,
@@ -277,7 +277,7 @@ def _main_download() -> None:
             subsets=args.subsets,
         )
 
-    elif args.dataset == ClothoCard.name:
+    elif args.dataset == ClothoCard.NAME:
         download_clotho(
             root=args.root,
             verbose=args.verbose,
@@ -288,7 +288,7 @@ def _main_download() -> None:
             subsets=args.subsets,
         )
 
-    elif args.dataset == MACSCard.name:
+    elif args.dataset == MACSCard.NAME:
         download_macs(
             root=args.root,
             verbose=args.verbose,
@@ -297,7 +297,7 @@ def _main_download() -> None:
             clean_archives=args.clean_archives,
         )
 
-    elif args.dataset == WavCapsCard.name:
+    elif args.dataset == WavCapsCard.NAME:
         download_wavcaps(
             root=args.root,
             verbose=args.verbose,

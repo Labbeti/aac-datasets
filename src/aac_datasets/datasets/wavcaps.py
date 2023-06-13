@@ -52,7 +52,13 @@ class WavCapsItem(TypedDict):
 
 @dataclass(init=False, frozen=True)
 class WavCapsCard(DatasetCard):
-    citation: str = r"""
+    CAPTIONS_PER_AUDIO = {
+        "as": 1,
+        "bbc": 1,
+        "fsd": 1,
+        "sb": 1,
+    }
+    CITATION: str = r"""
     @article{mei2023WavCaps,
         title        = {Wav{C}aps: A {ChatGPT}-Assisted Weakly-Labelled Audio Captioning Dataset for Audio-Language Multimodal Research},
         author       = {Xinhao Mei and Chutong Meng and Haohe Liu and Qiuqiang Kong and Tom Ko and Chengqi Zhao and Mark D. Plumbley and Yuexian Zou and Wenwu Wang},
@@ -60,14 +66,14 @@ class WavCapsCard(DatasetCard):
         journal      = {arXiv preprint arXiv:2303.17395}
     }
     """
-    default_revision: str = "85a0c21e26fa7696a5a74ce54fada99a9b43c6de"
-    description = "WavCaps: A ChatGPT-Assisted Weakly-Labelled Audio Captioning Dataset for Audio-Language Multimodal Research."
-    homepage = "https://huggingface.co/datasets/cvssp/WavCaps"
-    language: Tuple[str, ...] = ("en",)
-    name: str = "wavcaps"
-    pretty_name: str = "WavCaps"
-    subsets: Tuple[str, ...] = ("as", "bbc", "sb", "fsd")
-    sample_rate: int = 32_000  # Hz
+    DEFAULT_REVISION: str = "85a0c21e26fa7696a5a74ce54fada99a9b43c6de"
+    DESCRIPTION = "WavCaps: A ChatGPT-Assisted Weakly-Labelled Audio Captioning Dataset for Audio-Language Multimodal Research."
+    HOMEPAGE = "https://huggingface.co/datasets/cvssp/WavCaps"
+    LANGUAGE: Tuple[str, ...] = ("en",)
+    NAME: str = "wavcaps"
+    PRETTY_NAME: str = "WavCaps"
+    SUBSETS: Tuple[str, ...] = ("as", "bbc", "fsd", "sb")
+    SAMPLE_RATE: int = 32_000  # Hz
 
 
 class WavCaps(AACDataset[WavCapsItem]):
@@ -141,7 +147,7 @@ class WavCaps(AACDataset[WavCapsItem]):
         download: bool = False,
         transform: Optional[Callable] = None,
         hf_cache_dir: Optional[str] = None,
-        revision: Optional[str] = WavCapsCard.default_revision,
+        revision: Optional[str] = WavCapsCard.DEFAULT_REVISION,
         verbose: int = 1,
     ) -> None:
         self._hf_cache_dir = hf_cache_dir
@@ -164,7 +170,7 @@ class WavCaps(AACDataset[WavCapsItem]):
         raw_data = _load_wavcaps_dataset(root, hf_cache_dir, revision, subset)
 
         size = len(next(iter(raw_data.values())))
-        raw_data["dataset"] = [WavCapsCard.name] * size
+        raw_data["dataset"] = [WavCapsCard.NAME] * size
         raw_data["subset"] = [subset] * size
         raw_data["fpath"] = [
             osp.join(
@@ -182,7 +188,7 @@ class WavCaps(AACDataset[WavCapsItem]):
             transform=transform,
             column_names=WavCapsItem.__required_keys__,
             flat_captions=False,
-            sr=WavCapsCard.sample_rate,
+            sr=WavCapsCard.SAMPLE_RATE,
             verbose=verbose,
         )
 
