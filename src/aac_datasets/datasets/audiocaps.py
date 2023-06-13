@@ -17,6 +17,7 @@ from typing import (
     Dict,
     List,
     Optional,
+    Tuple,
 )
 
 import torch
@@ -74,11 +75,11 @@ class AudioCapsCard(DatasetCard):
     }
     """
     homepage: str = "https://audiocaps.github.io/"
-    language: tuple[str, ...] = ("en",)
+    language: Tuple[str, ...] = ("en",)
     name: str = "audiocaps"
     pretty_name: str = "AudioCaps"
     source: str = "YouTube"
-    subsets: tuple[str, ...] = ("train", "val", "test")
+    subsets: Tuple[str, ...] = ("train", "val", "test")
 
 
 class AudioCaps(AACDataset[AudioCapsItem]):
@@ -331,7 +332,7 @@ def _load_audiocaps_dataset(
     exclude_removed_audio: bool,
     verbose: int,
     audio_format: str = "flac",
-) -> tuple[Dict[str, List[Any]], List[str]]:
+) -> Tuple[Dict[str, List[Any]], List[str]]:
     if not _is_prepared(root, subset, sr):
         raise RuntimeError(
             f"Cannot load data: audiocaps_{subset} is not prepared in data root={root}. Please use download=True in dataset constructor."

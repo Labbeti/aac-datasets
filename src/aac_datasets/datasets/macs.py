@@ -17,6 +17,7 @@ from typing import (
     Dict,
     List,
     Optional,
+    Tuple,
 )
 
 import yaml
@@ -69,14 +70,14 @@ class MACSCard(DatasetCard):
     }
     """
     homepage: str = "https://zenodo.org/record/5114771"
-    language: tuple[str, ...] = ("en",)
+    language: Tuple[str, ...] = ("en",)
     max_captions_per_audio: Dict[str, int] = {"full": 5}
     min_captions_per_audio: Dict[str, int] = {"full": 2}
     name: str = "macs"
     n_channels: int = 2
     pretty_name: str = "MACS"
     sample_rate: int = 48_000  # Hz
-    subsets: tuple[str, ...] = ("full",)
+    subsets: Tuple[str, ...] = ("full",)
 
 
 class MACS(AACDataset[MACSItem]):
@@ -226,7 +227,7 @@ def _is_prepared(root: str) -> bool:
 
 def _load_macs_dataset(
     root: str, subset: str, verbose: int
-) -> tuple[Dict[str, List[Any]], Dict[int, float]]:
+) -> Tuple[Dict[str, List[Any]], Dict[int, float]]:
     if not _is_prepared(root):
         raise RuntimeError(
             f"Cannot load data: macs is not prepared in data root={root}. Please use download=True in dataset constructor."

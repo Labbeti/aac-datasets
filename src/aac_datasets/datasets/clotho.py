@@ -15,6 +15,7 @@ from typing import (
     Dict,
     List,
     Optional,
+    Tuple,
 )
 from zipfile import ZipFile
 
@@ -72,13 +73,13 @@ class ClothoCard(DatasetCard):
         "dcase_retrieval_captions": 1,
     }
     homepage: str = "https://zenodo.org/record/3490684"
-    language: tuple[str, ...] = ("en",)
+    language: Tuple[str, ...] = ("en",)
     default_version: str = "v2.1"
     name: str = "clotho"
     n_channels: int = 1
     pretty_name: str = "Clotho"
     sample_rate: int = 44_100  # Hz
-    subsets: tuple[str, ...] = (
+    subsets: Tuple[str, ...] = (
         "dev",
         "val",
         "eval",
@@ -87,7 +88,7 @@ class ClothoCard(DatasetCard):
         "dcase_retrieval_audio",
         "dcase_retrieval_captions",
     )
-    versions: tuple[str, ...] = ("v1", "v2", "v2.1")
+    versions: Tuple[str, ...] = ("v1", "v2", "v2.1")
 
 
 class Clotho(AACDataset[ClothoItem]):

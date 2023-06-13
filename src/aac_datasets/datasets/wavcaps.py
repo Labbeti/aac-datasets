@@ -9,7 +9,7 @@ import subprocess
 import zipfile
 
 from dataclasses import dataclass
-from typing import Any, Callable, ClassVar, Dict, List, Optional
+from typing import Any, Callable, ClassVar, Dict, List, Optional, Tuple
 
 import tqdm
 
@@ -63,10 +63,10 @@ class WavCapsCard(DatasetCard):
     default_revision: str = "85a0c21e26fa7696a5a74ce54fada99a9b43c6de"
     description = "WavCaps: A ChatGPT-Assisted Weakly-Labelled Audio Captioning Dataset for Audio-Language Multimodal Research."
     homepage = "https://huggingface.co/datasets/cvssp/WavCaps"
-    language: tuple[str, ...] = ("en",)
+    language: Tuple[str, ...] = ("en",)
     name: str = "wavcaps"
     pretty_name: str = "WavCaps"
-    subsets: tuple[str, ...] = ("as", "bbc", "sb", "fsd")
+    subsets: Tuple[str, ...] = ("as", "bbc", "sb", "fsd")
     sample_rate: int = 32_000  # Hz
 
 
@@ -131,7 +131,7 @@ class WavCaps(AACDataset[WavCapsItem]):
     }
     REPO_ID: ClassVar[str] = "cvssp/WavCaps"
     RESUME_DL: ClassVar[bool] = True
-    SOURCES: ClassVar[tuple[str, ...]] = tuple(EXPECTED_SIZES.keys())
+    SOURCES: ClassVar[Tuple[str, ...]] = tuple(EXPECTED_SIZES.keys())
     ZIP_PATH: ClassVar[str] = "zip"
 
     def __init__(
@@ -543,7 +543,7 @@ def _prepare_wavcaps_dataset(
                 os.remove(fpath)
 
 
-def _load_json(fpath: str) -> tuple[Dict[str, Any], int]:
+def _load_json(fpath: str) -> Tuple[Dict[str, Any], int]:
     with open(fpath, "r") as file:
         data = json.load(file)
     data = data["data"]
