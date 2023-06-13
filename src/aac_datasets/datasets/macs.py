@@ -9,17 +9,23 @@ import os.path as osp
 import shutil
 import zipfile
 
-from functools import lru_cache
-from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, Union, overload
+from dataclasses import dataclass
+from typing import (
+    Any,
+    Callable,
+    ClassVar,
+    Dict,
+    List,
+    Optional,
+)
 
-import torchaudio
 import yaml
 
 from torch import Tensor
 from torch.hub import download_url_to_file
-from torch.utils.data.dataset import Dataset
 from typing_extensions import TypedDict
 
+from aac_datasets.datasets.base import AACDataset, DatasetCard
 from aac_datasets.utils.download import validate_file
 
 
@@ -45,10 +51,35 @@ class MACSItem(TypedDict):
     tags: List[List[str]]
 
 
-MACS_ALL_COLUMNS = tuple(MACSItem.__required_keys__ | MACSItem.__optional_keys__)
+@dataclass(init=False, frozen=True)
+class MACSCard(DatasetCard):
+    citation: str = r"""
+    @inproceedings{Martin2021b,
+        title        = {Diversity and Bias in Audio Captioning Datasets},
+        author       = {Martin, Irene and Mesaros, Annamaria},
+        year         = 2021,
+        month        = {November},
+        booktitle    = {Proceedings of the 6th Detection and Classification of Acoustic Scenes and Events 2021 Workshop (DCASE2021)},
+        address      = {Barcelona, Spain},
+        pages        = {90--94},
+        isbn         = {978-84-09-36072-7},
+        url          = {https://dcase.community/documents/workshop2021/proceedings/DCASE2021Workshop_Martin_34.pdf},
+        abstract     = {Describing soundscapes in sentences allows better understanding of the acoustic scene than a single label indicating the acoustic scene class or a set of audio tags indicating the sound events active in the audio clip. In addition, the richness of natural language allows a range of possible descriptions for the same acoustic scene. In this work, we address the diversity obtained when collecting descriptions of soundscapes using crowdsourcing. We study how much the collection of audio captions can be guided by the instructions given in the annotation task, by analysing the possible bias introduced by auxiliary information provided in the annotation process. Our study shows that even when given hints on the audio content, different annotators describe the same soundscape using different vocabulary. In automatic captioning, hints provided as audio tags represent grounding textual information that facilitates guiding the captioning output towards specific concepts. We also release a new dataset of audio captions and audio tags produced by multiple annotators for a subset of the TAU Urban Acoustic Scenes 2018 dataset, suitable for studying guided captioning.},
+        doi.         = {10.5281/zenodo.5770113}
+    }
+    """
+    homepage: str = "https://zenodo.org/record/5114771"
+    language: tuple[str, ...] = ("en",)
+    max_captions_per_audio: Dict[str, int] = {"full": 5}
+    min_captions_per_audio: Dict[str, int] = {"full": 2}
+    name: str = "macs"
+    n_channels: int = 2
+    pretty_name: str = "MACS"
+    sample_rate: int = 48_000  # Hz
+    subsets: tuple[str, ...] = ("full",)
 
 
-class MACS(Dataset[Dict[str, Any]]):
+class MACS(AACDataset[MACSItem]):
     r"""Unofficial MACS PyTorch dataset.
 
     .. code-block:: text
@@ -68,37 +99,11 @@ class MACS(Dataset[Dict[str, Any]]):
                 └── meta.csv
     """
     # Common globals
-    AUDIO_N_CHANNELS = 2
-    CITATION: str = r"""
-    @inproceedings{Martin2021b,
-        title        = {Diversity and Bias in Audio Captioning Datasets},
-        author       = {Martin, Irene and Mesaros, Annamaria},
-        year         = 2021,
-        month        = {November},
-        booktitle    = {Proceedings of the 6th Detection and Classification of Acoustic Scenes and Events 2021 Workshop (DCASE2021)},
-        address      = {Barcelona, Spain},
-        pages        = {90--94},
-        isbn         = {978-84-09-36072-7},
-        url          = {https://dcase.community/documents/workshop2021/proceedings/DCASE2021Workshop_Martin_34.pdf},
-        abstract     = {Describing soundscapes in sentences allows better understanding of the acoustic scene than a single label indicating the acoustic scene class or a set of audio tags indicating the sound events active in the audio clip. In addition, the richness of natural language allows a range of possible descriptions for the same acoustic scene. In this work, we address the diversity obtained when collecting descriptions of soundscapes using crowdsourcing. We study how much the collection of audio captions can be guided by the instructions given in the annotation task, by analysing the possible bias introduced by auxiliary information provided in the annotation process. Our study shows that even when given hints on the audio content, different annotators describe the same soundscape using different vocabulary. In automatic captioning, hints provided as audio tags represent grounding textual information that facilitates guiding the captioning output towards specific concepts. We also release a new dataset of audio captions and audio tags produced by multiple annotators for a subset of the TAU Urban Acoustic Scenes 2018 dataset, suitable for studying guided captioning.},
-        doi.         = {10.5281/zenodo.5770113}
-    }
-    """
-    DATASET_NAME = "macs"
-    FORCE_PREPARE_DATA: bool = False
-    HOMEPAGE = "https://zenodo.org/record/5114771"
-    MAX_AUDIO_SEC = 10.000020833333334
-    MIN_AUDIO_SEC = 9.999979166666666
-    SAMPLE_RATE = 48000  # in Hz
-    SUBSETS = ("full",)
-    VERIFY_FILES: bool = True
+    FORCE_PREPARE_DATA: ClassVar[bool] = False
+    VERIFY_FILES: ClassVar[bool] = True
 
     # MACS-specific globals
-    AUDIO_MAX_SIZE = 480001
-    AUDIO_MIN_SIZE = 479999
-    CLEAN_ARCHIVES: bool = False
-    MAX_CAPTIONS_PER_AUDIO = {"full": 5}
-    MIN_CAPTIONS_PER_AUDIO = {"full": 2}
+    CLEAN_ARCHIVES: ClassVar[bool] = False
 
     # Initialization
     def __init__(
@@ -126,149 +131,48 @@ class MACS(Dataset[Dict[str, Any]]):
         :param verbose: Verbose level to use. Can be 0 or 1.
             defaults to 0.
         """
-        if subset not in self.SUBSETS:
+        if subset not in MACSCard.subsets:
             raise ValueError(
-                f"Invalid argument subset={subset} for MACS. (expected one of {self.SUBSETS})"
+                f"Invalid argument subset={subset} for MACS. (expected one of {MACSCard.subsets})"
             )
 
-        super().__init__()
+        if download:
+            _prepare_macs_dataset(
+                root,
+                subset,
+                verbose,
+                MACS.FORCE_PREPARE_DATA,
+                MACS.VERIFY_FILES,
+                MACS.CLEAN_ARCHIVES,
+            )
+        raw_data, annotator_id_to_competence = _load_macs_dataset(root, subset, verbose)
+
+        audio_dpath = _get_audio_dpath(root)
+        size = len(next(iter(raw_data.values())))
+        raw_data["dataset"] = [MACSCard.name] * size
+        raw_data["subset"] = [subset] * size
+        raw_data["fpath"] = [
+            osp.join(audio_dpath, fname) for fname in raw_data["fname"]
+        ]
+        raw_data["index"] = list(range(size))
+
+        super().__init__(
+            raw_data=raw_data,
+            transform=transform,
+            column_names=MACSItem.__required_keys__,
+            flat_captions=flat_captions,
+            sr=MACSCard.sample_rate,
+            verbose=verbose,
+        )
         self._root = root
         self._subset = subset
         self._download = download
         self._transform = transform
         self._flat_captions = flat_captions
         self._verbose = verbose
-
-        self._annotator_id_to_competence = {}
-        self._all_items = {}
-        self._loaded = False
-
-        if self._download:
-            self._prepare_dataset()
-        self._load_dataset()
-
-    # Properties
-    @property
-    def column_names(self) -> List[str]:
-        """The name of each column of the dataset."""
-        column_names = list(MACS_ALL_COLUMNS)
-        return column_names
-
-    @property
-    def info(self) -> Dict[str, Any]:
-        """Return the global dataset info."""
-        return {
-            "dataset": self.DATASET_NAME,
-            "subset": self._subset,
-        }
-
-    @property
-    def shape(self) -> Tuple[int, ...]:
-        """The shape of the MACS dataset."""
-        return len(self), len(self.column_names)
+        self._annotator_id_to_competence = annotator_id_to_competence
 
     # Public methods
-    @overload
-    def at(self, idx: int) -> MACSItem:
-        ...
-
-    @overload
-    def at(self, idx: Union[Iterable[int], slice, None]) -> Dict[str, List]:
-        ...
-
-    @overload
-    def at(self, idx: Any, column: Any) -> Any:
-        ...
-
-    def at(
-        self,
-        idx: Union[int, Iterable[int], None, slice] = None,
-        column: Union[str, Iterable[str], None] = None,
-    ) -> Any:
-        """Get a specific data field.
-
-        :param index: The index or slice of the value in range [0, len(dataset)-1].
-        :param column: The name(s) of the column. Can be any value of :meth:`~MACS.column_names`.
-        :returns: The field value. The type depends of the column.
-        """
-        if idx is None:
-            idx = slice(None)
-        if column is None:
-            column = self.column_names
-
-        if not isinstance(column, str) and isinstance(column, Iterable):
-            return {column_i: self.at(idx, column_i) for column_i in column}
-
-        if isinstance(idx, (int, slice)) and column in self._all_items.keys():
-            return self._all_items[column][idx]
-
-        if isinstance(idx, slice):
-            idx = range(len(self))[idx]
-
-        if isinstance(idx, Iterable):
-            idx = list(idx)
-            if not all(isinstance(idx_i, int) for idx_i in idx):
-                raise TypeError(
-                    f"Invalid input type for idx={idx}. (expected Iterable[int], not Iterable[{idx.__class__.__name__}])"
-                )
-            return [self.at(idx_i, column) for idx_i in idx]
-
-        if column == "audio":
-            fpath = self.at(idx, "fpath")
-            audio, sr = torchaudio.load(fpath)  # type: ignore
-
-            # Sanity check
-            if audio.nelement() == 0:
-                raise RuntimeError(
-                    f"Invalid audio number of elements in {fpath}. (expected audio.nelement()={audio.nelement()} > 0)"
-                )
-            if sr != self.SAMPLE_RATE:
-                raise RuntimeError(
-                    f"Invalid sample rate in {fpath}. (expected {self.SAMPLE_RATE} but found sr={sr})"
-                )
-            return audio
-
-        elif column == "audio_metadata":
-            fpath = self.at(idx, "fpath")
-            audio_metadata = torchaudio.info(fpath)  # type: ignore
-            return audio_metadata
-
-        elif column == "competences":
-            annotators_ids = self.at(idx, "annotators_ids")
-            competences = [self.get_competence(id_) for id_ in annotators_ids]
-            return competences
-
-        elif column == "dataset":
-            return self.DATASET_NAME
-
-        elif column == "fpath":
-            fname = self.at(idx, "fname")
-            fpath = osp.join(self.__dpath_audio, fname)
-            return fpath
-
-        elif column == "index":
-            return idx
-
-        elif column == "num_channels":
-            audio_metadata = self.at(idx, "audio_metadata")
-            return audio_metadata.num_channels
-
-        elif column == "num_frames":
-            audio_metadata = self.at(idx, "audio_metadata")
-            return audio_metadata.num_frames
-
-        elif column == "sr":
-            audio_metadata = self.at(idx, "audio_metadata")
-            return audio_metadata.sample_rate
-
-        elif column == "subset":
-            return self._subset
-
-        else:
-            raise ValueError(
-                f"Invalid argument column={column} at idx={idx}. (expected one of {tuple(self.column_names)})"
-            )
-
     def get_annotator_id_to_competence_dict(self) -> Dict[int, float]:
         """Get annotator to competence dictionary."""
         # Note : copy to prevent any changes on this attribute
@@ -278,303 +182,263 @@ class MACS(Dataset[Dict[str, Any]]):
         """Get competence value for a specific annotator id."""
         return self._annotator_id_to_competence[annotator_id]
 
-    def is_loaded(self) -> bool:
-        """Returns True if the dataset is loaded."""
-        return self._loaded
-
-    def set_transform(
-        self,
-        transform: Optional[Callable[[Dict[str, Any]], Any]],
-    ) -> None:
-        """Set the transform applied to each row."""
-        self._transform = transform
-
     # Magic methods
-    @overload
-    def __getitem__(self, idx: int) -> MACSItem:
-        ...
-
-    @overload
-    def __getitem__(self, idx: Union[Iterable[int], slice, None]) -> Dict[str, List]:
-        ...
-
-    @overload
-    def __getitem__(self, idx: Any) -> Any:
-        ...
-
-    def __getitem__(self, idx: Any) -> Any:
-        if (
-            isinstance(idx, tuple)
-            and len(idx) == 2
-            and (isinstance(idx[1], (str, Iterable)) or idx[1] is None)
-        ):
-            idx, column = idx
-        else:
-            column = None
-
-        item = self.at(idx, column)
-        if isinstance(idx, int) and column is None and self._transform is not None:
-            item = self._transform(item)
-        return item
-
-    def __len__(self) -> int:
-        return len(self._all_items["captions"])
-
     def __repr__(self) -> str:
-        return f"MACS(size={len(self)}, subset={self._subset}, num_columns={len(self.column_names)})"
-
-    # Private methods
-    @property
-    @lru_cache()
-    def __dpath_archives(self) -> str:
-        return osp.join(self.__dpath_data, "archives")
-
-    @property
-    @lru_cache()
-    def __dpath_audio(self) -> str:
-        return osp.join(self.__dpath_data, "audio")
-
-    @property
-    @lru_cache()
-    def __dpath_data(self) -> str:
-        return osp.join(self._root, "MACS")
-
-    @property
-    @lru_cache()
-    def __dpath_tau_meta(self) -> str:
-        return osp.join(self.__dpath_data, "tau_meta")
-
-    def __is_prepared(self) -> bool:
-        if not osp.isdir(self.__dpath_audio):
-            return False
-        captions_fpath = osp.join(self.__dpath_data, MACS_FILES["captions"]["fname"])
-        if not osp.isfile(captions_fpath):
-            return False
-
-        with open(captions_fpath, "r") as file:
-            data = yaml.safe_load(file)
-        data = data["files"]
-        fnames = os.listdir(self.__dpath_audio)
-        return len(data) == len(fnames)
-
-    def _load_dataset(self) -> None:
-        if not self.__is_prepared():
-            raise RuntimeError(
-                f"Cannot load data: macs is not prepared in data root={self._root}. Please use download=True in dataset constructor."
-            )
-
-        # Read data files
-        captions_fname = MACS_FILES["captions"]["fname"]
-        captions_fpath = osp.join(self.__dpath_data, captions_fname)
-        if self._verbose >= 2:
-            pylog.debug(f"Reading captions file {captions_fname}...")
-
-        with open(captions_fpath, "r") as file:
-            caps_data = yaml.safe_load(file)
-
-        tau_meta_fname = "meta.csv"
-        tau_meta_fpath = osp.join(self.__dpath_tau_meta, tau_meta_fname)
-        if self._verbose >= 2:
-            pylog.debug(
-                f"Reading Tau Urban acoustic scene meta file {tau_meta_fname}..."
-            )
-
-        with open(tau_meta_fpath, "r") as file:
-            reader = csv.DictReader(file, delimiter="\t")
-            tau_tags_data = list(reader)
-
-        competence_fname = "MACS_competence.csv"
-        competence_fpath = osp.join(self.__dpath_data, competence_fname)
-        if self._verbose >= 2:
-            pylog.debug(f"Reading file {competence_fname}...")
-
-        with open(competence_fpath, "r") as file:
-            reader = csv.DictReader(file, delimiter="\t")
-            competences_data = list(reader)
-
-        # Store MACS data
-        all_items: Dict[str, List[Any]] = {
-            "fname": [item["filename"] for item in caps_data["files"]],
-            "captions": [
-                [subitem["sentence"] for subitem in item["annotations"]]
-                for item in caps_data["files"]
-            ],
-            "tags": [
-                [subitem["tags"] for subitem in item["annotations"]]
-                for item in caps_data["files"]
-            ],
-            "annotators_ids": [
-                [subitem["annotator_id"] for subitem in item["annotations"]]
-                for item in caps_data["files"]
-            ],
+        repr_dic = {
+            "subset": self._subset,
+            "size": len(self),
+            "num_columns": len(self.column_names),
         }
-        dataset_size = len(all_items["fname"])
+        repr_str = ", ".join(f"{k}={v}" for k, v in repr_dic.items())
+        return f"{MACSCard.pretty_name}({repr_str})"
 
-        # Build global mappings
-        fname_to_idx = {fname: i for i, fname in enumerate(all_items["fname"])}
-        annotator_id_to_competence = {
-            int(annotator["annotator_id"]): float(annotator["competence"])
-            for annotator in competences_data
-        }
 
-        # Store TAU Urban acoustic scenes data
-        tau_additional_keys = ("scene_label", "identifier")
-        all_items.update(
-            {key: [None for _ in range(dataset_size)] for key in tau_additional_keys}
+def _get_macs_dpath(root: str) -> str:
+    return osp.join(root, "MACS")
+
+
+def _get_archives_dpath(root: str) -> str:
+    return osp.join(_get_macs_dpath(root), "archives")
+
+
+def _get_audio_dpath(root: str) -> str:
+    return osp.join(_get_macs_dpath(root), "audio")
+
+
+def _get_tau_meta_dpath(root: str) -> str:
+    return osp.join(_get_macs_dpath(root), "tau_meta")
+
+
+def _is_prepared(root: str) -> bool:
+    audio_dpath = _get_audio_dpath(root)
+    if not osp.isdir(audio_dpath):
+        return False
+    captions_fpath = osp.join(_get_macs_dpath(root), MACS_FILES["captions"]["fname"])
+    if not osp.isfile(captions_fpath):
+        return False
+
+    with open(captions_fpath, "r") as file:
+        data = yaml.safe_load(file)
+    data = data["files"]
+    fnames = os.listdir(audio_dpath)
+    return len(data) == len(fnames)
+
+
+def _load_macs_dataset(
+    root: str, subset: str, verbose: int
+) -> tuple[dict[str, list[Any]], dict[int, float]]:
+    if not _is_prepared(root):
+        raise RuntimeError(
+            f"Cannot load data: macs is not prepared in data root={root}. Please use download=True in dataset constructor."
         )
 
-        tau_meta_fpath = osp.join(self.__dpath_tau_meta, "meta.csv")
-        for tau_tags in tau_tags_data:
-            fname = osp.basename(tau_tags["filename"])
-            if fname in fname_to_idx:
-                idx = fname_to_idx[fname]
-                for key in tau_additional_keys:
-                    all_items[key][idx] = tau_tags[key]
+    macs_dpath = _get_macs_dpath(root)
+    tau_meta_dpath = _get_tau_meta_dpath(root)
 
-        if self._flat_captions and self.MIN_CAPTIONS_PER_AUDIO[self._subset] > 1:
-            all_infos_flatten = {key: [] for key in all_items.keys()}
+    # Read data files
+    captions_fname = MACS_FILES["captions"]["fname"]
+    captions_fpath = osp.join(macs_dpath, captions_fname)
+    if verbose >= 2:
+        pylog.debug(f"Reading captions file {captions_fname}...")
 
-            for i, captions in enumerate(all_items["captions"]):
-                for caption in captions:
-                    for key in all_items.keys():
-                        all_infos_flatten[key].append(all_items[key][i])
-                    all_infos_flatten["captions"] = [caption]
+    with open(captions_fpath, "r") as file:
+        caps_data = yaml.safe_load(file)
 
-            all_items = all_infos_flatten
+    tau_meta_fname = "meta.csv"
+    tau_meta_fpath = osp.join(tau_meta_dpath, tau_meta_fname)
+    if verbose >= 2:
+        pylog.debug(f"Reading Tau Urban acoustic scene meta file {tau_meta_fname}...")
 
-        # Sanity checks
-        assert all(
-            all(value is not None for value in all_items[key])
-            for key in tau_additional_keys
+    with open(tau_meta_fpath, "r") as file:
+        reader = csv.DictReader(file, delimiter="\t")
+        tau_tags_data = list(reader)
+
+    competence_fname = "MACS_competence.csv"
+    competence_fpath = osp.join(macs_dpath, competence_fname)
+    if verbose >= 2:
+        pylog.debug(f"Reading file {competence_fname}...")
+
+    with open(competence_fpath, "r") as file:
+        reader = csv.DictReader(file, delimiter="\t")
+        competences_data = list(reader)
+
+    # Store MACS data
+    raw_data: Dict[str, List[Any]] = {
+        "fname": [item["filename"] for item in caps_data["files"]],
+        "captions": [
+            [subitem["sentence"] for subitem in item["annotations"]]
+            for item in caps_data["files"]
+        ],
+        "tags": [
+            [subitem["tags"] for subitem in item["annotations"]]
+            for item in caps_data["files"]
+        ],
+        "annotators_ids": [
+            [subitem["annotator_id"] for subitem in item["annotations"]]
+            for item in caps_data["files"]
+        ],
+    }
+    dataset_size = len(raw_data["fname"])
+
+    # Build global mappings
+    fname_to_idx = {fname: i for i, fname in enumerate(raw_data["fname"])}
+    annotator_id_to_competence = {
+        int(annotator["annotator_id"]): float(annotator["competence"])
+        for annotator in competences_data
+    }
+
+    # Store TAU Urban acoustic scenes data
+    tau_additional_keys = ("scene_label", "identifier")
+    raw_data.update(
+        {key: [None for _ in range(dataset_size)] for key in tau_additional_keys}
+    )
+
+    tau_meta_fpath = osp.join(tau_meta_dpath, "meta.csv")
+    for tau_tags in tau_tags_data:
+        fname = osp.basename(tau_tags["filename"])
+        if fname in fname_to_idx:
+            idx = fname_to_idx[fname]
+            for key in tau_additional_keys:
+                raw_data[key][idx] = tau_tags[key]
+
+    # Sanity checks
+    assert all(
+        all(value is not None for value in raw_data[key]) for key in tau_additional_keys
+    )
+    assert all(len(values) == dataset_size for values in raw_data.values())
+
+    if verbose >= 1:
+        pylog.info(
+            f"Dataset {MACSCard.pretty_name} ({subset}) has been loaded. (len={len(next(iter(raw_data.values())))})"
         )
-        assert all(len(values) == dataset_size for values in all_items.values())
 
-        # Set attributes
-        self._all_items = all_items
-        self._annotator_id_to_competence = annotator_id_to_competence
-        self._loaded = True
+    return raw_data, annotator_id_to_competence
 
-        if self._verbose >= 1:
-            pylog.info(f"{repr(self)} has been loaded. (len={len(self)})")
 
-    def _prepare_dataset(self) -> None:
-        if not osp.isdir(self._root):
-            raise RuntimeError(f"Cannot find root directory '{self._root}'.")
+def _prepare_macs_dataset(
+    root: str,
+    subset: str,
+    verbose: int,
+    force: bool,
+    verify_files: bool,
+    clean_archives: bool,
+) -> None:
+    if not osp.isdir(root):
+        raise RuntimeError(f"Cannot find root directory '{root}'.")
 
-        os.makedirs(self.__dpath_archives, exist_ok=True)
-        os.makedirs(self.__dpath_audio, exist_ok=True)
-        os.makedirs(self.__dpath_tau_meta, exist_ok=True)
+    macs_dpath = _get_macs_dpath(root)
+    archives_dpath = _get_archives_dpath(root)
+    audio_dpath = _get_audio_dpath(root)
+    tau_meta_dpath = _get_tau_meta_dpath(root)
 
-        # Download MACS specific files
-        for file_info in MACS_FILES.values():
-            dpath = self.__dpath_data
-            fname = file_info["fname"]
-            fpath = osp.join(dpath, fname)
+    for dpath in (archives_dpath, audio_dpath, tau_meta_dpath):
+        os.makedirs(dpath, exist_ok=True)
 
-            if not osp.isfile(fpath) or self.FORCE_PREPARE_DATA:
-                if self._verbose >= 1:
-                    pylog.info(f"Downloading captions file '{fname}'...")
+    # Download MACS specific files
+    for file_info in MACS_FILES.values():
+        fname = file_info["fname"]
+        fpath = osp.join(macs_dpath, fname)
 
-                url = file_info["url"]
-                download_url_to_file(
-                    url,
-                    fpath,
-                    progress=self._verbose >= 1,
-                )
+        if not osp.isfile(fpath) or force:
+            if verbose >= 1:
+                pylog.info(f"Downloading captions file '{fname}'...")
 
-            if self.VERIFY_FILES:
-                hash_value = file_info["hash_value"]
-                valid = validate_file(fpath, hash_value, hash_type="md5")
-                if not valid:
-                    raise RuntimeError(f"Invalid checksum for file {fname}.")
-                elif self._verbose >= 2:
-                    pylog.debug(f"File '{fname}' has a valid checksum.")
-
-        captions_fpath = osp.join(self.__dpath_data, MACS_FILES["captions"]["fname"])
-        with open(captions_fpath, "r") as file:
-            captions_data = yaml.safe_load(file)
-        captions_data = captions_data["files"]
-
-        # Download TAU Urban Sound audio archives files
-        for i, file_info in enumerate(MACS_ARCHIVES_FILES.values()):
-            dpath = self.__dpath_archives
-            zip_fname = file_info["fname"]
-            zip_fpath = osp.join(dpath, zip_fname)
-
-            if not osp.isfile(zip_fpath) or self.FORCE_PREPARE_DATA:
-                if self._verbose >= 1:
-                    pylog.info(
-                        f"Downloading audio zip file '{zip_fpath}'... ({i+1}/{len(MACS_ARCHIVES_FILES)})"
-                    )
-
-                url = file_info["url"]
-                download_url_to_file(
-                    url,
-                    zip_fpath,
-                    progress=self._verbose >= 1,
-                )
-
-            if self.VERIFY_FILES:
-                hash_value = file_info["hash_value"]
-                valid = validate_file(zip_fpath, hash_value, hash_type="md5")
-                if not valid:
-                    raise RuntimeError(f"Invalid checksum for file {zip_fname}.")
-                elif self._verbose >= 2:
-                    pylog.debug(f"File '{zip_fname}' has a valid checksum.")
-
-        # Extract files from TAU Urban Sound archives
-        macs_fnames = dict.fromkeys(data["filename"] for data in captions_data)
-        for i, (name, file_info) in enumerate(MACS_ARCHIVES_FILES.items()):
-            zip_fname = file_info["fname"]
-            zip_fpath = osp.join(self.__dpath_archives, zip_fname)
-
-            if self._verbose >= 2:
-                pylog.debug(
-                    f"Check to extract TAU Urban acoustic scenes archive zip_fname={zip_fname}..."
-                )
-
-            is_audio_archive = name.startswith("audio")
-            target_dpath = (
-                self.__dpath_audio if is_audio_archive else self.__dpath_tau_meta
+            url = file_info["url"]
+            download_url_to_file(
+                url,
+                fpath,
+                progress=verbose >= 1,
             )
 
-            with zipfile.ZipFile(zip_fpath, "r") as file:
-                members_to_extract = [
-                    member
-                    for member in file.namelist()
-                    # Extract member if file if in captions yaml file and if the audio file is not already downloaded
-                    if (
-                        (osp.basename(member) in macs_fnames or not is_audio_archive)
-                        and not osp.isfile(osp.join(target_dpath, osp.basename(member)))
-                    )
-                ]
+        if verify_files:
+            hash_value = file_info["hash_value"]
+            valid = validate_file(fpath, hash_value, hash_type="md5")
+            if not valid:
+                raise RuntimeError(f"Invalid checksum for file {fname}.")
+            elif verbose >= 2:
+                pylog.debug(f"File '{fname}' has a valid checksum.")
 
-                if self._verbose >= 1:
-                    pylog.info(
-                        f"Extracting {len(members_to_extract)}/{len(file.namelist())} audio files from ZIP file '{zip_fname}'... ({i+1}/{len(MACS_ARCHIVES_FILES)})"
-                    )
+    captions_fpath = osp.join(macs_dpath, MACS_FILES["captions"]["fname"])
+    with open(captions_fpath, "r") as file:
+        captions_data = yaml.safe_load(file)
+    captions_data = captions_data["files"]
 
-                if len(members_to_extract) > 0:
-                    file.extractall(self.__dpath_archives, members_to_extract)
-                    for member in members_to_extract:
-                        extracted_fpath = osp.join(self.__dpath_archives, member)
-                        target_fpath = osp.join(target_dpath, osp.basename(member))
-                        shutil.move(extracted_fpath, target_fpath)
+    # Download TAU Urban Sound audio archives files
+    for i, file_info in enumerate(MACS_ARCHIVES_FILES.values()):
+        zip_fname = file_info["fname"]
+        zip_fpath = osp.join(archives_dpath, zip_fname)
 
-        if self.CLEAN_ARCHIVES:
-            if self._verbose >= 1:
-                pylog.info(f"Removing archives files in {self.__dpath_archives}...")
-            shutil.rmtree(self.__dpath_archives, ignore_errors=True)
+        if not osp.isfile(zip_fpath) or force:
+            if verbose >= 1:
+                pylog.info(
+                    f"Downloading audio zip file '{zip_fpath}'... ({i+1}/{len(MACS_ARCHIVES_FILES)})"
+                )
 
-        audio_fnames = [
-            name for name in os.listdir(self.__dpath_audio) if name.endswith(".wav")
-        ]
-        assert len(audio_fnames) == len(macs_fnames)
+            url = file_info["url"]
+            download_url_to_file(
+                url,
+                zip_fpath,
+                progress=verbose >= 1,
+            )
 
-        if self._verbose >= 2:
+        if verify_files:
+            hash_value = file_info["hash_value"]
+            valid = validate_file(zip_fpath, hash_value, hash_type="md5")
+            if not valid:
+                raise RuntimeError(f"Invalid checksum for file {zip_fname}.")
+            elif verbose >= 2:
+                pylog.debug(f"File '{zip_fname}' has a valid checksum.")
+
+    # Extract files from TAU Urban Sound archives
+    macs_fnames = dict.fromkeys(data["filename"] for data in captions_data)
+    for i, (name, file_info) in enumerate(MACS_ARCHIVES_FILES.items()):
+        zip_fname = file_info["fname"]
+        zip_fpath = osp.join(archives_dpath, zip_fname)
+
+        if verbose >= 2:
             pylog.debug(
-                f"Dataset {self.__class__.__name__} ({self._subset}) has been prepared."
+                f"Check to extract TAU Urban acoustic scenes archive zip_fname={zip_fname}..."
             )
+
+        is_audio_archive = name.startswith("audio")
+        if is_audio_archive:
+            target_dpath = audio_dpath
+        else:
+            target_dpath = tau_meta_dpath
+
+        with zipfile.ZipFile(zip_fpath, "r") as file:
+            members_to_extract = [
+                member
+                for member in file.namelist()
+                # Extract member if file if in captions yaml file and if the audio file is not already downloaded
+                if (
+                    (osp.basename(member) in macs_fnames or not is_audio_archive)
+                    and not osp.isfile(osp.join(target_dpath, osp.basename(member)))
+                )
+            ]
+
+            if verbose >= 1:
+                pylog.info(
+                    f"Extracting {len(members_to_extract)}/{len(file.namelist())} audio files from ZIP file '{zip_fname}'... ({i+1}/{len(MACS_ARCHIVES_FILES)})"
+                )
+
+            if len(members_to_extract) > 0:
+                file.extractall(archives_dpath, members_to_extract)
+                for member in members_to_extract:
+                    extracted_fpath = osp.join(archives_dpath, member)
+                    target_fpath = osp.join(target_dpath, osp.basename(member))
+                    shutil.move(extracted_fpath, target_fpath)
+
+    if clean_archives:
+        if verbose >= 1:
+            pylog.info(f"Removing archives files in {archives_dpath}...")
+        shutil.rmtree(archives_dpath, ignore_errors=True)
+
+    audio_fnames = [name for name in os.listdir(audio_dpath) if name.endswith(".wav")]
+    assert len(audio_fnames) == len(macs_fnames)
+
+    if verbose >= 2:
+        pylog.debug(f"Dataset {MACSCard.pretty_name} ({subset}) has been prepared.")
 
 
 # MACS-specific files links.
@@ -715,7 +579,7 @@ TAU_URBAN_ACOUSTIC_DEV_FILES = {
     },
 }
 
-# List of TAU_URBAN_ACOUSTIC archives containing at least 1 MACS audio.
+# List of TAU_URBAN_ACOUSTIC archives containing at least 1 MACS audio file.
 MACS_ARCHIVES_FILES = {
     name: TAU_URBAN_ACOUSTIC_DEV_FILES[name]
     for name in (
