@@ -4,7 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## [0.4.0] UNRELEASED
 ### Added
-- New subsets `test_retrieval_audio` and `test_retrieval_captions` for Clotho dataset.
+- Subsets `dcase_retrieval_audio` and `dcase_retrieval_captions` from the DCASE Challenge task 6b, in Clotho dataset.
+- First implementation of WavCaps dataset.
+- Dataset cards as separate dataclasses for each dataset.
+
+### Modified
+- Rename `test` subset to `dcase_captioning_test`, `analysis` subset to `dcase_captioning_analysis` from the DCASE Challenge task 6a, in Clotho dataset.
 
 ## [0.3.3] 2023-05-11
 ### Added
