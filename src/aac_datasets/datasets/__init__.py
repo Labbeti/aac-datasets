@@ -8,3 +8,4 @@ Module containing the datasets classes source code for :class:`~aac_datasets.dat
 from .audiocaps import AudioCaps
 from .clotho import Clotho
 from .macs import MACS
+from .wavcaps import WavCaps
