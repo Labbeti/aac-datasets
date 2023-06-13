@@ -39,7 +39,9 @@ ItemType = TypeVar("ItemType", bound=TypedDict, covariant=True)
 
 
 class AACDataset(Generic[ItemType], Dataset[ItemType]):
-    AUTO_COLUMNS = {
+    """Base class for AAC datasets."""
+
+    _AUTO_COLUMNS = {
         "audio": ["fpath"],
         "audio_metadata": ["fpath"],
         "duration": ["audio_metadata"],
@@ -89,7 +91,7 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
         """The name of each column of the dataset."""
         return list(
             self._raw_data
-            | dict.fromkeys(filter(self._can_be_loaded, self.AUTO_COLUMNS))
+            | dict.fromkeys(filter(self._can_be_loaded, self._AUTO_COLUMNS))
         )
 
     @property
@@ -333,7 +335,7 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
             )
 
     def _can_be_loaded(self, col_name: str) -> bool:
-        AUTO_COLUMNS = self.__class__.AUTO_COLUMNS
+        AUTO_COLUMNS = self.__class__._AUTO_COLUMNS
         if self.is_loaded_column(col_name):
             return True
         elif col_name in AUTO_COLUMNS:
