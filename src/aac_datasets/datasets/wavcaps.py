@@ -39,6 +39,7 @@ class WavCapsItem(TypedDict):
     fname: str
     index: int
     subset: str
+    sr: int
     # WavCaps-specific attributes
     author: Optional[str]  # FSD and SB
     description: Optional[str]  # BBC, FSD and SB only
@@ -81,6 +82,12 @@ class WavCaps(AACDataset[WavCapsItem]):
 
     WavCaps Paper : https://arxiv.org/pdf/2303.17395.pdf
     HuggingFace source : https://huggingface.co/datasets/cvssp/WavCaps
+
+    This dataset contains 4 training subsets, extracted from different sources:
+    - AudioSet strongly labeled (as)
+    - BBC Sound Effects (bbc)
+    - FreeSound (fsd)
+    - SoundBible (sb)
 
     .. code-block:: text
         :caption:  Dataset folder tree
