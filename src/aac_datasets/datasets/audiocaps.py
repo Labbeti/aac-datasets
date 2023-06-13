@@ -53,9 +53,8 @@ class AudioCapsItem(TypedDict, total=True):
     youtube_id: str
 
 
-@dataclass(init=False, frozen=True)
 class AudioCapsCard(DatasetCard):
-    CAPTIONS_PER_AUDIO = {
+    CAPTIONS_PER_AUDIO: Dict[str, int] = {
         "train": 1,
         "val": 5,
         "test": 5,

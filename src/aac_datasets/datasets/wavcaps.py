@@ -51,9 +51,8 @@ class WavCapsItem(TypedDict):
     tags: List[str]  # FSD only
 
 
-@dataclass(init=False, frozen=True)
 class WavCapsCard(DatasetCard):
-    CAPTIONS_PER_AUDIO = {
+    CAPTIONS_PER_AUDIO: Dict[str, int] = {
         "as": 1,
         "bbc": 1,
         "fsd": 1,

@@ -52,7 +52,6 @@ class MACSItem(TypedDict):
     tags: List[List[str]]
 
 
-@dataclass(init=False, frozen=True)
 class MACSCard(DatasetCard):
     CITATION: str = r"""
     @inproceedings{Martin2021b,

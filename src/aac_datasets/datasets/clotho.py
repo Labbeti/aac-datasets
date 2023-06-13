@@ -51,7 +51,6 @@ class ClothoItem(TypedDict, total=True):
     license: str
 
 
-@dataclass(init=False, frozen=True)
 class ClothoCard(DatasetCard):
     CAPTIONS_PER_AUDIO = {
         "dev": 5,
