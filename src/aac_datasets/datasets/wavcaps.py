@@ -241,7 +241,7 @@ def _is_prepared(
         expected_size = WavCaps.EXPECTED_SIZES[source]
         if expected_size != len(audio_fnames):
             pylog.error(
-                f"Invalid number of files for {source=}. (expected {expected_size} but found {len(audio_fnames)} files)"
+                f"Invalid number of files for source={source}. (expected {expected_size} but found {len(audio_fnames)} files)"
             )
             return False
     return True
@@ -308,7 +308,7 @@ def _load_wavcaps_dataset(
             raw_data["fname"] += fnames
 
         else:
-            raise RuntimeError(f"Invalid {source=}.")
+            raise RuntimeError(f"Invalid source={source}.")
 
         for k in _WAVCAPS_RAW_COLUMNS:
             if k in json_data:
@@ -320,7 +320,7 @@ def _load_wavcaps_dataset(
             elif k in ("audio", "file_name"):
                 pass
             else:
-                raise RuntimeError(f"Invalid column name {k}. (with {source=})")
+                raise RuntimeError(f"Invalid column name {k}. (with source={source})")
 
         raw_data["source"] += sources
 
@@ -347,7 +347,7 @@ def _prepare_wavcaps_dataset(
     verbose: int,
 ) -> None:
     if not _is_prepared(root, hf_cache_dir, revision, subset):
-        raise RuntimeError(f"WavCaps is not prepared in {root=}.")
+        raise RuntimeError(f"WavCaps is not prepared in root={root}.")
 
     if hf_cache_dir is None:
         hf_cache_dir = HUGGINGFACE_HUB_CACHE
@@ -362,8 +362,8 @@ def _prepare_wavcaps_dataset(
         for pattern in (f"json_files/{source}/*.json", f"Zip_files/*")  # {source}/
     ]
     if verbose >= 2:
-        pylog.debug(f"{ign_sources=}")
-        pylog.debug(f"{ign_patterns=}")
+        pylog.debug(f"ign_sources={ign_sources}")
+        pylog.debug(f"ign_patterns={ign_patterns}")
 
     pbar_enabled = are_progress_bars_disabled()
     if pbar_enabled and verbose <= 0:
@@ -383,12 +383,12 @@ def _prepare_wavcaps_dataset(
     if pbar_enabled and verbose <= 0:
         enable_progress_bars()
 
-    snapshot_absdpath = osp.abspath(snapshot_dpath)
+    snapshot_abs_dpath = osp.abspath(snapshot_dpath)
     wavcaps_dpath = _get_wavcaps_dpath(root, hf_cache_dir, revision)
     if verbose >= 2:
-        pylog.debug(f"{snapshot_dpath=}")
-        pylog.debug(f"{snapshot_absdpath=}")
-        pylog.debug(f"{wavcaps_dpath=}")
+        pylog.debug(f"snapshot_dpath={snapshot_dpath}")
+        pylog.debug(f"snapshot_absdpath={snapshot_abs_dpath}")
+        pylog.debug(f"wavcaps_dpath={wavcaps_dpath}")
     del snapshot_dpath
 
     # Build symlink to hf cache
@@ -396,14 +396,14 @@ def _prepare_wavcaps_dataset(
         if not osp.islink(wavcaps_dpath):
             raise RuntimeError("WavCaps root exists but it is not a symlink.")
         link_target_abspath = osp.abspath(osp.realpath(wavcaps_dpath))
-        if link_target_abspath != snapshot_absdpath:
+        if link_target_abspath != snapshot_abs_dpath:
             pylog.error(
                 "Target link is not pointing to current snapshot path. It will be automatically replaced."
             )
             os.remove(wavcaps_dpath)
-            os.symlink(snapshot_absdpath, wavcaps_dpath, True)
+            os.symlink(snapshot_abs_dpath, wavcaps_dpath, True)
     else:
-        os.symlink(snapshot_absdpath, wavcaps_dpath, True)
+        os.symlink(snapshot_abs_dpath, wavcaps_dpath, True)
 
     source_and_splitted = [
         ("AudioSet_SL", True),

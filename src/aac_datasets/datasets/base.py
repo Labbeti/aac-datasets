@@ -165,7 +165,7 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
         elif isinstance(idx, Tensor):
             if idx.ndim not in (0, 1):
                 raise ValueError(
-                    f"Invalid number of dimensions for idx argument. (found {idx.ndim=} but expected 0 or 1)"
+                    f"Invalid number of dimensions for idx argument. (found idx.ndim={idx.ndim} but expected 0 or 1)"
                 )
             elif idx.is_floating_point():
                 raise TypeError(
@@ -321,7 +321,7 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
         ]
         if len(invalid_column_names) > 0:
             raise ValueError(
-                f"Invalid argument {column_names=}. (found {len(invalid_column_names)} invalids column names)"
+                f"Invalid argument column_names={column_names}. (found {len(invalid_column_names)} invalids column names)"
             )
 
         invalid_column_names = [
@@ -329,7 +329,7 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
         ]
         if len(invalid_column_names) > 0:
             raise ValueError(
-                f"Invalid argument {column_names=}. (found {len(invalid_column_names)} invalids column names)"
+                f"Invalid argument column_names={column_names}. (found {len(invalid_column_names)} invalids column names)"
             )
 
     def _can_be_loaded(self, col_name: str) -> bool:
