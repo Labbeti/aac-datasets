@@ -207,35 +207,10 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
             ]
             return values
 
-        if not isinstance(idx, int):
-            raise TypeError(f"Invalid argument type {type(idx)}.")
-
-        # Auto columns
-        elif column == "audio":
-            return self._load_audio(idx)
-
-        elif column == "audio_metadata":
-            return self._load_audio_metadata(idx)
-
-        elif column == "duration":
-            return self._load_duration(idx)
-
-        elif column == "fname":
-            return self._load_fname(idx)
-
-        elif column == "num_channels":
-            return self._load_num_channels(idx)
-
-        elif column == "num_frames":
-            return self._load_num_frames(idx)
-
-        elif column == "sr":
-            return self._load_sr(idx)
-
+        if isinstance(idx, int):
+            return self._load_auto_value(column, idx)
         else:
-            raise ValueError(
-                f"Invalid argument column={column} at idx={idx}. (expected one of {self.all_column_names})"
-            )
+            raise TypeError(f"Invalid argument type {type(idx)}.")
 
     def is_loaded_column(self, name: str) -> bool:
         return name in self._raw_data
@@ -346,6 +321,26 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
 
     def _flat_raw_data(self) -> None:
         self._raw_data = _flat_raw_data(self._raw_data)
+
+    def _load_auto_value(self, column: str, idx: int) -> Any:
+        if column == "audio":
+            return self._load_audio(idx)
+        elif column == "audio_metadata":
+            return self._load_audio_metadata(idx)
+        elif column == "duration":
+            return self._load_duration(idx)
+        elif column == "fname":
+            return self._load_fname(idx)
+        elif column == "num_channels":
+            return self._load_num_channels(idx)
+        elif column == "num_frames":
+            return self._load_num_frames(idx)
+        elif column == "sr":
+            return self._load_sr(idx)
+        else:
+            raise ValueError(
+                f"Invalid argument column={column} at idx={idx}. (expected one of {self.all_column_names})"
+            )
 
     def _load_audio(self, idx: int) -> Tensor:
         fpath = self.at(idx, "fpath")
