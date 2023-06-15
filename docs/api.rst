@@ -1,7 +1,7 @@
 .. _modules_file:
 
-Package tree
-============
+API
+===
 
 .. toctree::
    :maxdepth: 6

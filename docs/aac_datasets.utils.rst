@@ -13,4 +13,4 @@ Submodules
    :maxdepth: 4
 
    aac_datasets.utils.collate
-   aac_datasets.utils.dcase
+   aac_datasets.utils.download
