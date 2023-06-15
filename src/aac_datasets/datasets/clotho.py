@@ -56,10 +56,10 @@ class ClothoCard(DatasetCard):
         "dev": 5,
         "val": 5,
         "eval": 5,
-        "dcase_captioning_test": 0,
-        "dcase_captioning_analysis": 0,
-        "dcase_retrieval_audio": 0,
-        "dcase_retrieval_captions": 1,
+        "dcase_aac_test": 0,
+        "dcase_aac_analysis": 0,
+        "dcase_t2a_audio": 0,
+        "dcase_t2a_captions": 1,
     }
     CITATION: str = r"""
     @inproceedings{Drossos_2020_icassp,
@@ -82,10 +82,10 @@ class ClothoCard(DatasetCard):
         "dev",
         "val",
         "eval",
-        "dcase_captioning_test",
-        "dcase_captioning_analysis",
-        "dcase_retrieval_audio",
-        "dcase_retrieval_captions",
+        "dcase_aac_test",
+        "dcase_aac_analysis",
+        "dcase_t2a_audio",
+        "dcase_t2a_captions",
     )
     VERSIONS: Tuple[str, ...] = ("v1", "v2", "v2.1")
 
@@ -214,12 +214,12 @@ class Clotho(AACDataset[ClothoItem]):
         # Exclude some columns containing empty values for several subsets
         column_names = list(ClothoItem.__required_keys__)
         if self._subset in (
-            "dcase_captioning_test",
-            "dcase_captioning_analysis",
-            "dcase_retrieval_audio",
+            "dcase_aac_test",
+            "dcase_aac_analysis",
+            "dcase_t2a_audio",
         ):
             removed_columns = ("captions",)
-        elif self._subset == "dcase_retrieval_captions":
+        elif self._subset == "dcase_t2a_captions":
             removed_columns = ("audio", "sr", "fname")
         else:
             removed_columns = ()
@@ -588,10 +588,10 @@ _CLOTHO_AUDIO_DNAMES = {
     "dev": "development",
     "val": "validation",
     "eval": "evaluation",
-    "dcase_captioning_test": "test",
-    "dcase_captioning_analysis": "clotho_analysis",
-    "dcase_retrieval_audio": "test_retrieval_audio",
-    "dcase_retrieval_captions": None,
+    "dcase_aac_test": "test",
+    "dcase_aac_analysis": "clotho_analysis",
+    "dcase_t2a_audio": "test_retrieval_audio",
+    "dcase_t2a_captions": None,
 }
 
 # Archives and file links used to download Clotho
