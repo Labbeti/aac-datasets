@@ -9,7 +9,6 @@ import os.path as osp
 import shutil
 import zipfile
 
-from dataclasses import dataclass
 from typing import (
     Any,
     Callable,
