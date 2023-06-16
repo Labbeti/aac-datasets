@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import csv
 import json
 import logging
 import os
@@ -8,7 +9,7 @@ import os.path as osp
 import subprocess
 import zipfile
 
-from dataclasses import dataclass
+from pathlib import Path
 from typing import Any, Callable, ClassVar, Dict, List, Optional, Tuple
 
 import tqdm
@@ -69,12 +70,20 @@ class WavCapsCard(DatasetCard):
     """
     DEFAULT_REVISION: str = "85a0c21e26fa7696a5a74ce54fada99a9b43c6de"
     DESCRIPTION = "WavCaps: A ChatGPT-Assisted Weakly-Labelled Audio Captioning Dataset for Audio-Language Multimodal Research."
+    EXPECTED_SIZES: ClassVar[Dict[str, int]] = {
+        "AudioSet_SL": 108317,
+        "BBC_Sound_Effects": 31201,
+        "FreeSound": 262300,
+        "SoundBible": 1320,  # note: 1232 according to github+hf, but found 1320 => seems that archive contains more data than in json
+    }
     HOMEPAGE = "https://huggingface.co/datasets/cvssp/WavCaps"
     LANGUAGE: Tuple[str, ...] = ("en",)
     NAME: str = "wavcaps"
     PRETTY_NAME: str = "WavCaps"
-    SUBSETS: Tuple[str, ...] = ("as", "bbc", "fsd", "sb")
+    SOURCES: ClassVar[Tuple[str, ...]] = tuple(EXPECTED_SIZES.keys())
+    SUBSETS: Tuple[str, ...] = ("as", "bbc", "fsd", "sb", "as_noac", "fsd_nocl")
     SAMPLE_RATE: int = 32_000  # Hz
+    TASK_CATEGORIES: Tuple[str, ...] = ("audio-to-text", "text-to-audio")
 
 
 class WavCaps(AACDataset[WavCapsItem]):
@@ -137,17 +146,9 @@ class WavCaps(AACDataset[WavCapsItem]):
 
     # WavCaps-specific globals
     CLEAN_ARCHIVES: ClassVar[bool] = False
-    EXPECTED_SIZES: ClassVar[Dict[str, int]] = {
-        "AudioSet_SL": 108317,
-        "BBC_Sound_Effects": 31201,
-        "FreeSound": 262300,
-        "SoundBible": 1320,  # note: 1232 according to github+hf, but found 1320 => seems that archive contains more data than in json
-    }
     REPO_ID: ClassVar[str] = "cvssp/WavCaps"
     RESUME_DL: ClassVar[bool] = True
     SIZE_CATEGORIES: Tuple[str, ...] = ("100K<n<1M",)
-    SOURCES: ClassVar[Tuple[str, ...]] = tuple(EXPECTED_SIZES.keys())
-    TASK_CATEGORIES: Tuple[str, ...] = ("audio-to-text", "text-to-audio")
     ZIP_PATH: ClassVar[str] = "zip"
 
     def __init__(
@@ -177,7 +178,7 @@ class WavCaps(AACDataset[WavCapsItem]):
                 verbose,
             )
 
-        raw_data = _load_wavcaps_dataset(root, hf_cache_dir, revision, subset)
+        raw_data = _load_wavcaps_dataset(root, hf_cache_dir, revision, subset, verbose)
 
         size = len(next(iter(raw_data.values())))
         raw_data["dataset"] = [WavCapsCard.NAME] * size
@@ -271,17 +272,19 @@ def _is_prepared(
     hf_cache_dir: Optional[str],
     revision: Optional[str],
     subset: str,
+    verbose: int,
 ) -> bool:
-    sources = [source for source in WavCaps.SOURCES if _use_source(source, subset)]
+    sources = [source for source in WavCapsCard.SOURCES if _use_source(source, subset)]
     for source in sources:
         audio_fnames = os.listdir(
             _get_audio_subset_dpath(root, hf_cache_dir, revision, source)
         )
-        expected_size = WavCaps.EXPECTED_SIZES[source]
+        expected_size = WavCapsCard.EXPECTED_SIZES[source]
         if expected_size != len(audio_fnames):
-            pylog.error(
-                f"Invalid number of files for source={source}. (expected {expected_size} but found {len(audio_fnames)} files)"
-            )
+            if verbose >= 0:
+                pylog.error(
+                    f"Invalid number of files for source={source}. (expected {expected_size} but found {len(audio_fnames)} files)"
+                )
             return False
     return True
 
@@ -289,10 +292,10 @@ def _is_prepared(
 def _use_source(source: str, subset: str) -> bool:
     return any(
         (
-            source == "AudioSet_SL" and subset in ("as", "as_bbc_sb"),
-            source == "BBC_Sound_Effects" and subset in ("bbc", "as_bbc_sb"),
-            source == "FreeSound" and subset in ("fsd",),
-            source == "SoundBible" and subset in ("sb", "as_bbc_sb"),
+            source == "AudioSet_SL" and subset in ("as", "as_noac"),
+            source == "BBC_Sound_Effects" and subset in ("bbc",),
+            source == "FreeSound" and subset in ("fsd", "fsd_nocl"),
+            source == "SoundBible" and subset in ("sb",),
         )
     )
 
@@ -302,10 +305,57 @@ def _load_wavcaps_dataset(
     hf_cache_dir: Optional[str],
     revision: Optional[str],
     subset: str,
+    verbose: int,
 ) -> Dict[str, List[Any]]:
     if subset not in WavCapsCard.SUBSETS:
         raise ValueError(
             f"Invalid argument subset={subset}. (expected one of {WavCapsCard.SUBSETS})"
+        )
+
+    if subset in ("as_noac", "fsd_nocl"):
+        if subset == "as_noac":
+            target_subset = "as"
+            csv_fname = "blacklist_audiocaps.full.csv"
+
+        elif subset == "fsd_nocl":
+            target_subset = "fsd"
+            csv_fname = "blacklist_clotho.full.csv"
+
+        else:
+            raise ValueError(f"INTERNAL ERROR: Invalid argument subset={subset}.")
+
+        raw_data = _load_wavcaps_dataset(
+            root, hf_cache_dir, revision, target_subset, verbose
+        )
+        wavcaps_ids = raw_data["id"]
+
+        csv_fpath = (
+            Path(__file__)
+            .parent.parent.parent.parent.joinpath("data")
+            .joinpath(csv_fname)
+        )
+        with open(csv_fpath, "r") as file:
+            reader = csv.DictReader(file)
+            data = list(reader)
+        other_ids = [data_i["id"] for data_i in data]
+        other_ids = dict.fromkeys(other_ids)
+
+        indexes = [i for i, wc_id in enumerate(wavcaps_ids) if wc_id not in other_ids]
+
+        if verbose >= 1:
+            pylog.info(
+                f"Getting {len(indexes)}/{len(wavcaps_ids)} items from '{target_subset}' for subset '{subset}'."
+            )
+
+        raw_data = {
+            column: [column_data[idx] for idx in indexes]
+            for column, column_data in raw_data.items()
+        }
+        return raw_data
+
+    if not _is_prepared(root, hf_cache_dir, revision, subset, verbose):
+        raise RuntimeError(
+            f"{WavCaps.CARD.PRETTY_NAME} is not prepared in root={root}. Please use download=True to install it in root."
         )
 
     json_dpath = _get_json_dpath(root, hf_cache_dir, revision)
@@ -391,19 +441,48 @@ def _prepare_wavcaps_dataset(
     zip_path: str,
     verbose: int,
 ) -> None:
-    if not _is_prepared(root, hf_cache_dir, revision, subset):
-        raise RuntimeError(f"WavCaps is not prepared in root={root}.")
+    if subset == "as_noac":
+        return _prepare_wavcaps_dataset(
+            root,
+            "as",
+            revision,
+            hf_cache_dir,
+            resume_dl,
+            force,
+            verify_files,
+            clean_archives,
+            zip_path,
+            verbose,
+        )
+    elif subset == "fsd_nocl":
+        return _prepare_wavcaps_dataset(
+            root,
+            "fsd",
+            revision,
+            hf_cache_dir,
+            resume_dl,
+            force,
+            verify_files,
+            clean_archives,
+            zip_path,
+            verbose,
+        )
+
     if subset not in WavCapsCard.SUBSETS:
         raise ValueError(
             f"Invalid argument subset={subset}. (expected one of {WavCapsCard.SUBSETS})"
         )
+
+    # note: verbose=-1 to disable warning triggered when dset is not prepared
+    if not force and _is_prepared(root, hf_cache_dir, revision, subset, verbose=-1):
+        return None
 
     if hf_cache_dir is None:
         hf_cache_dir = HUGGINGFACE_HUB_CACHE
 
     # Download files from huggingface
     ign_sources = [
-        source for source in WavCaps.SOURCES if not _use_source(source, subset)
+        source for source in WavCapsCard.SOURCES if not _use_source(source, subset)
     ]
     ign_patterns = [
         pattern
