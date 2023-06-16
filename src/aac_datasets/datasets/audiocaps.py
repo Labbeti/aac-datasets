@@ -54,6 +54,7 @@ class AudioCapsItem(TypedDict, total=True):
 
 
 class AudioCapsCard(DatasetCard):
+    ANNOTATIONS_CREATORS: Tuple[str, ...] = ("crowdsourced",)
     CAPTIONS_PER_AUDIO: Dict[str, int] = {
         "train": 1,
         "val": 5,
@@ -77,7 +78,9 @@ class AudioCapsCard(DatasetCard):
     LANGUAGE: Tuple[str, ...] = ("en",)
     NAME: str = "audiocaps"
     PRETTY_NAME: str = "AudioCaps"
+    SIZE_CATEGORIES: Tuple[str, ...] = ("10K<n<100K",)
     SUBSETS: Tuple[str, ...] = ("train", "val", "test")
+    TASK_CATEGORIES: Tuple[str, ...] = ("audio-to-text", "text-to-audio")
 
 
 class AudioCaps(AACDataset[AudioCapsItem]):

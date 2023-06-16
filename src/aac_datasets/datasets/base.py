@@ -27,8 +27,6 @@ from typing_extensions import TypedDict
 from torch import Tensor
 from torch.utils.data.dataset import Dataset
 
-from aac_datasets.utils.collate import intersect_lists
-
 
 pylog = logging.getLogger(__name__)
 
@@ -238,37 +236,40 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
         else:
             raise TypeError(f"Invalid argument type {type(idx)}.")
 
-    def is_loaded_column(self, name: str) -> bool:
-        return name in self._raw_data
+    def is_loaded_column(self, column: str) -> bool:
+        return column in self._raw_data
+
+    def is_auto_column(self, column: str) -> bool:
+        return column in self._auto_columns_fns
 
     def add_column(
         self,
-        column_name: str,
-        column: List[Any],
+        column: str,
+        column_data: List[Any],
         allow_replace: bool = False,
     ) -> None:
-        if not allow_replace and column_name in self._raw_data:
+        if not allow_replace and column in self._raw_data:
             raise ValueError(
-                f"Column '{column_name}' already exists. Please choose another name or set allow_replace arg to True."
+                f"Column '{column}' already exists. Please choose another name or set allow_replace arg to True."
             )
-        if len(self._raw_data) > 0 and len(column) != len(self):
-            raise ValueError(f"Invalid number of rows in column '{column_name}'.")
-        self._raw_data[column_name] = column
+        if len(self._raw_data) > 0 and len(column_data) != len(self):
+            raise ValueError(f"Invalid number of rows in column '{column}'.")
+        self._raw_data[column] = column_data
 
-    def remove_column(self, column_name: str) -> List[Any]:
-        if column_name not in self._raw_data:
-            raise ValueError(f"Column '{column_name}' does not exists in data.")
-        column = self._raw_data.pop(column_name, [])
-        return column
+    def remove_column(self, column: str) -> List[Any]:
+        if column not in self._raw_data:
+            raise ValueError(f"Column '{column}' does not exists in data.")
+        column_data = self._raw_data.pop(column, [])
+        return column_data
 
     def rename_column(
         self,
-        old_name: str,
-        new_name: str,
+        old_col_name: str,
+        new_col_name: str,
         allow_replace: bool = False,
     ) -> None:
-        column = self.remove_column(old_name)
-        self.add_column(new_name, column, allow_replace)
+        col_data = self.remove_column(old_col_name)
+        self.add_column(new_col_name, col_data, allow_replace)
 
     def register_auto_column(
         self,
@@ -278,6 +279,19 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
         if column_name in self.column_names:
             raise ValueError(f"Column '{column_name}' already exists in {self}.")
         self._auto_columns_fns[column_name] = load_fn
+
+    def preload_auto_column(
+        self,
+        column_name: str,
+        allow_replace: bool = False,
+    ) -> Callable[["AACDataset", int], Any]:
+        if column_name not in self._auto_columns_fns:
+            raise ValueError(f"Invalid argument column_name={column_name}.")
+
+        column_data = [self._load_auto_value(column_name, i) for i in range(len(self))]
+        fn = self._auto_columns_fns.pop(column_name)
+        self.add_column(column_name, column_data, allow_replace=allow_replace)
+        return fn
 
     # Magic methods
     @overload

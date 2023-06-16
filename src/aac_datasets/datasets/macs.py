@@ -53,6 +53,7 @@ class MACSItem(TypedDict):
 
 
 class MACSCard(DatasetCard):
+    ANNOTATIONS_CREATORS: Tuple[str, ...] = ("crowdsourced",)
     CITATION: str = r"""
     @inproceedings{Martin2021b,
         title        = {Diversity and Bias in Audio Captioning Datasets},
@@ -76,7 +77,9 @@ class MACSCard(DatasetCard):
     N_CHANNELS: int = 2
     PRETTY_NAME: str = "MACS"
     SAMPLE_RATE: int = 48_000  # Hz
+    SIZE_CATEGORIES: Tuple[str, ...] = ("1K<n<10K",)
     SUBSETS: Tuple[str, ...] = ("full",)
+    TASK_CATEGORIES: Tuple[str, ...] = ("audio-to-text", "text-to-audio")
 
 
 class MACS(AACDataset[MACSItem]):

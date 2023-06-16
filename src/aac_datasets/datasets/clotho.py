@@ -51,6 +51,7 @@ class ClothoItem(TypedDict, total=True):
 
 
 class ClothoCard(DatasetCard):
+    ANNOTATIONS_CREATORS: Tuple[str, ...] = ("crowdsourced",)
     CAPTIONS_PER_AUDIO = {
         "dev": 5,
         "val": 5,
@@ -77,6 +78,7 @@ class ClothoCard(DatasetCard):
     N_CHANNELS: int = 1
     PRETTY_NAME: str = "Clotho"
     SAMPLE_RATE: int = 44_100  # Hz
+    SIZE_CATEGORIES: Tuple[str, ...] = ("1K<n<10K",)
     SUBSETS: Tuple[str, ...] = (
         "dev",
         "val",
@@ -86,6 +88,7 @@ class ClothoCard(DatasetCard):
         "dcase_t2a_audio",
         "dcase_t2a_captions",
     )
+    TASK_CATEGORIES: Tuple[str, ...] = ("audio-to-text", "text-to-audio")
     VERSIONS: Tuple[str, ...] = ("v1", "v2", "v2.1")
 
 

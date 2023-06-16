@@ -52,6 +52,7 @@ class WavCapsItem(TypedDict):
 
 
 class WavCapsCard(DatasetCard):
+    ANNOTATIONS_CREATORS: Tuple[str, ...] = ("machine-generated",)
     CAPTIONS_PER_AUDIO: Dict[str, int] = {
         "as": 1,
         "bbc": 1,
@@ -144,7 +145,9 @@ class WavCaps(AACDataset[WavCapsItem]):
     }
     REPO_ID: ClassVar[str] = "cvssp/WavCaps"
     RESUME_DL: ClassVar[bool] = True
+    SIZE_CATEGORIES: Tuple[str, ...] = ("100K<n<1M",)
     SOURCES: ClassVar[Tuple[str, ...]] = tuple(EXPECTED_SIZES.keys())
+    TASK_CATEGORIES: Tuple[str, ...] = ("audio-to-text", "text-to-audio")
     ZIP_PATH: ClassVar[str] = "zip"
 
     def __init__(
