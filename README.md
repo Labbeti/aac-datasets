@@ -12,7 +12,7 @@
     <img src='https://readthedocs.org/projects/aac-datasets/badge/?version=stable&style=for-the-badge' alt='Documentation Status' />
 </a>
 
-Audio Captioning unofficial datasets source code for **AudioCaps** [[1]](#audiocaps), **Clotho** [[2]](#clotho), and **MACS** [[3]](#macs), designed for PyTorch.
+Audio Captioning unofficial datasets source code for **AudioCaps** [[1]](#audiocaps), **Clotho** [[2]](#clotho), **MACS** [[3]](#macs), and **WavCaps** [[4]](#wavcaps), designed for PyTorch.
 
 </div>
 
@@ -54,16 +54,16 @@ for batch in dataloader:
 ## Datasets stats
 Here is the statistics for each dataset :
 
-| | AudioCaps | Clotho | MACS |
-|:---:|:---:|:---:|:---:|
-| Subsets | train, val, test | dev, val, eval, test, analysis | full |
-| Sample rate (Hz) | 32,000 | 44,100 | 48,000 |
-| Estimated size (GB) | 43 | 27 | 13 |
-| Audio source | AudioSet (YouTube) | FreeSound | TAU Urban Acoustic Scenes 2019 |
+| | AudioCaps | Clotho | MACS | WavCaps |
+|:---:|:---:|:---:|:---:|:---:|
+| Subsets | train, val, test | dev, val, eval, dcase_aac_test, dcase_aac_analysis, dcase_t2a_audio, dcase_t2a_captions | full | as, as_noac, bbc, fsd, fsd_nocl, sb |
+| Sample rate (kHz) | 32 | 44.1 | 48 | 32 |
+| Estimated size (GB) | 43 | 27 | 13 | 941 |
+| Audio source | AudioSet | FreeSound | TAU Urban Acoustic Scenes 2019 | AudioSet, BBC Sound Effects, FreeSound, SoundBible |
 
-For Clotho, the dev subset should be used for training, val for validation and eval for testing. The test and analysis subsets contains only audio files without labels from the DCASE challenge.
+For Clotho, the dev subset should be used for training, val for validation and eval for testing.
 
-Here is the **train** subset statistics for each dataset :
+Here is the **train** subset statistics for AudioCaps, Clotho and MACS datasets :
 
 | | AudioCaps/train | Clotho/dev | MACS/full |
 |:---:|:---:|:---:|:---:|
@@ -89,6 +89,7 @@ torchaudio >= 0.10.1
 py7zr >= 0.17.2
 pyyaml >= 6.0
 tqdm >= 4.64.0
+huggingface-hub >= 0.15.1
 ```
 
 ### External requirements (AudioCaps only)
@@ -109,12 +110,6 @@ To download a dataset, you can use `download` argument in dataset construction :
 ```python
 dataset = Clotho(root=".", subset="dev", download=True)
 ```
-Or use the corresponding function in the code :
-```python
-from aac_datasets.download import download_clotho
-
-download_clotho(root=".", subsets=["dev"])
-```
 However, if you want to download datasets from a script, you can also use the following command :
 ```bash
 aac-datasets-download --root "." clotho --subsets "dev"
@@ -130,12 +125,15 @@ aac-datasets-download --root "." clotho --subsets "dev"
 #### MACS
 [3] F. Font, A. Mesaros, D. P. W. Ellis, E. Fonseca, M. Fuentes, and B. Elizalde, Proceedings of the 6th Workshop on Detection and Classication of Acoustic Scenes and Events (DCASE 2021). Barcelona, Spain: Music Technology Group - Universitat Pompeu Fabra, Nov. 2021. Available: https://doi.org/10.5281/zenodo.5770113
 
+#### WavCaps
+[1] X. Mei et al., “WavCaps: A ChatGPT-Assisted Weakly-Labelled Audio Captioning Dataset for Audio-Language Multimodal Research,” arXiv preprint arXiv:2303.17395, 2023, [Online]. Available: https://arxiv.org/pdf/2303.17395.pdf 
+
 ## Cite the aac-datasets package
 If you use this software, please consider cite it as below :
 
 ```
 @software{
-    Labbe_aac-datasets_2022,
+    Labbe_aac_datasets_2022,
     author = {Labbé, Etienne},
     license = {MIT},
     month = {05},

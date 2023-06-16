@@ -65,7 +65,8 @@ class WavCapsCard(DatasetCard):
         title        = {Wav{C}aps: A {ChatGPT}-Assisted Weakly-Labelled Audio Captioning Dataset for Audio-Language Multimodal Research},
         author       = {Xinhao Mei and Chutong Meng and Haohe Liu and Qiuqiang Kong and Tom Ko and Chengqi Zhao and Mark D. Plumbley and Yuexian Zou and Wenwu Wang},
         year         = 2023,
-        journal      = {arXiv preprint arXiv:2303.17395}
+        journal      = {arXiv preprint arXiv:2303.17395},
+        url          = {https://arxiv.org/pdf/2303.17395.pdf}
     }
     """
     DEFAULT_REVISION: str = "85a0c21e26fa7696a5a74ce54fada99a9b43c6de"
