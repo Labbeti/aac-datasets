@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 ## [0.4.0] UNRELEASED
 ### Added
 - Subsets `dcase_t2a_audio` and `dcase_t2a_captions` from the DCASE Challenge task 6b, in Clotho dataset.
-- First implementation of WavCaps dataset.
+- First implementation of **WavCaps** dataset.
 - Dataset cards as separate dataclasses for each dataset.
 
 ### Modified

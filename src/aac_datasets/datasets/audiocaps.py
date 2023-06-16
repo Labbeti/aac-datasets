@@ -113,6 +113,7 @@ class AudioCaps(AACDataset[AudioCapsItem]):
     """
 
     # Common globals
+    CARD: ClassVar[AudioCapsCard] = AudioCapsCard()
     FORCE_PREPARE_DATA: ClassVar[bool] = False
     VERIFY_FILES: ClassVar[bool] = False
 

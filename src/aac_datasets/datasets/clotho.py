@@ -135,6 +135,7 @@ class Clotho(AACDataset[ClothoItem]):
     """
 
     # Common globals
+    CARD: ClassVar[ClothoCard] = ClothoCard()
     FORCE_PREPARE_DATA: ClassVar[bool] = False
     VERIFY_FILES: ClassVar[bool] = True
 
@@ -238,6 +239,27 @@ class Clotho(AACDataset[ClothoItem]):
         self._subset = subset
         self._download = download
         self._version = version
+
+    # Properties
+    @property
+    def download(self) -> bool:
+        return self._download
+
+    @property
+    def root(self) -> str:
+        return self._root
+
+    @property
+    def sr(self) -> int:
+        return self._sr  # type: ignore
+
+    @property
+    def subset(self) -> str:
+        return self._subset
+
+    @property
+    def version(self) -> str:
+        return self._version
 
     # Magic methods
     def __repr__(self) -> str:

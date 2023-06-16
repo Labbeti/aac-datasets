@@ -98,7 +98,9 @@ class MACS(AACDataset[MACSItem]):
                 ├── fold1_train.csv
                 └── meta.csv
     """
+
     # Common globals
+    CARD: ClassVar[MACSCard] = MACSCard()
     FORCE_PREPARE_DATA: ClassVar[bool] = False
     VERIFY_FILES: ClassVar[bool] = True
 
@@ -171,6 +173,23 @@ class MACS(AACDataset[MACSItem]):
         self._flat_captions = flat_captions
         self._verbose = verbose
         self._annotator_id_to_competence = annotator_id_to_competence
+
+    # Properties
+    @property
+    def download(self) -> bool:
+        return self._download
+
+    @property
+    def root(self) -> str:
+        return self._root
+
+    @property
+    def sr(self) -> int:
+        return self._sr  # type: ignore
+
+    @property
+    def subset(self) -> str:
+        return self._subset
 
     # Public methods
     def get_annotator_id_to_competence_dict(self) -> Dict[int, float]:

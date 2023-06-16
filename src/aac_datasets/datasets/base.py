@@ -80,6 +80,7 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
         self._flat_captions = flat_captions
         self._sr = sr
         self._verbose = verbose
+
         self._auto_columns_fns = AACDataset.default_auto_columns_fns()
 
         if self._flat_captions:

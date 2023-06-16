@@ -130,6 +130,7 @@ class WavCaps(AACDataset[WavCapsItem]):
     """
 
     # Common globals
+    CARD: ClassVar[WavCapsCard] = WavCapsCard()
     FORCE_PREPARE_DATA: ClassVar[bool] = False
     VERIFY_FILES: ClassVar[bool] = False
 
@@ -197,6 +198,26 @@ class WavCaps(AACDataset[WavCapsItem]):
             sr=WavCapsCard.SAMPLE_RATE,
             verbose=verbose,
         )
+        self._root = root
+        self._subset = subset
+        self._download = download
+
+    # Properties
+    @property
+    def download(self) -> bool:
+        return self._download
+
+    @property
+    def root(self) -> str:
+        return self._root
+
+    @property
+    def sr(self) -> int:
+        return self._sr  # type: ignore
+
+    @property
+    def subset(self) -> str:
+        return self._subset
 
 
 def _get_wavcaps_dpath(
