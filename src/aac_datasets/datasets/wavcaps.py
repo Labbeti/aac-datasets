@@ -300,6 +300,11 @@ def _load_wavcaps_dataset(
     revision: Optional[str],
     subset: str,
 ) -> Dict[str, List[Any]]:
+    if subset not in WavCapsCard.SUBSETS:
+        raise ValueError(
+            f"Invalid argument subset={subset}. (expected one of {WavCapsCard.SUBSETS})"
+        )
+
     json_dpath = _get_json_dpath(root, hf_cache_dir, revision)
     json_paths = [
         ("AudioSet_SL", osp.join(json_dpath, "AudioSet_SL", "as_final.json")),
@@ -385,6 +390,10 @@ def _prepare_wavcaps_dataset(
 ) -> None:
     if not _is_prepared(root, hf_cache_dir, revision, subset):
         raise RuntimeError(f"WavCaps is not prepared in root={root}.")
+    if subset not in WavCapsCard.SUBSETS:
+        raise ValueError(
+            f"Invalid argument subset={subset}. (expected one of {WavCapsCard.SUBSETS})"
+        )
 
     if hf_cache_dir is None:
         hf_cache_dir = HUGGINGFACE_HUB_CACHE
