@@ -119,8 +119,7 @@ def list_dict_to_dict_list(
         if not all(keys == set(item.keys()) for item in lst[1:]):
             raise ValueError("Invalid keys for batch.")
     elif key_mode == "intersect":
-        for item in lst[1:]:
-            keys = keys.intersection(item.keys())
+        keys = intersect_lists([list(item.keys()) for item in lst])
     else:
         KEY_MODES = ("same", "intersect")
         raise ValueError(
@@ -128,3 +127,14 @@ def list_dict_to_dict_list(
         )
 
     return {key: [item[key] for item in lst] for key in keys}
+
+
+def intersect_lists(lst_of_lst: list[list[T]]) -> list[T]:
+    if len(lst_of_lst) <= 0:
+        return []
+    out = lst_of_lst[0]
+    for lst_i in lst_of_lst[1:]:
+        out = [name for name in out if name in lst_i]
+        if len(out) == 0:
+            break
+    return out

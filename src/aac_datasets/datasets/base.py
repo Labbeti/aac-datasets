@@ -27,6 +27,8 @@ from typing_extensions import TypedDict
 from torch import Tensor
 from torch.utils.data.dataset import Dataset
 
+from aac_datasets.utils.collate import intersect_lists
+
 
 pylog = logging.getLogger(__name__)
 
@@ -78,6 +80,7 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
         self._flat_captions = flat_captions
         self._sr = sr
         self._verbose = verbose
+        self._auto_columns_fns = AACDataset.default_auto_columns_fns()
 
         if self._flat_captions:
             self._flat_raw_data()
@@ -88,6 +91,18 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
     @staticmethod
     def new_empty() -> "AACDataset":
         return AACDataset({}, None, (), False, None, 0)
+
+    @classmethod
+    def default_auto_columns_fns(cls) -> dict[str, Callable]:
+        return {
+            "audio": AACDataset._load_audio,
+            "audio_metadata": AACDataset._load_audio_metadata,
+            "duration": AACDataset._load_duration,
+            "fname": AACDataset._load_fname,
+            "num_channels": AACDataset._load_num_channels,
+            "num_frames": AACDataset._load_num_frames,
+            "sr": AACDataset._load_sr,
+        }
 
     # Properties
     @property
@@ -254,6 +269,15 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
         column = self.remove_column(old_name)
         self.add_column(new_name, column, allow_replace)
 
+    def register_auto_column(
+        self,
+        column_name: str,
+        load_fn: Callable[["AACDataset", int], Any],
+    ) -> None:
+        if column_name in self.column_names:
+            raise ValueError(f"Column '{column_name}' already exists in {self}.")
+        self._auto_columns_fns[column_name] = load_fn
+
     # Magic methods
     @overload
     def __getitem__(self, idx: int) -> ItemType:
@@ -346,20 +370,9 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
         self._raw_data = _flat_raw_data(self._raw_data)
 
     def _load_auto_value(self, column: str, idx: int) -> Any:
-        if column == "audio":
-            return self._load_audio(idx)
-        elif column == "audio_metadata":
-            return self._load_audio_metadata(idx)
-        elif column == "duration":
-            return self._load_duration(idx)
-        elif column == "fname":
-            return self._load_fname(idx)
-        elif column == "num_channels":
-            return self._load_num_channels(idx)
-        elif column == "num_frames":
-            return self._load_num_frames(idx)
-        elif column == "sr":
-            return self._load_sr(idx)
+        if column in self._auto_columns_fns:
+            fn = self._auto_columns_fns[column]
+            return fn(self, idx)
         else:
             raise ValueError(
                 f"Invalid argument column={column} at idx={idx}. (expected one of {self.all_column_names})"
