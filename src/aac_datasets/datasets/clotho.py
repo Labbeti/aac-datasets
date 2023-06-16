@@ -718,7 +718,7 @@ _CLOTHO_LINKS = {
                 "hash_value": "13946f054d4e1bf48079813aac61bf77",
             },
         },
-        "test": {
+        "dcase_aac_test": {
             "audio_archive": {
                 "fname": "clotho_audio_test.7z",
                 "url": "https://zenodo.org/record/3865658/files/clotho_audio_test.7z?download=1",
@@ -783,7 +783,7 @@ _CLOTHO_LINKS = {
                 "hash_value": "13946f054d4e1bf48079813aac61bf77",
             },
         },
-        "test": {
+        "dcase_aac_test": {
             "audio_archive": {
                 "fname": "clotho_audio_test.7z",
                 "url": "https://zenodo.org/record/3865658/files/clotho_audio_test.7z?download=1",
@@ -795,14 +795,14 @@ _CLOTHO_LINKS = {
                 "hash_value": "52f8ad01c229a310a0ff8043df480e21",
             },
         },
-        "analysis": {
+        "dcase_aac_analysis": {
             "audio_archive": {
                 "fname": "clotho_analysis_2022.zip",
                 "url": "https://zenodo.org/record/6610709/files/clotho_analysis_2022.zip?download=1",
                 "hash_value": "7e8fa4762cc3a7c5546606680b958d08",
             },
         },
-        "test_retrieval_audio": {
+        "dcase_t2a_audio": {
             "audio_archive": {
                 "fname": "retrieval_audio.7z",
                 "url": "https://zenodo.org/record/6590983/files/retrieval_audio.7z?download=1",
@@ -814,7 +814,7 @@ _CLOTHO_LINKS = {
                 "hash_value": "1301db07acbf1e4fabc467eb54e0d353",
             },
         },
-        "test_retrieval_captions": {
+        "dcase_t2a_captions": {
             "captions": {
                 "fname": "retrieval_captions.csv",
                 "url": "https://zenodo.org/record/6590983/files/retrieval_captions.csv?download=1",
