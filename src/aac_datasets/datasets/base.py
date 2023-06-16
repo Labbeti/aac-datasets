@@ -85,6 +85,10 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
         # Check must be done after setting the attributes
         self._check_column_names(column_names)
 
+    @staticmethod
+    def new_empty() -> "AACDataset":
+        return AACDataset({}, None, (), False, None, 0)
+
     # Properties
     @property
     def all_column_names(self) -> List[str]:
@@ -141,6 +145,10 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
     # Public methods
     @overload
     def at(self, idx: int) -> ItemType:
+        ...
+
+    @overload
+    def at(self, idx: Union[Iterable[int], slice, None], column: str) -> List:
         ...
 
     @overload
@@ -250,6 +258,10 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
         ...
 
     @overload
+    def __getitem__(self, idx: tuple[Union[Iterable[int], slice, None], str]) -> List:
+        ...
+
+    @overload
     def __getitem__(self, idx: Union[Iterable[int], slice, None]) -> Dict[str, List]:
         ...
 
@@ -286,7 +298,10 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
             return 0
 
     def __repr__(self) -> str:
-        info = {"num_rows": len(self), "num_columns": len(self.column_names)}
+        info = {
+            "size": len(self),
+            "num_columns": len(self.column_names),
+        }
         repr_str = ", ".join(f"{k}={v}" for k, v in info.items())
         return f"{self.__class__.__name__}({repr_str})"
 
