@@ -7,7 +7,6 @@ import logging
 import os
 import os.path as osp
 
-from dataclasses import dataclass
 from typing import (
     Any,
     Callable,
@@ -22,7 +21,7 @@ from zipfile import ZipFile
 from py7zr import SevenZipFile
 from torch import Tensor
 from torch.hub import download_url_to_file
-from typing_extensions import TypedDict
+from typing_extensions import TypedDict, NotRequired
 
 from aac_datasets.datasets.base import AACDataset, DatasetCard
 from aac_datasets.utils.download import validate_file
@@ -35,20 +34,20 @@ class ClothoItem(TypedDict, total=True):
     r"""Class representing a single Clotho item."""
 
     # Common attributes
-    audio: Tensor
-    captions: List[str]
+    audio: NotRequired[Tensor]
+    captions: NotRequired[List[str]]
     dataset: str
-    fname: str
+    fname: NotRequired[str]
     index: int
     subset: str
     sr: int
     # Clotho-specific attributes
-    keywords: List[str]
-    sound_id: str  # warning: some files contains "Not found"
-    sound_link: str  # warning: some files contains "NA"
-    start_end_samples: str  # warning: some files contains ""
-    manufacturer: str
-    license: str
+    keywords: NotRequired[List[str]]
+    sound_id: NotRequired[str]  # warning: some files contains "Not found"
+    sound_link: NotRequired[str]  # warning: some files contains "NA"
+    start_end_samples: NotRequired[str]  # warning: some files contains ""
+    manufacturer: NotRequired[str]
+    license: NotRequired[str]
 
 
 class ClothoCard(DatasetCard):
@@ -201,31 +200,56 @@ class Clotho(AACDataset[ClothoItem]):
                 Clotho.CLEAN_ARCHIVES,
             )
 
-        raw_data = _load_clotho_dataset(root, version, subset, verbose)
-
-        audio_subset_dpath = _get_audio_subset_dpath(root, version, subset)
-        size = len(next(iter(raw_data.values())))
-        raw_data["dataset"] = [ClothoCard.NAME] * size
-        raw_data["subset"] = [subset] * size
-        raw_data["fpath"] = [
-            osp.join(audio_subset_dpath, fname) for fname in raw_data["fname"]
-        ]
-        raw_data["index"] = list(range(size))
-
         # Exclude some columns containing empty values for several subsets
-        column_names = list(ClothoItem.__required_keys__)
-        if subset in (
-            "dcase_aac_test",
-            "dcase_aac_analysis",
-            "dcase_t2a_audio",
-        ):
+        column_names = list(ClothoItem.__required_keys__) + list(
+            ClothoItem.__optional_keys__
+        )
+        if subset == "dcase_aac_test":
+            removed_columns = ("captions", "sound_id", "keywords", "sound_link")
+        elif subset == "dcase_aac_analysis":
+            removed_columns = (
+                "captions",
+                "sound_id",
+                "keywords",
+                "sound_link",
+                "license",
+                "manufacturer",
+                "start_end_samples",
+            )
+        elif subset == "dcase_t2a_audio":
             removed_columns = ("captions",)
         elif subset == "dcase_t2a_captions":
-            removed_columns = ("audio", "sr", "fname")
+            removed_columns = (
+                "audio",
+                "sr",
+                "fname",
+                "sound_id",
+                "keywords",
+                "sound_link",
+                "license",
+                "manufacturer",
+                "start_end_samples",
+            )
         else:
             removed_columns = ()
         for name in removed_columns:
             column_names.remove(name)
+
+        raw_data = _load_clotho_dataset(root, version, subset, verbose)
+
+        size = len(next(iter(raw_data.values())))
+        raw_data["dataset"] = [ClothoCard.NAME] * size
+        raw_data["subset"] = [subset] * size
+        raw_data["index"] = list(range(size))
+
+        if "audio" not in removed_columns:
+            audio_subset_dpath = _get_audio_subset_dpath(root, version, subset)
+            assert (
+                audio_subset_dpath is not None
+            ), "Internal error. (expected audio column but audio dname is None)"
+            raw_data["fpath"] = [
+                osp.join(audio_subset_dpath, fname) for fname in raw_data["fname"]
+            ]
 
         super().__init__(
             raw_data=raw_data,
@@ -289,18 +313,22 @@ def _get_csv_dpath(root: str, version: str) -> str:
     return osp.join(_get_clotho_dpath(root, version), "clotho_csv_files")
 
 
-def _get_audio_subset_dpath(root: str, version: str, subset: str) -> str:
+def _get_audio_subset_dpath(root: str, version: str, subset: str) -> Optional[str]:
+    dname = _CLOTHO_AUDIO_DNAMES[subset]
+    if dname is None:
+        return None
+
     return osp.join(
         _get_clotho_dpath(root, version),
         "clotho_audio_files",
-        _CLOTHO_AUDIO_DNAMES[subset],
+        dname,
     )
 
 
 def _is_prepared(root: str, version: str, subset: str) -> bool:
-    audio_subset_dpath = _get_audio_subset_dpath(root, version, subset)
+    audio_dpath = _get_audio_dpath(root, version)
     csv_dpath = _get_csv_dpath(root, version)
-    if not all(map(osp.isdir, (audio_subset_dpath, csv_dpath))):
+    if not all(map(osp.isdir, (audio_dpath, csv_dpath))):
         return False
 
     if ClothoCard.CAPTIONS_PER_AUDIO[subset] == 0:
@@ -314,6 +342,8 @@ def _is_prepared(root: str, version: str, subset: str) -> bool:
     with open(captions_fpath, "r") as file:
         reader = csv.DictReader(file)
         lines = list(reader)
+
+    audio_subset_dpath = _get_audio_subset_dpath(root, version, subset)
     return len(lines) == len(os.listdir(audio_subset_dpath))
 
 
@@ -331,7 +361,6 @@ def _load_clotho_dataset(
     # Read fpath of .wav audio files
     links = _CLOTHO_LINKS[version][subset]
     csv_dpath = _get_csv_dpath(root, version)
-    audio_subset_dpath = _get_audio_subset_dpath(root, version, subset)
 
     # Read Clotho files
     if "captions" in links.keys():
@@ -343,7 +372,7 @@ def _load_clotho_dataset(
             reader = csv.DictReader(file)
             captions_data = list(reader)
 
-        if subset == "test_retrieval_captions":
+        if subset == "dcase_t2a_captions":
             captions_data = [
                 data | {"file_name": f"no_fname_{i}"}
                 for i, data in enumerate(captions_data)
@@ -363,7 +392,7 @@ def _load_clotho_dataset(
             encoding = None
 
         with open(metadata_fpath, "r", encoding=encoding) as file:
-            delimiter = ";" if subset == "test" else ","
+            delimiter = ";" if subset == "dcase_aac_test" else ","
             reader = csv.DictReader(file, delimiter=delimiter)
             metadata = list(reader)
     else:
@@ -373,11 +402,12 @@ def _load_clotho_dataset(
         # note: "dev", "val", "eval"
         fnames_lst = [line["file_name"] for line in captions_data]
     elif "metadata" in links.keys():
-        # note: for "test" subset which do not have captions CSV file
+        # note: for "dcase_aac_test" subset which do not have captions CSV file
         fnames_lst = [line["file_name"] for line in metadata]
     else:
-        # note 1: for "analysis" subset which do not have any CSV file
+        # note 1: for "dcase_aac_analysis" subset which do not have any CSV file
         # note 2: force sorted list to have the same order on all OS
+        audio_subset_dpath = _get_audio_subset_dpath(root, version, subset)
         fnames_lst = list(sorted(os.listdir(audio_subset_dpath)))
 
     idx_to_fname = {i: fname for i, fname in enumerate(fnames_lst)}
@@ -392,7 +422,7 @@ def _load_clotho_dataset(
 
     all_captions_lst = [[] for _ in range(dataset_size)]
 
-    if subset != "test_retrieval_captions":
+    if subset != "dcase_t2a_captions":
         captions_keys = _CAPTIONS_KEYS
     else:
         captions_keys = ("caption",)
@@ -430,7 +460,7 @@ def _load_clotho_dataset(
             for keywords in raw_data["keywords"]
         ]
 
-    if subset == "test_retrieval_audio":
+    if subset == "dcase_t2a_audio":
         # Temporary patch to avoid file loading errors
         # indexes: 53, 521, 677
         replaces = {
@@ -513,81 +543,81 @@ def _prepare_clotho_dataset(
 
     # Extract audio files from archives
     audio_subset_dpath = _get_audio_subset_dpath(root, version, subset)
+    if audio_subset_dpath is not None:
+        for file_info in links.values():
+            fname = file_info["fname"]
+            extension = fname.split(".")[-1]
 
-    for file_info in links.values():
-        fname = file_info["fname"]
-        extension = fname.split(".")[-1]
+            if extension == "csv":
+                continue
 
-        if extension == "csv":
-            continue
+            if extension not in ("7z", "zip"):
+                pylog.error(
+                    f"Found unexpected extension={extension} for downloaded file '{fname}'. Expected one of {EXTENSIONS}."
+                )
+                continue
 
-        if extension not in ("7z", "zip"):
-            pylog.error(
-                f"Found unexpected extension={extension} for downloaded file '{fname}'. Expected one of {EXTENSIONS}."
-            )
-            continue
+            fpath = osp.join(archives_dpath, fname)
 
-        fpath = osp.join(archives_dpath, fname)
+            if verbose >= 1:
+                pylog.info(f"Extract archive file fname={fname}...")
 
-        if verbose >= 1:
-            pylog.info(f"Extract archive file fname={fname}...")
-
-        if extension == "7z":
-            archive_file = SevenZipFile(fpath)
-            compressed_fnames = [
-                osp.basename(fname) for fname in archive_file.getnames()
-            ]
-        elif extension == "zip":
-            archive_file = ZipFile(fpath)
-            compressed_fnames = [
-                osp.basename(file.filename) for file in archive_file.filelist
-            ]
-        else:
-            raise RuntimeError(f"Invalid extension '{extension}'.")
-
-        # Ignore dir name from archive file
-        compressed_fnames = [
-            fname for fname in compressed_fnames if fname.endswith(".wav")
-        ]
-        extracted_fnames = (
-            os.listdir(audio_subset_dpath) if osp.isdir(audio_subset_dpath) else []
-        )
-
-        if set(extracted_fnames) != set(compressed_fnames):
-            # For test_retrieval_audio subset, the name of the audio dname is also "test", so we need to move the audio files to another folder named "test_retrieval_audio".
-            if subset == "test_retrieval_audio":
-                target_dpath = audio_subset_dpath
-                os.makedirs(target_dpath, exist_ok=True)
+            if extension == "7z":
+                archive_file = SevenZipFile(fpath)
+                compressed_fnames = [
+                    osp.basename(fname) for fname in archive_file.getnames()
+                ]
+            elif extension == "zip":
+                archive_file = ZipFile(fpath)
+                compressed_fnames = [
+                    osp.basename(file.filename) for file in archive_file.filelist
+                ]
             else:
-                target_dpath = audio_dpath
+                raise RuntimeError(f"Invalid extension '{extension}'.")
 
-            archive_file.extractall(target_dpath)
+            # Ignore dir name from archive file
+            compressed_fnames = [
+                fname for fname in compressed_fnames if fname.endswith(".wav")
+            ]
+            extracted_fnames = (
+                os.listdir(audio_subset_dpath) if osp.isdir(audio_subset_dpath) else []
+            )
 
-            if subset == "test_retrieval_audio":
-                extracted_dpath = osp.join(target_dpath, "test")
-                for fname in os.listdir(extracted_dpath):
-                    os.rename(
-                        osp.join(extracted_dpath, fname),
-                        osp.join(target_dpath, fname),
-                    )
-                os.rmdir(extracted_dpath)
-
-            # Check if files is good now
-            extracted_fnames = os.listdir(audio_subset_dpath)
             if set(extracted_fnames) != set(compressed_fnames):
-                found_but_not_expected = len(
-                    set(extracted_fnames).difference(set(compressed_fnames))
-                )
-                expected_but_not_found = len(
-                    set(compressed_fnames).difference(set(extracted_fnames))
-                )
+                # For dcase_t2a_audio subset, the name of the audio dname is also "test", so we need to move the audio files to another folder named "test_retrieval_audio".
+                if subset == "dcase_t2a_audio":
+                    target_dpath = audio_subset_dpath
+                    os.makedirs(target_dpath, exist_ok=True)
+                else:
+                    target_dpath = audio_dpath
 
-                raise RuntimeError(
-                    f"Invalid number of audios extracted, found {len(extracted_fnames)} files but expected the same {len(compressed_fnames)} files. "
-                    f"(with found_but_not_expected={found_but_not_expected} and expected_but_not_found={expected_but_not_found})"
-                )
+                archive_file.extractall(target_dpath)
 
-        archive_file.close()
+                if subset == "dcase_t2a_audio":
+                    extracted_dpath = osp.join(target_dpath, "test")
+                    for fname in os.listdir(extracted_dpath):
+                        os.rename(
+                            osp.join(extracted_dpath, fname),
+                            osp.join(target_dpath, fname),
+                        )
+                    os.rmdir(extracted_dpath)
+
+                # Check if files is good now
+                extracted_fnames = os.listdir(audio_subset_dpath)
+                if set(extracted_fnames) != set(compressed_fnames):
+                    found_but_not_expected = len(
+                        set(extracted_fnames).difference(set(compressed_fnames))
+                    )
+                    expected_but_not_found = len(
+                        set(compressed_fnames).difference(set(extracted_fnames))
+                    )
+
+                    raise RuntimeError(
+                        f"Invalid number of audios extracted, found {len(extracted_fnames)} files but expected the same {len(compressed_fnames)} files. "
+                        f"(with found_but_not_expected={found_but_not_expected} and expected_but_not_found={expected_but_not_found})"
+                    )
+
+            archive_file.close()
 
     if clean_archives:
         for file_info in links.values():
