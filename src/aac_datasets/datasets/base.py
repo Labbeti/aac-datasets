@@ -345,17 +345,15 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
             name for name in column_names if name not in expected_column_names
         ]
         if len(invalid_column_names) > 0:
-            raise ValueError(
-                f"Invalid argument column_names={column_names}. (found {len(invalid_column_names)} invalids column names)"
-            )
+            msg = f"Invalid argument column_names={column_names}. (found {len(invalid_column_names)} invalids column names for {self.__class__.__name__}: {invalid_column_names})"
+            raise ValueError(msg)
 
         invalid_column_names = [
             name for name in column_names if not self._can_be_loaded(name)
         ]
         if len(invalid_column_names) > 0:
-            raise ValueError(
-                f"Invalid argument column_names={column_names}. (found {len(invalid_column_names)} invalids column names)"
-            )
+            msg = f"Invalid argument column_names={column_names}. (found {len(invalid_column_names)} invalids column names for {self.__class__.__name__}: {invalid_column_names})"
+            raise ValueError(msg)
 
     def _can_be_loaded(self, col_name: str) -> bool:
         AUTO_COLUMNS = self.__class__._AUTO_COLUMNS
