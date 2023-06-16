@@ -2,3 +2,5 @@
 recursive-include src *.py
 global-exclude *.pyc
 global-exclude __pycache__
+
+recursive-include data *.csv
