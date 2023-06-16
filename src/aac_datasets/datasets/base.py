@@ -152,7 +152,9 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
         ...
 
     @overload
-    def at(self, idx: Union[Iterable[int], slice, None]) -> Dict[str, List]:
+    def at(
+        self, idx: Union[Iterable[int], slice, None], column: Union[Iterable[str], None]
+    ) -> Dict[str, List]:
         ...
 
     @overload
@@ -190,7 +192,7 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
             return {column_i: self.at(idx, column_i) for column_i in column}
 
         if isinstance(idx, (int, slice)) and column in self._raw_data.keys():
-            return self._raw_data[column][idx]
+            return self._raw_data[column][idx]  # type: ignore
 
         if isinstance(idx, slice):
             idx = range(len(self))[idx]
@@ -263,6 +265,12 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
 
     @overload
     def __getitem__(self, idx: Union[Iterable[int], slice, None]) -> Dict[str, List]:
+        ...
+
+    @overload
+    def __getitem__(
+        self, idx: tuple[Union[Iterable[int], slice, None], Union[Iterable[str], None]]
+    ) -> Dict[str, List]:
         ...
 
     @overload
