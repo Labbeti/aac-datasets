@@ -79,7 +79,7 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
         self._sr = sr
         self._verbose = verbose
 
-        self._auto_columns_fns = AACDataset.default_auto_columns_fns()
+        self._auto_columns_fns = {}
 
         if self._flat_captions:
             self._flat_raw_data()
@@ -90,18 +90,6 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
     @staticmethod
     def new_empty() -> "AACDataset":
         return AACDataset({}, None, (), False, None, 0)
-
-    @classmethod
-    def default_auto_columns_fns(cls) -> dict[str, Callable]:
-        return {
-            "audio": AACDataset._load_audio,
-            "audio_metadata": AACDataset._load_audio_metadata,
-            "duration": AACDataset._load_duration,
-            "fname": AACDataset._load_fname,
-            "num_channels": AACDataset._load_num_channels,
-            "num_frames": AACDataset._load_num_frames,
-            "sr": AACDataset._load_sr,
-        }
 
     # Properties
     @property
@@ -279,6 +267,13 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
         if column_name in self.column_names:
             raise ValueError(f"Column '{column_name}' already exists in {self}.")
         self._auto_columns_fns[column_name] = load_fn
+
+    def register_auto_columns(
+        self,
+        column_name_fns: dict[str, Callable[["AACDataset", int], Any]],
+    ) -> None:
+        for name, load_fn in column_name_fns.items():
+            self.register_auto_column(name, load_fn)
 
     def preload_auto_column(
         self,

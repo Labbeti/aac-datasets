@@ -207,6 +207,7 @@ class AudioCaps(AACDataset[AudioCapsItem]):
             sr=sr,
             verbose=verbose,
         )
+
         # Attributes
         self._root = root
         self._subset = subset
@@ -214,6 +215,17 @@ class AudioCaps(AACDataset[AudioCapsItem]):
         self._exclude_removed_audio = exclude_removed_audio
         self._with_tags = with_tags
         self._index_to_tagname = index_to_tagname
+
+        self.register_auto_columns(
+            {
+                "audio": AACDataset._load_audio,
+                "audio_metadata": AACDataset._load_audio_metadata,
+                "duration": AACDataset._load_duration,
+                "num_channels": AACDataset._load_num_channels,
+                "num_frames": AACDataset._load_num_frames,
+                "sr": AACDataset._load_sr,
+            }
+        )
 
     # Properties
     @property

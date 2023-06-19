@@ -176,6 +176,17 @@ class MACS(AACDataset[MACSItem]):
         self._verbose = verbose
         self._annotator_id_to_competence = annotator_id_to_competence
 
+        self.register_auto_columns(
+            {
+                "audio": AACDataset._load_audio,
+                "audio_metadata": AACDataset._load_audio_metadata,
+                "duration": AACDataset._load_duration,
+                "num_channels": AACDataset._load_num_channels,
+                "num_frames": AACDataset._load_num_frames,
+                "sr": AACDataset._load_sr,
+            }
+        )
+
     # Properties
     @property
     def download(self) -> bool:

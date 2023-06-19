@@ -207,6 +207,17 @@ class WavCaps(AACDataset[WavCapsItem]):
         self._subset = subset
         self._download = download
 
+        self.register_auto_columns(
+            {
+                "audio": AACDataset._load_audio,
+                "audio_metadata": AACDataset._load_audio_metadata,
+                "duration": AACDataset._load_duration,
+                "num_channels": AACDataset._load_num_channels,
+                "num_frames": AACDataset._load_num_frames,
+                "sr": AACDataset._load_sr,
+            }
+        )
+
     # Properties
     @property
     def download(self) -> bool:
