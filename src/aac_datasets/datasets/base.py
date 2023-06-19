@@ -270,7 +270,7 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
 
     def register_auto_columns(
         self,
-        column_name_fns: dict[str, Callable[["AACDataset", int], Any]],
+        column_name_fns: Dict[str, Callable[["AACDataset", int], Any]],
     ) -> None:
         for name, load_fn in column_name_fns.items():
             self.register_auto_column(name, load_fn)
