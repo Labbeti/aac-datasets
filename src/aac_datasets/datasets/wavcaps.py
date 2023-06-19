@@ -388,6 +388,8 @@ def _load_wavcaps_dataset(
 
     raw_data = {k: [] for k in _WAVCAPS_RAW_COLUMNS + ("source", "fname")}
     for source, json_path in json_paths:
+        if verbose >= 2:
+            pylog.debug(f"Loading metadata in JSON '{json_path}'...")
         json_data, size = _load_json(json_path)
 
         sources = [source] * size
@@ -432,12 +434,14 @@ def _load_wavcaps_dataset(
 
     raw_data.pop("audio")
     raw_data.pop("file_name")
-    raw_data["captions"] = raw_data.pop("caption")
+    captions = raw_data.pop("caption")
 
     # Convert str -> List[str] for captions to match other datasets captions type
-    raw_data["captions"] = [[caption] for caption in raw_data["captions"]]
+    raw_data["captions"] = [[caption] for caption in captions]
+
     # Force floating-point precision for duration
     raw_data["duration"] = list(map(float, raw_data["duration"]))
+
     return raw_data
 
 

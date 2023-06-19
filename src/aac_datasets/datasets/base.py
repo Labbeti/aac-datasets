@@ -264,7 +264,7 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
         column_name: str,
         load_fn: Callable[["AACDataset", int], Any],
     ) -> None:
-        if column_name in self.column_names:
+        if column_name in self._auto_columns_fns:
             raise ValueError(f"Column '{column_name}' already exists in {self}.")
         self._auto_columns_fns[column_name] = load_fn
 
