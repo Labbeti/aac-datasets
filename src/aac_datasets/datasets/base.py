@@ -294,7 +294,7 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
         ...
 
     @overload
-    def __getitem__(self, idx: tuple[Union[Iterable[int], slice, None], str]) -> List:
+    def __getitem__(self, idx: Tuple[Union[Iterable[int], slice, None], str]) -> List:
         ...
 
     @overload
@@ -303,7 +303,7 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
 
     @overload
     def __getitem__(
-        self, idx: tuple[Union[Iterable[int], slice, None], Union[Iterable[str], None]]
+        self, idx: Tuple[Union[Iterable[int], slice, None], Union[Iterable[str], None]]
     ) -> Dict[str, List]:
         ...
 
