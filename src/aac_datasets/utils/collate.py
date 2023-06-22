@@ -129,7 +129,7 @@ def list_dict_to_dict_list(
     return {key: [item[key] for item in lst] for key in keys}
 
 
-def intersect_lists(lst_of_lst: list[list[T]]) -> list[T]:
+def intersect_lists(lst_of_lst: List[List[T]]) -> List[T]:
     if len(lst_of_lst) <= 0:
         return []
     out = lst_of_lst[0]
