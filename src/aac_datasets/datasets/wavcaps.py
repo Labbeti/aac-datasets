@@ -79,6 +79,7 @@ class WavCapsCard(DatasetCard):
     }
     HOMEPAGE = "https://huggingface.co/datasets/cvssp/WavCaps"
     LANGUAGE: Tuple[str, ...] = ("en",)
+    LANGUAGE_DETAILS: Tuple[str, ...] = ("en-US",)
     NAME: str = "wavcaps"
     PRETTY_NAME: str = "WavCaps"
     SOURCES: ClassVar[Tuple[str, ...]] = tuple(EXPECTED_SIZES.keys())
@@ -119,7 +120,7 @@ class WavCaps(AACDataset[WavCapsItem]):
             │   ├── BBC_Sound_Effects
             │   │    └── (26 zip files, ~562GB)
             │   ├── FreeSound
-            │   │    └── (100 zip? files, ~274GB) TODO : verif
+            │   │    └── (123 zip? files, ~1.4TB)
             │   └── SoundBible
             │        └── (1 zip? files, ~624GB)
             ├── json_files

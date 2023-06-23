@@ -70,6 +70,7 @@ class MACSCard(DatasetCard):
     """
     HOMEPAGE: str = "https://zenodo.org/record/5114771"
     LANGUAGE: Tuple[str, ...] = ("en",)
+    LANGUAGE_DETAILS: Tuple[str, ...] = ("en-US",)
     MAX_CAPTIONS_PER_AUDIO: Dict[str, int] = {"full": 5}
     MIN_CAPTIONS_PER_AUDIO: Dict[str, int] = {"full": 2}
     NAME: str = "macs"

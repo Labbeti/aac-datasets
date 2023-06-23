@@ -75,6 +75,7 @@ class AudioCapsCard(DatasetCard):
     """
     HOMEPAGE: str = "https://audiocaps.github.io/"
     LANGUAGE: Tuple[str, ...] = ("en",)
+    LANGUAGE_DETAILS: Tuple[str, ...] = ("en-US",)
     NAME: str = "audiocaps"
     PRETTY_NAME: str = "AudioCaps"
     SIZE_CATEGORIES: Tuple[str, ...] = ("10K<n<100K",)

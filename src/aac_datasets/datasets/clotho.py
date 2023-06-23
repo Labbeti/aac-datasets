@@ -73,6 +73,7 @@ class ClothoCard(DatasetCard):
     """
     HOMEPAGE: str = "https://zenodo.org/record/3490684"
     LANGUAGE: Tuple[str, ...] = ("en",)
+    LANGUAGE_DETAILS: Tuple[str, ...] = ("en-US",)
     DEFAULT_VERSION: str = "v2.1"
     NAME: str = "clotho"
     N_CHANNELS: int = 1
