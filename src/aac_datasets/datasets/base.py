@@ -84,9 +84,6 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
         if self._flat_captions:
             self._flat_raw_data()
 
-        # Check must be done after setting the attributes
-        self._check_column_names(column_names)
-
     @staticmethod
     def new_empty() -> "AACDataset":
         return AACDataset({}, None, (), False, None, 0)
@@ -95,10 +92,7 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
     @property
     def all_column_names(self) -> List[str]:
         """The name of each column of the dataset."""
-        return list(
-            self._raw_data
-            | dict.fromkeys(filter(self._can_be_loaded, self._AUTO_COLUMNS))
-        )
+        return list(self._raw_data | self._auto_columns_fns)
 
     @property
     def column_names(self) -> List[str]:
@@ -262,7 +256,7 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
     def register_auto_column(
         self,
         column_name: str,
-        load_fn: Callable[["AACDataset", int], Any],
+        load_fn: Callable[[Any, int], Any],
     ) -> None:
         if column_name in self._auto_columns_fns:
             raise ValueError(f"Column '{column_name}' already exists in {self}.")
@@ -270,7 +264,7 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
 
     def register_auto_columns(
         self,
-        column_name_fns: Dict[str, Callable[["AACDataset", int], Any]],
+        column_name_fns: Dict[str, Callable[[Any, int], Any]],
     ) -> None:
         for name, load_fn in column_name_fns.items():
             self.register_auto_column(name, load_fn)
@@ -279,7 +273,7 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
         self,
         column_name: str,
         allow_replace: bool = False,
-    ) -> Callable[["AACDataset", int], Any]:
+    ) -> Callable[[Any, int], Any]:
         if column_name not in self._auto_columns_fns:
             raise ValueError(f"Invalid argument column_name={column_name}.")
 

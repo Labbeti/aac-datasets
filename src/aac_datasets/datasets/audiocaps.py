@@ -219,8 +219,8 @@ class AudioCaps(AACDataset[AudioCapsItem]):
 
         self.register_auto_columns(
             {
-                "audio": AACDataset._load_audio,
-                "audio_metadata": AACDataset._load_audio_metadata,
+                "audio": AudioCaps._load_audio,
+                "audio_metadata": AudioCaps._load_audio_metadata,
                 "duration": AACDataset._load_duration,
                 "num_channels": AACDataset._load_num_channels,
                 "num_frames": AACDataset._load_num_frames,

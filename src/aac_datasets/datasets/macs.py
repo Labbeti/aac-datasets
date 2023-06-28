@@ -185,6 +185,7 @@ class MACS(AACDataset[MACSItem]):
                 "num_channels": AACDataset._load_num_channels,
                 "num_frames": AACDataset._load_num_frames,
                 "sr": AACDataset._load_sr,
+                "competences": MACS._load_competences,
             }
         )
 
@@ -214,6 +215,11 @@ class MACS(AACDataset[MACSItem]):
     def get_competence(self, annotator_id: int) -> float:
         """Get competence value for a specific annotator id."""
         return self._annotator_id_to_competence[annotator_id]
+
+    def _load_competences(self, idx: int) -> List[float]:
+        annotators_ids: List[int] = self.at(idx, "annotators_ids")
+        competences = [self.get_competence(id_) for id_ in annotators_ids]
+        return competences
 
     # Magic methods
     def __repr__(self) -> str:
