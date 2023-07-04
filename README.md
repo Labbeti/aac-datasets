@@ -58,7 +58,7 @@ Here is the statistics for each dataset :
 |:---:|:---:|:---:|:---:|:---:|
 | Subsets | train, val, test | dev, val, eval, dcase_aac_test, dcase_aac_analysis, dcase_t2a_audio, dcase_t2a_captions | full | as, as_noac, bbc, fsd, fsd_nocl, sb |
 | Sample rate (kHz) | 32 | 44.1 | 48 | 32 |
-| Estimated size (GB) | 43 | 27 | 13 | 941 |
+| Estimated size (GB) | 43 | 53 | 13 | 941 |
 | Audio source | AudioSet | FreeSound | TAU Urban Acoustic Scenes 2019 | AudioSet, BBC Sound Effects, FreeSound, SoundBible |
 
 For Clotho, the dev subset should be used for training, val for validation and eval for testing.

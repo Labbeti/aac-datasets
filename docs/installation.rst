@@ -20,12 +20,12 @@ The python requirements are automatically installed when using pip on this repos
     py7zr >= 0.17.2
     pyyaml >= 6.0
     tqdm >= 4.64.0
+    huggingface-hub>=0.15.1
 
 External requirements (AudioCaps only)
 ######################################
 
-The external requirements needed to download **AudioCaps** are **ffmpeg** and **youtube-dl**.
-These two programs can be download on Ubuntu using `sudo apt install ffmpeg youtube-dl`.
+The external requirements needed to download **AudioCaps** are **ffmpeg** and **youtube-dl** or **ytdlp**.
 
 You can also override their paths for AudioCaps:
 
@@ -33,5 +33,5 @@ You can also override their paths for AudioCaps:
 
     from aac_datasets import AudioCaps
     AudioCaps.FFMPEG_PATH = "/my/path/to/ffmpeg"
-    AudioCaps.YOUTUBE_DL_PATH = "/my/path/to/youtube_dl"
+    AudioCaps.YOUTUBE_DL_PATH = "/my/path/to/youtube_dl_or_ytdlp"
     dataset = AudioCaps(root=".", download=True)

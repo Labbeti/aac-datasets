@@ -325,6 +325,29 @@ def _load_wavcaps_dataset(
             f"Invalid argument subset={subset}. (expected one of {WavCapsCard.SUBSETS})"
         )
 
+    if subset == "as":
+        overlapped_ds = "AudioCaps"
+        overlapped_subsets = ("val", "test")
+        pylog.warning(
+            f"You selected WavCaps subset {subset}, be careful to not use these data as training when evaluating on {overlapped_ds} {overlapped_subsets} subsets. "
+            "You can use as_noac subset for to avoid this bias with AudioCaps."
+        )
+
+    elif subset == "fsd":
+        overlapped_ds = "Clotho"
+        overlapped_subsets = (
+            "val",
+            "eval",
+            "dcase_aac_test",
+            "dcase_aac_analysis",
+            "dcase_t2a_audio",
+            "dcase_t2a_captions",
+        )
+        pylog.warning(
+            f"You selected WavCaps subset {subset}, be careful to not use these data as training when evaluating on {overlapped_ds} {overlapped_subsets} subsets. "
+            f"You can use fsd_nocl subset for to avoid this bias for Clotho val, eval, dcase_t2a_audio and dcase_t2a_captions subsets. Data could still overlap with Clotho dcase_aac_test and dcase_aac_analysis subsets."
+        )
+
     if subset in ("as_noac", "fsd_nocl"):
         if subset == "as_noac":
             target_subset = "as"
