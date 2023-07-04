@@ -194,19 +194,26 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
 
             elif not all(isinstance(idx_i, int) for idx_i in idx):
                 raise TypeError(
-                    f"Invalid input type for idx={idx}. (expected Iterable[int], not Iterable[{idx.__class__.__name__}])"
+                    f"Invalid input type for idx={idx}. (expected Iterable[int], not Iterable[{idx[0].__class__.__name__}])"
                 )
 
             values = [
                 self.at(idx_i, column)
-                for idx_i in tqdm.tqdm(idx, disable=self._verbose < 2)
+                for idx_i in tqdm.tqdm(
+                    idx,
+                    desc=f"Loading column '{column}'...",
+                    disable=self._verbose < 2,
+                )
             ]
             return values
 
         if isinstance(idx, int):
             return self._load_auto_value(column, idx)
         else:
-            raise TypeError(f"Invalid argument type {type(idx)}.")
+            IDX_TYPES = ("int", "Iterable[int]", "None", "slice", "Tensor")
+            raise TypeError(
+                f"Invalid argument type {type(idx)}. (expected one of {IDX_TYPES})"
+            )
 
     def is_loaded_column(self, column: str) -> bool:
         return column in self._raw_data
