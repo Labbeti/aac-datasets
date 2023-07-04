@@ -41,16 +41,6 @@ ItemType = TypeVar("ItemType", bound=TypedDict, covariant=True)
 class AACDataset(Generic[ItemType], Dataset[ItemType]):
     """Base class for AAC datasets."""
 
-    _AUTO_COLUMNS = {
-        "audio": ["fpath"],
-        "audio_metadata": ["fpath"],
-        "duration": ["audio_metadata"],
-        "fname": ["fpath"],
-        "num_channels": ["audio_metadata"],
-        "num_frames": ["audio_metadata"],
-        "sr": ["audio_metadata"],
-    }
-
     # Initialization
     def __init__(
         self,
@@ -359,14 +349,7 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
             raise ValueError(msg)
 
     def _can_be_loaded(self, col_name: str) -> bool:
-        AUTO_COLUMNS = self.__class__._AUTO_COLUMNS
-        if self.is_loaded_column(col_name):
-            return True
-        elif col_name in AUTO_COLUMNS:
-            requirements = AUTO_COLUMNS[col_name]
-            return all(self._can_be_loaded(req) for req in requirements)
-        else:
-            return False
+        return self.is_loaded_column(col_name) or self.is_auto_column(col_name)
 
     def _flat_raw_data(self) -> None:
         self._raw_data = _flat_raw_data(self._raw_data)
