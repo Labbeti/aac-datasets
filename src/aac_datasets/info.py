@@ -4,6 +4,7 @@
 import platform
 import sys
 
+from pathlib import Path
 from typing import Dict
 
 import torch
@@ -25,10 +26,16 @@ def get_install_info() -> Dict[str, str]:
     }
 
 
+def get_package_repository_path() -> str:
+    return str(Path(__file__).parent.parent.parent)
+
+
 def print_install_info() -> None:
-    """Print packages versions and architecture info."""
+    """Show main packages versions."""
     install_info = get_install_info()
+    pkg_repo_path = get_package_repository_path()
     print(yaml.dump(install_info, sort_keys=False))
+    print("Package source path:", pkg_repo_path)
 
 
 if __name__ == "__main__":
