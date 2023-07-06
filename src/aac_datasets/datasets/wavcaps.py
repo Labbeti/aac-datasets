@@ -163,6 +163,24 @@ class WavCaps(AACDataset[WavCapsItem]):
         revision: Optional[str] = WavCapsCard.DEFAULT_REVISION,
         verbose: int = 1,
     ) -> None:
+        """
+        :param root: The parent of the dataset root directory.
+            The data will be stored in the 'MACS' subdirectory.
+            defaults to ".".
+        :param subset: The subset of the dataset. This parameter is here only to accept the same interface than the other datasets.
+            The only valid subset is "full" and other values will raise a ValueError.
+            defaults to "as".
+        :param download: Download the dataset if download=True and if the dataset is not already downloaded.
+            defaults to False.
+        :param transform: The transform to apply to the global dict item. This transform is applied only in getitem method when argument is an integer.
+            defaults to None.
+        :param hf_cache_dir: HuggingFace cache directory. If None, use the global value :variable:`~huggingface_hub.constants.HUGGINGFACE_HUB_CACHE`.
+            defaults to None.
+        :param revision: The HuggingFace revision tag.
+            defaults to WavCapsCard.DEFAULT_REVISION.
+        :param verbose: Verbose level to use. Can be 0 or 1.
+            defaults to 0.
+        """
         self._hf_cache_dir = hf_cache_dir
         self._revision = revision
 
@@ -208,14 +226,14 @@ class WavCaps(AACDataset[WavCapsItem]):
         self._subset = subset
         self._download = download
 
-        self.register_auto_columns(
+        self.add_post_columns(
             {
-                "audio": AACDataset._load_audio,
-                "audio_metadata": AACDataset._load_audio_metadata,
-                "duration": AACDataset._load_duration,
-                "num_channels": AACDataset._load_num_channels,
-                "num_frames": AACDataset._load_num_frames,
-                "sr": AACDataset._load_sr,
+                "audio": WavCaps._load_audio,
+                "audio_metadata": WavCaps._load_audio_metadata,
+                "duration": WavCaps._load_duration,
+                "num_channels": WavCaps._load_num_channels,
+                "num_frames": WavCaps._load_num_frames,
+                "sr": WavCaps._load_sr,
             }
         )
 

@@ -40,7 +40,7 @@ class ClothoItem(TypedDict, total=True):
     fname: NotRequired[str]
     index: int
     subset: str
-    sr: int
+    sr: NotRequired[int]
     # Clotho-specific attributes
     keywords: NotRequired[List[str]]
     sound_id: NotRequired[str]  # warning: some files contains "Not found"
@@ -167,7 +167,7 @@ class Clotho(AACDataset[ClothoItem]):
             defaults to "dev".
         :param download: Download the dataset if download=True and if the dataset is not already downloaded.
             defaults to False.
-        :param transform: The transform to apply to the global dict item. This transform is applied only in getitem method.
+        :param transform: The transform to apply to the global dict item. This transform is applied only in getitem method when argument is an integer.
             defaults to None.
         :param flat_captions: If True, map captions to audio instead of audio to caption.
             defaults to True.
@@ -269,14 +269,14 @@ class Clotho(AACDataset[ClothoItem]):
         self._version = version
 
         if "audio" not in removed_columns:
-            self.register_auto_columns(
+            self.add_post_columns(
                 {
-                    "audio": AACDataset._load_audio,
-                    "audio_metadata": AACDataset._load_audio_metadata,
-                    "duration": AACDataset._load_duration,
-                    "num_channels": AACDataset._load_num_channels,
-                    "num_frames": AACDataset._load_num_frames,
-                    "sr": AACDataset._load_sr,
+                    "audio": Clotho._load_audio,
+                    "audio_metadata": Clotho._load_audio_metadata,
+                    "duration": Clotho._load_duration,
+                    "num_channels": Clotho._load_num_channels,
+                    "num_frames": Clotho._load_num_frames,
+                    "sr": Clotho._load_sr,
                 }
             )
 

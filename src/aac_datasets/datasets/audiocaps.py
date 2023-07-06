@@ -88,7 +88,7 @@ class AudioCaps(AACDataset[AudioCapsItem]):
 
     Subsets available are 'train', 'val' and 'test'.
 
-    Audio is a waveform tensor of shape (1, n_times) of 10 seconds max, sampled at 32kHz.
+    Audio is a waveform tensor of shape (1, n_times) of 10 seconds max, sampled at 32kHz by default.
     Target is a list of strings containing the captions.
     The 'train' subset has only 1 caption per sample and 'val' and 'test' have 5 captions.
 
@@ -101,11 +101,11 @@ class AudioCaps(AACDataset[AudioCapsItem]):
         :caption:  Dataset folder tree
 
         {root}
-        └── AUDIOCAPS_32000Hz
+        └── AUDIOCAPS
             ├── train.csv
             ├── val.csv
             ├── test.csv
-            └── audio
+            └── audio_32000Hz
                 ├── train
                 │    └── (46231/49838 flac files, ~42G for 32kHz)
                 ├── val
@@ -148,7 +148,7 @@ class AudioCaps(AACDataset[AudioCapsItem]):
             defaults to "train".
         :param download: Download the dataset if download=True and if the dataset is not already downloaded.
             defaults to False.
-        :param transform: The transform to apply to the global dict item. This transform is applied only in getitem method.
+        :param transform: The transform to apply to the global dict item. This transform is applied only in getitem method when argument is an integer.
             defaults to None.
         :param flat_captions: If True, map captions to audio instead of audio to caption.
             defaults to True.
@@ -160,6 +160,9 @@ class AudioCaps(AACDataset[AudioCapsItem]):
         :param with_tags: If True, load the tags from AudioSet dataset.
             Note: tags needs to be downloaded with download=True & with_tags=True before being used.
             defaults to False.
+        :param sr: The sample rate used for audio files in the dataset (in Hz).
+            Since original YouTube videos are recorded in various settings, this parameter allow to download allow audio files with a specific sample rate.
+            defaults to 32000.
         """
         if subset not in AudioCapsCard.SUBSETS:
             raise ValueError(
@@ -217,14 +220,14 @@ class AudioCaps(AACDataset[AudioCapsItem]):
         self._with_tags = with_tags
         self._index_to_tagname = index_to_tagname
 
-        self.register_auto_columns(
+        self.add_post_columns(
             {
                 "audio": AudioCaps._load_audio,
                 "audio_metadata": AudioCaps._load_audio_metadata,
-                "duration": AACDataset._load_duration,
-                "num_channels": AACDataset._load_num_channels,
-                "num_frames": AACDataset._load_num_frames,
-                "sr": AACDataset._load_sr,
+                "duration": AudioCaps._load_duration,
+                "num_channels": AudioCaps._load_num_channels,
+                "num_frames": AudioCaps._load_num_frames,
+                "sr": AudioCaps._load_sr,
             }
         )
 

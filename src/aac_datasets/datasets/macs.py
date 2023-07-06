@@ -129,7 +129,7 @@ class MACS(AACDataset[MACSItem]):
             defaults to "full".
         :param download: Download the dataset if download=True and if the dataset is not already downloaded.
             defaults to False.
-        :param transform: The transform to apply to the global dict item. This transform is applied only in getitem method.
+        :param transform: The transform to apply to the global dict item. This transform is applied only in getitem method when argument is an integer.
             defaults to None.
         :param flat_captions: If True, map captions to audio instead of audio to caption.
             defaults to True.
@@ -177,14 +177,14 @@ class MACS(AACDataset[MACSItem]):
         self._verbose = verbose
         self._annotator_id_to_competence = annotator_id_to_competence
 
-        self.register_auto_columns(
+        self.add_post_columns(
             {
-                "audio": AACDataset._load_audio,
-                "audio_metadata": AACDataset._load_audio_metadata,
-                "duration": AACDataset._load_duration,
-                "num_channels": AACDataset._load_num_channels,
-                "num_frames": AACDataset._load_num_frames,
-                "sr": AACDataset._load_sr,
+                "audio": MACS._load_audio,
+                "audio_metadata": MACS._load_audio_metadata,
+                "duration": MACS._load_duration,
+                "num_channels": MACS._load_num_channels,
+                "num_frames": MACS._load_num_frames,
+                "sr": MACS._load_sr,
                 "competences": MACS._load_competences,
             }
         )

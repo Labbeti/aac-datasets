@@ -64,12 +64,12 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
         super().__init__()
         self._raw_data = raw_data
         self._transform = transform
-        self._column_names = column_names
+        self._columns = column_names
         self._flat_captions = flat_captions
         self._sr = sr
         self._verbose = verbose
 
-        self._auto_columns_fns = {}
+        self._post_columns_fns = {}
 
         if self._flat_captions:
             self._flat_raw_data()
@@ -80,14 +80,14 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
 
     # Properties
     @property
-    def all_column_names(self) -> List[str]:
+    def all_columns(self) -> List[str]:
         """The name of each column of the dataset."""
-        return list(self._raw_data | self._auto_columns_fns)
+        return list(self._raw_data | self._post_columns_fns)
 
     @property
     def column_names(self) -> List[str]:
         """The name of each column of the dataset."""
-        return self._column_names
+        return self._columns
 
     @property
     def flat_captions(self) -> bool:
@@ -118,11 +118,11 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
     @column_names.setter
     def column_names(
         self,
-        column_names: Iterable[str],
+        columns: Iterable[str],
     ) -> None:
-        column_names = list(column_names)
-        self._check_column_names(column_names)
-        self._column_names = column_names
+        columns = list(columns)
+        self._check_columns(columns)
+        self._columns = columns
 
     @transform.setter
     def transform(self, transform: Optional[Callable]) -> None:
@@ -155,7 +155,7 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
         """Get a specific data field.
 
         :param index: The index or slice of the value in range [0, len(dataset)-1].
-        :param column: The name(s) of the column. Can be any value of :meth:`~Clotho.column_names`.
+        :param column: The name(s) of the column. Can be any value of :meth:`~Clotho.columns`.
         :returns: The field value. The type depends of the column.
         """
         if idx is None:
@@ -215,13 +215,43 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
                 f"Invalid argument type {type(idx)}. (expected one of {IDX_TYPES})"
             )
 
-    def is_loaded_column(self, column: str) -> bool:
+    def has_raw_column(self, column: str) -> bool:
         return column in self._raw_data
 
-    def is_auto_column(self, column: str) -> bool:
-        return column in self._auto_columns_fns
+    def has_post_column(self, column: str) -> bool:
+        return column in self._post_columns_fns
 
-    def add_column(
+    def has_column(self, column: str) -> bool:
+        return self.has_raw_column(column) or self.has_post_column(column)
+
+    def remove_column(self, column: str) -> Union[List[Any], Callable]:
+        if column in self._raw_data:
+            column_data = self._raw_data.pop(column, [])
+            return column_data
+        elif column in self._post_columns_fns:
+            fn = self._post_columns_fns.pop(column)
+            return fn
+        else:
+            raise ValueError(f"Column '{column}' does not exists in dataset.")
+
+    def rename_column(
+        self,
+        old_column: str,
+        new_column: str,
+        allow_replace: bool = False,
+    ) -> None:
+        column_data_or_fn = self.remove_column(old_column)
+
+        if isinstance(column_data_or_fn, List):
+            self.add_raw_column(new_column, column_data_or_fn, allow_replace)
+        elif isinstance(column_data_or_fn, Callable):
+            self.add_post_column(new_column, column_data_or_fn, allow_replace)
+        else:
+            raise TypeError(
+                f"Invalid type {type(column_data_or_fn)}. (expected List or Callable)"
+            )
+
+    def add_raw_column(
         self,
         column: str,
         column_data: List[Any],
@@ -235,48 +265,44 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
             raise ValueError(f"Invalid number of rows in column '{column}'.")
         self._raw_data[column] = column_data
 
-    def remove_column(self, column: str) -> List[Any]:
-        if column not in self._raw_data:
-            raise ValueError(f"Column '{column}' does not exists in data.")
-        column_data = self._raw_data.pop(column, [])
-        return column_data
-
-    def rename_column(
+    def add_post_column(
         self,
-        old_col_name: str,
-        new_col_name: str,
+        column: str,
+        load_fn: Callable[[Any, int], Any],
         allow_replace: bool = False,
     ) -> None:
-        col_data = self.remove_column(old_col_name)
-        self.add_column(new_col_name, col_data, allow_replace)
+        if not allow_replace and column in self._post_columns_fns:
+            raise ValueError(
+                f"Column '{column}' already exists in {self} and found argument {allow_replace=}."
+            )
+        self._post_columns_fns[column] = load_fn
 
-    def register_auto_column(
+    def add_post_columns(
         self,
-        column_name: str,
-        load_fn: Callable[[Any, int], Any],
+        post_columns_fns: Dict[str, Callable[[Any, int], Any]],
+        allow_replace: bool = False,
     ) -> None:
-        if column_name in self._auto_columns_fns:
-            raise ValueError(f"Column '{column_name}' already exists in {self}.")
-        self._auto_columns_fns[column_name] = load_fn
+        for name, load_fn in post_columns_fns.items():
+            self.add_post_column(name, load_fn, allow_replace)
 
-    def register_auto_columns(
+    def load_post_column(
         self,
-        column_name_fns: Dict[str, Callable[[Any, int], Any]],
-    ) -> None:
-        for name, load_fn in column_name_fns.items():
-            self.register_auto_column(name, load_fn)
-
-    def preload_auto_column(
-        self,
-        column_name: str,
+        column: str,
         allow_replace: bool = False,
     ) -> Callable[[Any, int], Any]:
-        if column_name not in self._auto_columns_fns:
-            raise ValueError(f"Invalid argument column_name={column_name}.")
+        if column not in self._post_columns_fns:
+            raise ValueError(f"Invalid argument column={column}.")
 
-        column_data = [self._load_auto_value(column_name, i) for i in range(len(self))]
-        fn = self._auto_columns_fns.pop(column_name)
-        self.add_column(column_name, column_data, allow_replace=allow_replace)
+        column_data = [
+            self._load_auto_value(column, i)
+            for i in tqdm.trange(
+                len(self),
+                disable=self._verbose < 2,
+                desc=f"Preloading column '{column}'",
+            )
+        ]
+        fn = self._post_columns_fns.pop(column)
+        self.add_raw_column(column, column_data, allow_replace=allow_replace)
         return fn
 
     # Magic methods
@@ -315,7 +341,7 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
         item = self.at(idx, column)
         if (
             isinstance(idx, int)
-            and (column is None or column == self._column_names)
+            and (column is None or column == self._columns)
             and self._transform is not None
         ):
             item = self._transform(item)
@@ -339,35 +365,31 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
         return f"{self.__class__.__name__}({repr_str})"
 
     # Private methods
-    def _check_column_names(self, column_names: List[str]) -> None:
-        expected_column_names = dict.fromkeys(self.all_column_names)
-        invalid_column_names = [
-            name for name in column_names if name not in expected_column_names
-        ]
-        if len(invalid_column_names) > 0:
-            msg = f"Invalid argument column_names={column_names}. (found {len(invalid_column_names)} invalids column names for {self.__class__.__name__}: {invalid_column_names})"
+    def _check_columns(self, columns: List[str]) -> None:
+        expected_columns = dict.fromkeys(self.all_columns)
+        invalid_columns = [name for name in columns if name not in expected_columns]
+        if len(invalid_columns) > 0:
+            msg = f"Invalid argument columns={columns}. (found {len(invalid_columns)} invalids column names for {self.__class__.__name__}: {invalid_columns})"
             raise ValueError(msg)
 
-        invalid_column_names = [
-            name for name in column_names if not self._can_be_loaded(name)
-        ]
-        if len(invalid_column_names) > 0:
-            msg = f"Invalid argument column_names={column_names}. (found {len(invalid_column_names)} invalids column names for {self.__class__.__name__}: {invalid_column_names})"
+        invalid_columns = [name for name in columns if not self._can_be_loaded(name)]
+        if len(invalid_columns) > 0:
+            msg = f"Invalid argument columns={columns}. (found {len(invalid_columns)} invalids column names for {self.__class__.__name__}: {invalid_columns})"
             raise ValueError(msg)
 
-    def _can_be_loaded(self, col_name: str) -> bool:
-        return self.is_loaded_column(col_name) or self.is_auto_column(col_name)
+    def _can_be_loaded(self, column: str) -> bool:
+        return self.has_raw_column(column) or self.has_post_column(column)
 
     def _flat_raw_data(self) -> None:
         self._raw_data = _flat_raw_data(self._raw_data)
 
     def _load_auto_value(self, column: str, idx: int) -> Any:
-        if column in self._auto_columns_fns:
-            fn = self._auto_columns_fns[column]
+        if column in self._post_columns_fns:
+            fn = self._post_columns_fns[column]
             return fn(self, idx)
         else:
             raise ValueError(
-                f"Invalid argument column={column} at idx={idx}. (expected one of {self.all_column_names})"
+                f"Invalid argument column={column} at idx={idx}. (expected one of {self.all_columns})"
             )
 
     def _load_audio(self, idx: int) -> Tensor:
@@ -419,13 +441,13 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
 
 def _flat_raw_data(
     raw_data: Dict[str, List[Any]],
-    caps_column_name: str = "captions",
+    caps_column: str = "captions",
 ) -> Dict[str, List[Any]]:
-    if caps_column_name not in raw_data:
-        raise ValueError(f"Cannot flat raw data without '{caps_column_name}' column.")
+    if caps_column not in raw_data:
+        raise ValueError(f"Cannot flat raw data without '{caps_column}' column.")
 
     raw_data_flat = {key: [] for key in raw_data.keys()}
-    mcaps = raw_data[caps_column_name]
+    mcaps = raw_data[caps_column]
 
     for i, caps in enumerate(mcaps):
         if len(caps) == 0:
@@ -435,6 +457,6 @@ def _flat_raw_data(
             for cap in caps:
                 for key in raw_data.keys():
                     raw_data_flat[key].append(raw_data[key][i])
-                raw_data_flat[caps_column_name] = [cap]
+                raw_data_flat[caps_column] = [cap]
 
     return raw_data_flat
