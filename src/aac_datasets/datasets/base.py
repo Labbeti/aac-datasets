@@ -273,7 +273,7 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
     ) -> None:
         if not allow_replace and column in self._post_columns_fns:
             raise ValueError(
-                f"Column '{column}' already exists in {self} and found argument {allow_replace=}."
+                f"Column '{column}' already exists in {self} and found argument allow_replace={allow_replace}."
             )
         self._post_columns_fns[column] = load_fn
 
