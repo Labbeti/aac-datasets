@@ -58,6 +58,7 @@ class AudioCapsCard(DatasetCard):
         "train": 1,
         "val": 5,
         "test": 5,
+        "train_v2": 1,
     }
     CITATION: str = r"""
     @inproceedings{kim_etal_2019_audiocaps,
@@ -79,7 +80,7 @@ class AudioCapsCard(DatasetCard):
     NAME: str = "audiocaps"
     PRETTY_NAME: str = "AudioCaps"
     SIZE_CATEGORIES: Tuple[str, ...] = ("10K<n<100K",)
-    SUBSETS: Tuple[str, ...] = ("train", "val", "test")
+    SUBSETS: Tuple[str, ...] = ("train", "val", "test", "train_v2")
     TASK_CATEGORIES: Tuple[str, ...] = ("audio-to-text", "text-to-audio")
 
 
@@ -763,6 +764,7 @@ _AUDIOCAPS_AUDIO_DNAMES = {
     "train": "train",
     "val": "val",
     "test": "test",
+    "train_v2": "train",
 }
 
 # Archives and file links used to download AudioCaps labels and metadata
@@ -783,6 +785,12 @@ _AUDIOCAPS_LINKS = {
         "captions": {
             "url": "https://raw.githubusercontent.com/cdjkim/audiocaps/master/dataset/test.csv",
             "fname": "test.csv",
+        },
+    },
+    "train_v2": {
+        "captions": {
+            "url": None,  # TODO
+            "fname": "train_v2.csv",
         },
     },
 }
