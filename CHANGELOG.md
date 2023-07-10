@@ -8,8 +8,9 @@ All notable changes to this project will be documented in this file.
 - First implementation of **WavCaps** dataset.
 - Dataset cards as separate dataclasses for each dataset.
 
-### Modified
+### Changed
 - Rename `test` subset to `dcase_aac_test`, `analysis` subset to `dcase_aac_analysis` from the DCASE Challenge task 6a, in Clotho dataset.
+- Function `get_install_info` now returns `package_path`.
 
 ## [0.3.3] 2023-05-11
 ### Added
