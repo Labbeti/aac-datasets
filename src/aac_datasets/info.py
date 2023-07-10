@@ -14,6 +14,10 @@ import yaml
 import aac_datasets
 
 
+def get_package_repository_path() -> str:
+    return str(Path(__file__).parent.parent.parent)
+
+
 def get_install_info() -> Dict[str, str]:
     """Return a dictionary containing the version python, the os name, the architecture name and the versions of the following packages: aac_datasets, torch, torchaudio."""
     return {
@@ -23,19 +27,14 @@ def get_install_info() -> Dict[str, str]:
         "architecture": platform.architecture()[0],
         "torch": str(torch.__version__),
         "torchaudio": torchaudio.__version__,
+        "package_path": get_package_repository_path(),
     }
-
-
-def get_package_repository_path() -> str:
-    return str(Path(__file__).parent.parent.parent)
 
 
 def print_install_info() -> None:
     """Show main packages versions."""
     install_info = get_install_info()
-    pkg_repo_path = get_package_repository_path()
     print(yaml.dump(install_info, sort_keys=False))
-    print("Package source path:", pkg_repo_path)
 
 
 if __name__ == "__main__":
