@@ -36,7 +36,7 @@ dynamic = ["version"]
 [project.urls]
 Homepage = "https://pypi.org/project/aac-datasets/"
 Documentation = "https://aac-datasets.readthedocs.io/"
-Repository = "https://github.com//Labbeti/aac-datasets.git"
+Repository = "https://github.com/Labbeti/aac-datasets.git"
 Changelog = "https://github.com/Labbeti/aac-datasets/blob/main/CHANGELOG.md"
 
 [project.scripts]
