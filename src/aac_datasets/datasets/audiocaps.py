@@ -334,12 +334,24 @@ def _get_audio_subset_dpath(root: str, subset: str, sr: int) -> str:
     )
 
 
-def _is_prepared(root: str, subset: str, sr: int) -> bool:
+def _is_prepared(root: str, subset: str, sr: int, verbose: int) -> bool:
     links = _AUDIOCAPS_LINKS[subset]
     captions_fname = links["captions"]["fname"]
     captions_fpath = osp.join(_get_audiocaps_dpath(root, sr), captions_fname)
     audio_subset_dpath = _get_audio_subset_dpath(root, subset, sr)
-    return osp.isdir(audio_subset_dpath) and osp.isfile(captions_fpath)
+
+    msgs = []
+
+    if not osp.isdir(audio_subset_dpath):
+        msgs.append(f"Cannot find directory '{audio_subset_dpath}'.")
+    if not osp.isfile(captions_fpath):
+        msgs.append(f"Cannot find file '{captions_fpath}'.")
+
+    if verbose >= 0:
+        for msg in msgs:
+            pylog.warning(msg)
+
+    return len(msgs) == 0
 
 
 def _load_audiocaps_dataset(
@@ -351,7 +363,7 @@ def _load_audiocaps_dataset(
     verbose: int,
     audio_format: str = "flac",
 ) -> Tuple[Dict[str, List[Any]], List[str]]:
-    if not _is_prepared(root, subset, sr):
+    if not _is_prepared(root, subset, sr, verbose):
         raise RuntimeError(
             f"Cannot load data: audiocaps_{subset} is not prepared in data root={root}. Please use download=True in dataset constructor."
         )
@@ -537,7 +549,7 @@ def _prepare_audiocaps_dataset(
         pylog.error(f"Cannot use ffmpeg path '{ffmpeg_path}'. ({err})")
         raise err
 
-    if _is_prepared(root, subset, sr) and not force:
+    if _is_prepared(root, subset, sr, -1) and not force:
         return None
 
     links = _AUDIOCAPS_LINKS[subset]
