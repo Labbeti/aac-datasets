@@ -102,12 +102,15 @@ class AudioCaps(Dataset[Dict[str, Any]]):
     MAX_AUDIO_SEC = 10.00096876
     MIN_AUDIO_SEC = 0.6501874
     SAMPLE_RATE = 32000
-    SUBSETS = ("train", "val", "test", "train_fr", "val_fr", "test_fr")
+    SUBSETS = ("train", "val", "test", "train_fr", "val_fr", "test_fr", "train_de", "val_de", "test_de", "train_es", "val_es", "test_es")
     VERIFY_FILES = False
 
     # AudioCaps-specific globals
     AUDIO_FILE_EXTENSION = "flac"
-    CAPTIONS_PER_AUDIO = {"train": 1, "val": 5, "test": 5, "train_fr": 1, "val_fr": 5, "test_fr": 5}
+    CAPTIONS_PER_AUDIO = {"train": 1, "val": 5, "test": 5,
+                          "train_de": 1, "val_de": 5, "test_de": 5,
+                          "train_fr": 1, "val_fr": 5, "test_fr": 5,
+                          "train_es": 1, "val_es": 5, "test_es": 5}
     DNAME_LOG = "logs"
     FFMPEG_PATH: str = "ffmpeg"
     MAX_CAPTION_LENGTH = 52
@@ -844,6 +847,40 @@ AUDIOCAPS_LINKS = {
         "captions": {
             "url": None,
             "fname": "test_fr.csv",
+        },
+    },"train_de": {
+        "captions": {
+            "url": None,
+            "fname": "train_de.csv",
+        },
+    },
+    "val_de": {
+        "captions": {
+            "url": None,
+            "fname": "val_de.csv",
+        },
+    },
+    "test_de": {
+        "captions": {
+            "url": None,
+            "fname": "test_de.csv",
+        },
+    },"train_es": {
+        "captions": {
+            "url": None,
+            "fname": "train_es.csv",
+        },
+    },
+    "val_es": {
+        "captions": {
+            "url": None,
+            "fname": "val_es.csv",
+        },
+    },
+    "test_es": {
+        "captions": {
+            "url": None,
+            "fname": "test_es.csv",
         },
     },
 }
