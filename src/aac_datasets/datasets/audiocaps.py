@@ -563,6 +563,10 @@ def _prepare_audiocaps_dataset(
 
     if not osp.isfile(captions_fpath):
         url = links["captions"]["url"]
+        if url is None:
+            raise ValueError(
+                f"AudioCaps subset '{subset}' cannot be automatically downloaded. (found url={url})"
+            )
         download_url_to_file(url, captions_fpath, progress=verbose >= 1)
 
     start = time.perf_counter()
