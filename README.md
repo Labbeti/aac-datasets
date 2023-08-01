@@ -92,6 +92,8 @@ tqdm >= 4.64.0
 huggingface-hub >= 0.15.1
 ```
 
+This package has been developped for Ubuntu 20.04, and it is expected to work on most Linux distributions.
+
 ### External requirements (AudioCaps only)
 
 The external requirements needed to download **AudioCaps** are **ffmpeg** and **youtube-dl**.
