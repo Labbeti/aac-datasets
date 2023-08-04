@@ -21,6 +21,11 @@ Audio Captioning unofficial datasets source code for **AudioCaps** [[1]](#audioc
 pip install aac-datasets
 ```
 
+If you want to check if the package has been installed and the version, you can use this command:
+```bash
+aac-datasets-info
+```
+
 ## Examples
 
 ### Create Clotho dataset
