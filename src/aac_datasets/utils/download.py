@@ -9,7 +9,7 @@ from typing import List, Union
 
 
 HASH_TYPES = ("sha256", "md5")
-DEFAULT_CHUNK_SIZE = 256 * 1024**2
+DEFAULT_CHUNK_SIZE = 256 * 1024**2  # 256 MiB
 
 
 def safe_rmdir(

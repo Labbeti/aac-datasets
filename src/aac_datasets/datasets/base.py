@@ -70,6 +70,7 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
         self._verbose = verbose
 
         self._post_columns_fns = {}
+        self._flat_indices = []
 
         if self._flat_captions:
             self._flat_raw_data()
@@ -91,7 +92,7 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
 
     @property
     def flat_captions(self) -> bool:
-        """The name of each column of the dataset."""
+        """Returns true if captions has been flattened."""
         return self._flat_captions
 
     @property
@@ -381,7 +382,8 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
         return self.has_raw_column(column) or self.has_post_column(column)
 
     def _flat_raw_data(self) -> None:
-        self._raw_data = _flat_raw_data(self._raw_data)
+        raw_data, _ = _flat_raw_data(self._raw_data)
+        self._raw_data = raw_data
 
     def _load_auto_value(self, column: str, idx: int) -> Any:
         if column in self._post_columns_fns:
@@ -442,12 +444,14 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
 def _flat_raw_data(
     raw_data: Dict[str, List[Any]],
     caps_column: str = "captions",
-) -> Dict[str, List[Any]]:
+) -> Tuple[Dict[str, List[Any]], List[int]]:
     if caps_column not in raw_data:
-        raise ValueError(f"Cannot flat raw data without '{caps_column}' column.")
+        raise ValueError(
+            f"Cannot flat raw data without '{caps_column}' column. (found only columns {tuple(raw_data.keys())})"
+        )
 
+    mcaps: List[List[str]] = raw_data[caps_column]
     raw_data_flat = {key: [] for key in raw_data.keys()}
-    mcaps = raw_data[caps_column]
 
     for i, caps in enumerate(mcaps):
         if len(caps) == 0:
@@ -456,7 +460,39 @@ def _flat_raw_data(
         else:
             for cap in caps:
                 for key in raw_data.keys():
+                    if key == caps_column:
+                        continue
                     raw_data_flat[key].append(raw_data[key][i])
-                raw_data_flat[caps_column] = [cap]
 
-    return raw_data_flat
+                # Overwrite cap
+                raw_data_flat[caps_column].append([cap])
+
+    sizes = [len(caps) for caps in mcaps]
+    return raw_data_flat, sizes
+
+
+def _unflat_raw_data(
+    raw_data_flat: Dict[str, List[Any]],
+    sizes: List[int],
+    caps_column: str = "captions",
+) -> Dict[str, List[Any]]:
+    if caps_column not in raw_data_flat:
+        raise ValueError(
+            f"Cannot flat raw data without '{caps_column}' column. (found only columns {tuple(raw_data.keys())})"
+        )
+
+    raw_data = {key: [] for key in raw_data_flat.keys()}
+
+    cumsize = 0
+    for size in sizes:
+        for key in raw_data.keys():
+            if key == caps_column:
+                caps = [
+                    raw_data_flat[key][idx][0] for idx in range(cumsize, cumsize + size)
+                ]
+                raw_data[key].append(caps)
+            else:
+                raw_data[key].append(raw_data_flat[key][cumsize])
+        cumsize += size
+
+    return raw_data

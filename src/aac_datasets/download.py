@@ -18,6 +18,10 @@ from aac_datasets.datasets.wavcaps import WavCaps, WavCapsCard, HUGGINGFACE_HUB_
 pylog = logging.getLogger(__name__)
 
 
+_TRUE_VALUES = ("true", "1", "t")
+_FALSE_VALUES = ("false", "0", "f")
+
+
 def download_audiocaps(
     root: str = ".",
     verbose: int = 1,
@@ -115,14 +119,16 @@ def download_wavcaps(
     return datasets
 
 
-def _to_bool(s: str) -> bool:
-    s = s.lower()
-    if s in ("true",):
+def _str_to_bool(s: str) -> bool:
+    s = str(s).strip().lower()
+    if s in _TRUE_VALUES:
         return True
-    elif s in ("false",):
+    elif s in _FALSE_VALUES:
         return False
     else:
-        raise ValueError(f"Invalid argument value {s}. (not a boolean)")
+        raise ValueError(
+            f"Invalid argument {s=}. (expected one of {_TRUE_VALUES + _FALSE_VALUES})"
+        )
 
 
 def _get_main_download_args() -> Namespace:
@@ -144,9 +150,8 @@ def _get_main_download_args() -> Namespace:
     )
     parser.add_argument(
         "--force",
-        type=_to_bool,
+        type=_str_to_bool,
         default=False,
-        choices=(False, True),
         help="Force download of files, even if they are already downloaded.",
     )
 
@@ -171,9 +176,8 @@ def _get_main_download_args() -> Namespace:
     )
     audiocaps_subparser.add_argument(
         "--with_tags",
-        type=_to_bool,
+        type=_str_to_bool,
         default=True,
-        choices=(False, True),
         help="Download additional audioset tags corresponding to audiocaps audio.",
     )
     audiocaps_subparser.add_argument(
@@ -195,9 +199,8 @@ def _get_main_download_args() -> Namespace:
     )
     clotho_subparser.add_argument(
         "--clean_archives",
-        type=_to_bool,
+        type=_str_to_bool,
         default=False,
-        choices=(False, True),
         help="Remove archives files after extraction.",
     )
     clotho_subparser.add_argument(
@@ -212,9 +215,8 @@ def _get_main_download_args() -> Namespace:
     macs_subparser = subparsers.add_parser(MACSCard.NAME)
     macs_subparser.add_argument(
         "--clean_archives",
-        type=_to_bool,
+        type=_str_to_bool,
         default=False,
-        choices=(False, True),
         help="Remove archives files after extraction.",
     )
     # Note : MACS only have 1 subset, so we do not add MACS subsets arg
@@ -222,9 +224,8 @@ def _get_main_download_args() -> Namespace:
     wavcaps_subparser = subparsers.add_parser(WavCapsCard.NAME)
     wavcaps_subparser.add_argument(
         "--clean_archives",
-        type=_to_bool,
+        type=_str_to_bool,
         default=False,
-        choices=(False, True),
         help="Remove archives files after extraction.",
     )
     wavcaps_subparser.add_argument(

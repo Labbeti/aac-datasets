@@ -55,3 +55,7 @@ jobs:
     - name: Print install info
       run: |
         aac-datasets-info
+  
+    - name: Test with pytest
+      run: |
+        python -m pytest -v
