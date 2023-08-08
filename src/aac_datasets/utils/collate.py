@@ -8,7 +8,7 @@ import torch
 from torch import Tensor
 from torch.nn import functional as F
 
-from aac.utils.collections import list_dict_to_dict_list
+from aac_datasets.utils.collections import list_dict_to_dict_list
 
 
 class BasicCollate:
