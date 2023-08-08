@@ -92,9 +92,7 @@ class AudioCaps(AACDataset[AudioCapsItem]):
     Audio is a waveform tensor of shape (1, n_times) of 10 seconds max, sampled at 32kHz by default.
     Target is a list of strings containing the captions.
     The 'train' subset has only 1 caption per sample and 'val' and 'test' have 5 captions.
-
     Download requires 'youtube-dl' and 'ffmpeg' commands.
-    You can change the default path with :attr:`~AudioCaps.YOUTUBE_DL_PATH` or :attr:`~AudioCaps.FFMPEG_PATH` global variables.
 
     AudioCaps paper : https://www.aclweb.org/anthology/N19-1011.pdf
 
@@ -125,8 +123,6 @@ class AudioCaps(AACDataset[AudioCapsItem]):
     AUDIO_DURATION: ClassVar[float] = 10.0
     AUDIO_FORMAT: ClassVar[str] = "flac"
     AUDIO_N_CHANNELS: ClassVar[int] = 1
-    FFMPEG_PATH: ClassVar[str] = "ffmpeg"
-    YOUTUBE_DL_PATH: ClassVar[str] = "youtube-dl"
 
     # Initialization
     def __init__(
@@ -140,6 +136,8 @@ class AudioCaps(AACDataset[AudioCapsItem]):
         exclude_removed_audio: bool = True,
         with_tags: bool = False,
         sr: int = 32_000,
+        ffmpeg_path: str = "ffmpeg",
+        ytdl_path: str = "youtube-dl",
     ) -> None:
         """
         :param root: Dataset root directory.
@@ -164,6 +162,10 @@ class AudioCaps(AACDataset[AudioCapsItem]):
         :param sr: The sample rate used for audio files in the dataset (in Hz).
             Since original YouTube videos are recorded in various settings, this parameter allow to download allow audio files with a specific sample rate.
             defaults to 32000.
+        :param ffmpeg_path: Path to ffmpeg executable file.
+            defaults to "ffmpeg".
+        :param ytdl_path: Path to youtube-dl or ytdlp executable.
+            defaults to "youtube-dl".
         """
         if subset not in AudioCapsCard.SUBSETS:
             raise ValueError(
@@ -178,8 +180,8 @@ class AudioCaps(AACDataset[AudioCapsItem]):
                 with_tags,
                 verbose,
                 AudioCaps.FORCE_PREPARE_DATA,
-                AudioCaps.YOUTUBE_DL_PATH,
-                AudioCaps.FFMPEG_PATH,
+                ytdl_path,
+                ffmpeg_path,
                 AudioCaps.AUDIO_FORMAT,
                 AudioCaps.AUDIO_DURATION,
                 AudioCaps.AUDIO_N_CHANNELS,
