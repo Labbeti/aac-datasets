@@ -27,6 +27,7 @@ from typing_extensions import TypedDict
 from aac_datasets.datasets.base import AACDataset, DatasetCard
 from aac_datasets.utils.collections import list_dict_to_dict_list
 from aac_datasets.utils.download import safe_rmdir
+from aac_datasets.utils.paths import _get_root
 
 
 pylog = logging.getLogger(__name__)
@@ -155,7 +156,7 @@ class WavCaps(AACDataset[WavCapsItem]):
 
     def __init__(
         self,
-        root: str = ".",
+        root: str = ...,
         subset: str = "as",
         download: bool = False,
         transform: Optional[Callable] = None,
@@ -181,8 +182,12 @@ class WavCaps(AACDataset[WavCapsItem]):
         :param verbose: Verbose level to use. Can be 0 or 1.
             defaults to 0.
         """
-        self._hf_cache_dir = hf_cache_dir
-        self._revision = revision
+        if subset not in WavCapsCard.SUBSETS:
+            raise ValueError(
+                f"Invalid argument subset={subset} for {WavCapsCard.PRETTY_NAME}. (expected one of {WavCapsCard.SUBSETS})"
+            )
+
+        root = _get_root(root)
 
         if download:
             _prepare_wavcaps_dataset(
@@ -225,6 +230,8 @@ class WavCaps(AACDataset[WavCapsItem]):
         self._root = root
         self._subset = subset
         self._download = download
+        self._hf_cache_dir = hf_cache_dir
+        self._revision = revision
 
         self.add_post_columns(
             {

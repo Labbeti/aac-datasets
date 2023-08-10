@@ -13,6 +13,11 @@ from aac_datasets.datasets.audiocaps import AudioCaps, AudioCapsCard
 from aac_datasets.datasets.clotho import Clotho, ClothoCard
 from aac_datasets.datasets.macs import MACS, MACSCard
 from aac_datasets.datasets.wavcaps import WavCaps, WavCapsCard, HUGGINGFACE_HUB_CACHE
+from aac_datasets.utils.paths import (
+    get_default_root,
+    get_default_ffmpeg_path,
+    get_default_ytdl_path,
+)
 
 
 pylog = logging.getLogger(__name__)
@@ -23,12 +28,12 @@ _FALSE_VALUES = ("false", "0", "f")
 
 
 def download_audiocaps(
-    root: str = ".",
+    root: str = ...,
     verbose: int = 1,
     force: bool = False,
     download: bool = True,
-    ffmpeg_path: str = "ffmpeg",
-    ytdl_path: str = "youtube-dl",
+    ffmpeg_path: str = ...,
+    ytdl_path: str = ...,
     with_tags: bool = False,
     subsets: Iterable[str] = AudioCapsCard.SUBSETS,
 ) -> Dict[str, AudioCaps]:
@@ -49,11 +54,11 @@ def download_audiocaps(
 
 
 def download_clotho(
-    root: str = ".",
+    root: str = ...,
     verbose: int = 1,
     force: bool = False,
     download: bool = True,
-    version: str = "v2.1",
+    version: str = ClothoCard.DEFAULT_VERSION,
     clean_archives: bool = False,
     subsets: Iterable[str] = ClothoCard.SUBSETS,
 ) -> Dict[str, Clotho]:
@@ -79,7 +84,7 @@ def download_clotho(
 
 
 def download_macs(
-    root: str = ".",
+    root: str = ...,
     verbose: int = 1,
     force: bool = False,
     download: bool = True,
@@ -96,7 +101,7 @@ def download_macs(
 
 
 def download_wavcaps(
-    root: str = ".",
+    root: str = ...,
     verbose: int = 1,
     force: bool = False,
     download: bool = True,
@@ -142,7 +147,7 @@ def _get_main_download_args() -> Namespace:
     parser.add_argument(
         "--root",
         type=str,
-        default=".",
+        default=get_default_root(),
         help="The path to the parent directory of the datasets.",
     )
     parser.add_argument(
@@ -168,13 +173,13 @@ def _get_main_download_args() -> Namespace:
     audiocaps_subparser.add_argument(
         "--ffmpeg_path",
         type=str,
-        default="ffmpeg",
+        default=get_default_ffmpeg_path(),
         help="Path to ffmpeg used to download audio from youtube.",
     )
     audiocaps_subparser.add_argument(
         "--ytdl_path",
         type=str,
-        default="youtube-dl",
+        default=get_default_ytdl_path(),
         help="Path to youtube-dl used to extract metadata from a youtube video.",
     )
     audiocaps_subparser.add_argument(

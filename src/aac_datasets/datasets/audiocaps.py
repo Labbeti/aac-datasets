@@ -29,6 +29,7 @@ from torchaudio.backend.common import AudioMetaData
 from typing_extensions import TypedDict
 
 from aac_datasets.datasets.base import AACDataset, DatasetCard
+from aac_datasets.utils.paths import _get_root, _get_ffmpeg_path, _get_ytdl_path
 
 
 pylog = logging.getLogger(__name__)
@@ -127,7 +128,7 @@ class AudioCaps(AACDataset[AudioCapsItem]):
     # Initialization
     def __init__(
         self,
-        root: str = ".",
+        root: str = ...,
         subset: str = "train",
         download: bool = False,
         transform: Optional[Callable[[Dict[str, Any]], Any]] = None,
@@ -136,8 +137,8 @@ class AudioCaps(AACDataset[AudioCapsItem]):
         exclude_removed_audio: bool = True,
         with_tags: bool = False,
         sr: int = 32_000,
-        ffmpeg_path: str = "ffmpeg",
-        ytdl_path: str = "youtube-dl",
+        ffmpeg_path: str = ...,
+        ytdl_path: str = ...,
     ) -> None:
         """
         :param root: Dataset root directory.
@@ -171,6 +172,10 @@ class AudioCaps(AACDataset[AudioCapsItem]):
             raise ValueError(
                 f"Invalid argument subset={subset} for AudioCaps. (expected one of {AudioCapsCard.SUBSETS})"
             )
+
+        root = _get_root(root)
+        ffmpeg_path = _get_ffmpeg_path(ffmpeg_path)
+        ytdl_path = _get_ytdl_path(ytdl_path)
 
         if download:
             _prepare_audiocaps_dataset(
@@ -521,8 +526,8 @@ def _prepare_audiocaps_dataset(
     with_tags: bool,
     verbose: int,
     force: bool = False,
-    ytdl_path: str = "youtube-dl",
-    ffmpeg_path: str = "ffmpeg",
+    ytdl_path: str = ...,
+    ffmpeg_path: str = ...,
     audio_format: str = "flac",
     audio_duration: float = 10.0,
     n_channels: int = 1,
@@ -694,8 +699,8 @@ def _download_and_extract_from_youtube(
     n_channels: int = 1,
     target_format: str = "flac",
     acodec: str = "flac",
-    ytdl_path: str = "youtube-dl",
-    ffmpeg_path: str = "ffmpeg",
+    ytdl_path: str = ...,
+    ffmpeg_path: str = ...,
 ) -> bool:
     """Download audio from youtube with youtube-dl and ffmpeg."""
 

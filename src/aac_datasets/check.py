@@ -14,6 +14,7 @@ from aac_datasets.datasets.audiocaps import AudioCaps, AudioCapsCard
 from aac_datasets.datasets.clotho import Clotho, ClothoCard
 from aac_datasets.datasets.macs import MACS, MACSCard
 from aac_datasets.datasets.wavcaps import WavCaps, WavCapsCard
+from aac_datasets.utils.paths import get_default_root
 
 
 pylog = logging.getLogger(__name__)
@@ -89,7 +90,7 @@ def _get_main_check_args() -> Namespace:
     parser.add_argument(
         "--root",
         type=str,
-        default=".",
+        default=get_default_root(),
         help="The path to the parent directory of the datasets.",
     )
     parser.add_argument(

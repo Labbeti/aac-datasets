@@ -27,6 +27,7 @@ from typing_extensions import TypedDict
 
 from aac_datasets.datasets.base import AACDataset, DatasetCard
 from aac_datasets.utils.download import validate_file
+from aac_datasets.utils.paths import _get_root
 
 
 pylog = logging.getLogger(__name__)
@@ -113,7 +114,7 @@ class MACS(AACDataset[MACSItem]):
     # Initialization
     def __init__(
         self,
-        root: str = ".",
+        root: str = ...,
         subset: str = "full",
         download: bool = False,
         transform: Optional[Callable] = None,
@@ -140,6 +141,8 @@ class MACS(AACDataset[MACSItem]):
             raise ValueError(
                 f"Invalid argument subset={subset} for MACS. (expected one of {MACSCard.SUBSETS})"
             )
+
+        root = _get_root(root)
 
         if download:
             _prepare_macs_dataset(

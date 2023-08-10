@@ -25,6 +25,7 @@ from typing_extensions import TypedDict, NotRequired
 
 from aac_datasets.datasets.base import AACDataset, DatasetCard
 from aac_datasets.utils.download import validate_file
+from aac_datasets.utils.paths import _get_root
 
 
 pylog = logging.getLogger(__name__)
@@ -151,7 +152,7 @@ class Clotho(AACDataset[ClothoItem]):
     # Initialization
     def __init__(
         self,
-        root: str = ".",
+        root: str = ...,
         subset: str = "dev",
         download: bool = False,
         transform: Optional[Callable] = None,
@@ -192,6 +193,8 @@ class Clotho(AACDataset[ClothoItem]):
             raise ValueError(
                 f"Invalid Clotho argument subset={subset} for version={version}. Must be one of {subsets}."
             )
+
+        root = _get_root(root)
 
         if download:
             _prepare_clotho_dataset(
