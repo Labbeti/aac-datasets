@@ -610,7 +610,7 @@ def _prepare_audiocaps_dataset(
                 start_time,
                 duration=audio_duration,
                 sr=sr,
-                youtube_dl_path=ytdl_path,
+                ytdl_path=ytdl_path,
                 ffmpeg_path=ffmpeg_path,
                 n_channels=n_channels,
             )
@@ -694,15 +694,15 @@ def _download_and_extract_from_youtube(
     n_channels: int = 1,
     target_format: str = "flac",
     acodec: str = "flac",
-    youtube_dl_path: str = "youtube-dl",
+    ytdl_path: str = "youtube-dl",
     ffmpeg_path: str = "ffmpeg",
 ) -> bool:
     """Download audio from youtube with youtube-dl and ffmpeg."""
 
     # Get audio download link with youtube-dl
-    link = f"https://www.youtube.com/watch?v={youtube_id}"
+    link = _get_youtube_link(youtube_id)
     get_url_command = [
-        youtube_dl_path,
+        ytdl_path,
         "--youtube-skip-dash-manifest",
         "-g",
         link,
@@ -737,7 +737,7 @@ def _download_and_extract_from_youtube(
         str(start_time),
         "-t",
         str(duration),
-        # Resample to 16 kHz
+        # Resample to a specific rate (default to 32 kHz)
         "-ar",
         str(sr),
         # Compute mean of 2 channels
@@ -775,6 +775,25 @@ def _check_file(fpath: str, expected_sr: Optional[int]) -> bool:
         return False
 
     return True
+
+
+def _get_youtube_link(youtube_id: str, start_time: Optional[int]) -> str:
+    link = f"https://www.youtube.com/watch?v={youtube_id}"
+    if start_time is None:
+        return link
+    else:
+        return f"{link}&t={start_time}s"
+
+
+def _get_youtube_link_embed(
+    youtube_id: str, start_time: Optional[int], duration: float = 10.0
+) -> str:
+    link = f"https://www.youtube.com/embed/{youtube_id}"
+    if start_time is None:
+        return link
+    else:
+        end_time = start_time + duration
+        return f"{link}?start={start_time}&end={end_time}"
 
 
 # Audio directory names per subset

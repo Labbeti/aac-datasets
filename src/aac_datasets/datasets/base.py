@@ -44,13 +44,17 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
     # Initialization
     def __init__(
         self,
-        raw_data: Dict[str, List[Any]],
-        transform: Optional[Callable],
-        column_names: Iterable[str],
-        flat_captions: bool,
-        sr: Optional[int],
-        verbose: int,
+        raw_data: Optional[Dict[str, List[Any]]] = None,
+        transform: Optional[Callable] = None,
+        column_names: Optional[Iterable[str]] = None,
+        flat_captions: bool = False,
+        sr: Optional[int] = None,
+        verbose: int = 0,
     ) -> None:
+        if raw_data is None:
+            raw_data = {}
+        if column_names is None:
+            column_names = raw_data.keys()
         column_names = list(column_names)
 
         if len(raw_data) > 1:
@@ -77,17 +81,18 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
 
     @staticmethod
     def new_empty() -> "AACDataset":
+        """Create a new empty dataset."""
         return AACDataset({}, None, (), False, None, 0)
 
     # Properties
     @property
     def all_columns(self) -> List[str]:
-        """The name of each column of the dataset."""
+        """The name of all columns of the dataset."""
         return list(self._raw_data | self._post_columns_fns)
 
     @property
     def column_names(self) -> List[str]:
-        """The name of each column of the dataset."""
+        """The name of all selected column of the dataset."""
         return self._columns
 
     @property
@@ -217,15 +222,19 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
             )
 
     def has_raw_column(self, column: str) -> bool:
+        """Returns True if column name exists in raw data."""
         return column in self._raw_data
 
     def has_post_column(self, column: str) -> bool:
+        """Returns True if column name exists in post processed data."""
         return column in self._post_columns_fns
 
     def has_column(self, column: str) -> bool:
+        """Returns True if column name exists in data."""
         return self.has_raw_column(column) or self.has_post_column(column)
 
     def remove_column(self, column: str) -> Union[List[Any], Callable]:
+        """Removes a column from this dataset."""
         if column in self._raw_data:
             column_data = self._raw_data.pop(column, [])
             return column_data
@@ -241,6 +250,7 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
         new_column: str,
         allow_replace: bool = False,
     ) -> None:
+        """Renames a column from this dataset."""
         column_data_or_fn = self.remove_column(old_column)
 
         if isinstance(column_data_or_fn, List):
@@ -258,6 +268,7 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
         column_data: List[Any],
         allow_replace: bool = False,
     ) -> None:
+        """Add a new raw column to this dataset."""
         if not allow_replace and column in self._raw_data:
             raise ValueError(
                 f"Column '{column}' already exists. Please choose another name or set allow_replace arg to True."
@@ -272,6 +283,7 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
         load_fn: Callable[[Any, int], Any],
         allow_replace: bool = False,
     ) -> None:
+        """Add a new post-processed column to this dataset."""
         if not allow_replace and column in self._post_columns_fns:
             raise ValueError(
                 f"Column '{column}' already exists in {self} and found argument allow_replace={allow_replace}."
@@ -283,6 +295,7 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
         post_columns_fns: Dict[str, Callable[[Any, int], Any]],
         allow_replace: bool = False,
     ) -> None:
+        """Add several new post-processed columns to this dataset."""
         for name, load_fn in post_columns_fns.items():
             self.add_post_column(name, load_fn, allow_replace)
 
@@ -291,6 +304,7 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
         column: str,
         allow_replace: bool = False,
     ) -> Callable[[Any, int], Any]:
+        """Load all data from a post-column data into raw data."""
         if column not in self._post_columns_fns:
             raise ValueError(f"Invalid argument column={column}.")
 
@@ -373,13 +387,10 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
             msg = f"Invalid argument columns={columns}. (found {len(invalid_columns)} invalids column names for {self.__class__.__name__}: {invalid_columns})"
             raise ValueError(msg)
 
-        invalid_columns = [name for name in columns if not self._can_be_loaded(name)]
+        invalid_columns = [name for name in columns if not self.has_column(name)]
         if len(invalid_columns) > 0:
             msg = f"Invalid argument columns={columns}. (found {len(invalid_columns)} invalids column names for {self.__class__.__name__}: {invalid_columns})"
             raise ValueError(msg)
-
-    def _can_be_loaded(self, column: str) -> bool:
-        return self.has_raw_column(column) or self.has_post_column(column)
 
     def _flat_raw_data(self) -> None:
         raw_data, _ = _flat_raw_data(self._raw_data)
