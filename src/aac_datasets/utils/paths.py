@@ -5,13 +5,13 @@ import logging
 import os
 import os.path as osp
 
-from typing import Optional, Union
+from typing import Dict, Optional, Union
 
 
 pylog = logging.getLogger(__name__)
 
 
-__DEFAULT_PATHS: dict[str, dict[str, Optional[str]]] = {
+__DEFAULT_PATHS: Dict[str, Dict[str, Optional[str]]] = {
     "root": {
         "user": None,
         "env": "AAC_DATASETS_ROOT",

@@ -13,6 +13,12 @@ import yaml
 
 import aac_datasets
 
+from aac_datasets.utils.paths import (
+    get_default_root,
+    get_default_ffmpeg_path,
+    get_default_ytdl_path,
+)
+
 
 def get_package_repository_path() -> str:
     """Return the absolute path where the source code of this package is installed."""
@@ -29,6 +35,9 @@ def get_install_info() -> Dict[str, str]:
         "torch": str(torch.__version__),
         "torchaudio": torchaudio.__version__,
         "package_path": get_package_repository_path(),
+        "root": get_default_root(),
+        "ffmpeg_path": get_default_ffmpeg_path(),
+        "ytdl_path": get_default_ytdl_path(),
     }
 
 
