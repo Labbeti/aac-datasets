@@ -107,7 +107,7 @@ def __get_default_path(path_name: str) -> str:
 
     pylog.error(f"Paths values: {paths}")
     raise RuntimeError(
-        f"Invalid default path for {path_name=}. (all default paths are None)"
+        f"Invalid default path for path_name={path_name}. (all default paths are None)"
     )
 
 
