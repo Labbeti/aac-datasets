@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file.
 - First implementation of **WavCaps** dataset.
 - Dataset cards as separate dataclasses for each dataset.
 - Get and set global user paths for root, ffmpeg and ytdl.
+- Base class for all datasets to simplify manipulation of loaded data.
 
 ### Changed
 - Rename `test` subset to `dcase_aac_test`, `analysis` subset to `dcase_aac_analysis` from the DCASE Challenge task 6a, in Clotho dataset.
