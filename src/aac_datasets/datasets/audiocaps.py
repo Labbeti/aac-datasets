@@ -704,8 +704,8 @@ def _download_and_extract_from_youtube(
 ) -> bool:
     """Download audio from youtube with youtube-dl and ffmpeg."""
 
-    # Get audio download link with youtube-dl
-    link = _get_youtube_link(youtube_id)
+    # Get audio download link with youtube-dl, without start time
+    link = _get_youtube_link(youtube_id, None)
     get_url_command = [
         ytdl_path,
         "--youtube-skip-dash-manifest",
