@@ -85,9 +85,11 @@ Here is the **train** subset statistics for AudioCaps, Clotho and MACS datasets 
 <sup>2</sup> The sentences are cleaned (lowercase+remove punctuation) and tokenized using the spacy tokenizer to count the words.
 
 ## Requirements
+
+This package has been developped for Ubuntu 20.04, and it is expected to work on most Linux distributions.
 ### Python packages
 
-The requirements are automatically installed when using pip on this repository.
+Python requirements are automatically installed when using pip on this repository.
 ```
 torch >= 1.10.1
 torchaudio >= 0.10.1
@@ -95,9 +97,8 @@ py7zr >= 0.17.2
 pyyaml >= 6.0
 tqdm >= 4.64.0
 huggingface-hub >= 0.15.1
+numpy >= 1.21.2
 ```
-
-This package has been developped for Ubuntu 20.04, and it is expected to work on most Linux distributions.
 
 ### External requirements (AudioCaps only)
 
