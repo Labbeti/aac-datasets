@@ -101,6 +101,9 @@ class WavCaps(AACDataset[WavCapsItem]):
     - FreeSound (fsd)
     - SoundBible (sb)
 
+    .. warning::
+        WavCaps download is experimental, you might expect errors.
+
     .. code-block:: text
         :caption:  Dataset folder tree
 

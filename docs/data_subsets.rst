@@ -26,7 +26,7 @@ WavCaps
 ########################
 WavCaps contains 6 subsets:
 
-- `"as"` : contains 108K files from AudioSet strongly labeled dataset,
+- as : contains 108K files from AudioSet strongly labeled dataset,
 - bbc : contains 31K files from BBC Sound Effects website,
 - fsd : contains 262K files from FreeSound website,
 - sb : contains 1.2K files from SoundBible website,
