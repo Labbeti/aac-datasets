@@ -393,7 +393,12 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
             raise ValueError(msg)
 
     def _flat_raw_data(self) -> None:
-        raw_data, _ = _flat_raw_data(self._raw_data)
+        raw_data, sizes = _flat_raw_data(self._raw_data)
+        self._raw_data = raw_data
+        self._sizes = sizes
+
+    def _unflat_raw_data(self) -> None:
+        raw_data = _unflat_raw_data(self._raw_data, self._sizes)
         self._raw_data = raw_data
 
     def _load_auto_value(self, column: str, idx: int) -> Any:
@@ -489,7 +494,7 @@ def _unflat_raw_data(
 ) -> Dict[str, List[Any]]:
     if caps_column not in raw_data_flat:
         raise ValueError(
-            f"Cannot flat raw data without '{caps_column}' column. (found only columns {tuple(raw_data.keys())})"
+            f"Cannot flat raw data without '{caps_column}' column. (found only columns {tuple(raw_data_flat.keys())})"
         )
 
     raw_data = {key: [] for key in raw_data_flat.keys()}
