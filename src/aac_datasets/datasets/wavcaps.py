@@ -90,7 +90,7 @@ class WavCapsCard(DatasetCard):
 
 
 class WavCaps(AACDataset[WavCapsItem]):
-    r"""Unofficial WavCaps dataset code.
+    r"""Unofficial WavCaos PyTorch dataset.
 
     WavCaps Paper : https://arxiv.org/pdf/2303.17395.pdf
     HuggingFace source : https://huggingface.co/datasets/cvssp/WavCaps
@@ -102,7 +102,7 @@ class WavCaps(AACDataset[WavCapsItem]):
     - SoundBible (sb)
 
     .. warning::
-        WavCaps download is experimental, you might expect errors.
+        WavCaps download is experimental ; it requires a lot of disk space and can take very long time to download and extract, so you might expect errors.
 
     .. code-block:: text
         :caption:  Dataset folder tree
