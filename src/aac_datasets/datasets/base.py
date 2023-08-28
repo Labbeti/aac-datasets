@@ -74,7 +74,7 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
         self._verbose = verbose
 
         self._post_columns_fns = {}
-        self._flat_indices = []
+        self._sizes = []
 
         if self._flat_captions:
             self._flat_raw_data()
