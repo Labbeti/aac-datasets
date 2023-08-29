@@ -19,7 +19,7 @@ def list_dict_to_dict_list(
         If "intersect", only the intersection of all keys will be used in output.
     :returns: The dictionary of lists.
     """
-    if len(lst) == 0:
+    if len(lst) <= 0:
         return {}
     keys = set(lst[0].keys())
     if key_mode == "same":

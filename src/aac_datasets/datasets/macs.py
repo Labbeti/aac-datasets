@@ -69,6 +69,7 @@ class MACSCard(DatasetCard):
         doi.         = {10.5281/zenodo.5770113}
     }
     """
+    DESCRIPTION = "Multi-Annotator Captioned Soundscapes dataset."
     HOMEPAGE: str = "https://zenodo.org/record/5114771"
     LANGUAGE: Tuple[str, ...] = ("en",)
     LANGUAGE_DETAILS: Tuple[str, ...] = ("en-US",)

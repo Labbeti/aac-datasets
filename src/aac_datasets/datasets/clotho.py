@@ -164,7 +164,7 @@ class Clotho(AACDataset[ClothoItem]):
         :param root: The parent of the dataset root directory.
             Note: The data is stored in the 'CLOTHO_{version}' subdirectory.
             defaults to ".".
-        :param subset: The subset of Clotho to use. Can be one of :attr:`~ClothoCard.subsets`.
+        :param subset: The subset of Clotho to use. Can be one of :attr:`~ClothoCard.SUBSETS`.
             defaults to "dev".
         :param download: Download the dataset if download=True and if the dataset is not already downloaded.
             defaults to False.

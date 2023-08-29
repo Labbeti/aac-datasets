@@ -142,9 +142,9 @@ class AudioCaps(AACDataset[AudioCapsItem]):
     ) -> None:
         """
         :param root: Dataset root directory.
-            The data will be stored in the 'AUDIOCAPS_{SAMPLE_RATE}' subdirectory.
+            The data will be stored in the 'AUDIOCAPS' subdirectory.
             defaults to ".".
-        :param subset: The subset of AudioCaps to use. Can be one of :attr:`~AudioCapsCard.subsets`.
+        :param subset: The subset of AudioCaps to use. Can be one of :attr:`~AudioCapsCard.SUBSETS`.
             defaults to "train".
         :param download: Download the dataset if download=True and if the dataset is not already downloaded.
             defaults to False.

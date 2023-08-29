@@ -171,8 +171,7 @@ class WavCaps(AACDataset[WavCapsItem]):
         :param root: The parent of the dataset root directory.
             The data will be stored in the 'MACS' subdirectory.
             defaults to ".".
-        :param subset: The subset of the dataset. This parameter is here only to accept the same interface than the other datasets.
-            The only valid subset is "full" and other values will raise a ValueError.
+        :param subset: The subset of the dataset. Can be one of :attr:`~WavCapsCard.SUBSETS`.
             defaults to "as".
         :param download: Download the dataset if download=True and if the dataset is not already downloaded.
             defaults to False.
@@ -181,8 +180,8 @@ class WavCaps(AACDataset[WavCapsItem]):
         :param hf_cache_dir: HuggingFace cache directory. If None, use the global value :variable:`~huggingface_hub.constants.HUGGINGFACE_HUB_CACHE`.
             defaults to None.
         :param revision: The HuggingFace revision tag.
-            defaults to WavCapsCard.DEFAULT_REVISION.
-        :param verbose: Verbose level to use. Can be 0 or 1.
+            defaults to :attr:`~WavCapsCard.DEFAULT_REVISION`.
+        :param verbose: Verbose level. Can be 0 or 1.
             defaults to 0.
         """
         if subset not in WavCapsCard.SUBSETS:
