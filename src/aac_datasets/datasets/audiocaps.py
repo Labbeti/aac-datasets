@@ -831,7 +831,7 @@ _AUDIOCAPS_LINKS = {
     },
     "train_v2": {
         "captions": {
-            "url": None,  # TODO
+            "url": "https://raw.githubusercontent.com/Labbeti/aac-datasets/dev/data/train_v2.csv",
             "fname": "train_v2.csv",
         },
     },

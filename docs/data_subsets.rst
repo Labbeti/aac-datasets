@@ -3,7 +3,9 @@ About datasets subsets
 
 AudioCaps
 ########################
-AudioCaps contains only 3 subsets : train, val and test.
+The original AudioCaps dataset contains only 3 subsets : train, val and test.
+
+A fourth subset named train_v2 is another version of the train subset where captions has been manually corrected or deleted. For more details, see paper "CoNeTTE: An efficient Audio Captioning system leveraging multiple datasets with Task Embedding".
 
 Clotho 
 ########################
@@ -20,7 +22,7 @@ Clotho contains 7 subsets:
 
 MACS
 ########################
-MACS contains only 1 subset: full. Its data is usually as additional training data.
+MACS contains only 1 subset: full. Its data is typically used as additional training data.
 
 WavCaps
 ########################

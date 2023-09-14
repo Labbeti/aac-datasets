@@ -2,10 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.4.0] UNRELEASED
+## [0.4.0] 2023-09-14
 ### Added
-- Subsets `dcase_t2a_audio` and `dcase_t2a_captions` from the DCASE Challenge task 6b, in Clotho dataset.
 - First experimental implementation of **WavCaps** dataset.
+- Subsets `dcase_t2a_audio` and `dcase_t2a_captions` from the DCASE Challenge task 6b, in Clotho dataset.
+- Subset `train_v2` for AudioCaps dataset.
 - Dataset cards as separate dataclasses for each dataset.
 - Get and set global user paths for root, ffmpeg and ytdl.
 - Base class for all datasets to simplify manipulation of loaded data.

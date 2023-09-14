@@ -60,6 +60,8 @@ class WavCapsCard(DatasetCard):
         "bbc": 1,
         "fsd": 1,
         "sb": 1,
+        "as_noac": 1,
+        "fsd_nocl": 1,
     }
     CITATION: str = r"""
     @article{mei2023WavCaps,
@@ -100,6 +102,8 @@ class WavCaps(AACDataset[WavCapsItem]):
     - BBC Sound Effects (bbc)
     - FreeSound (fsd)
     - SoundBible (sb)
+    - AudioSet strongly labeled without AudioCaps (as_noac)
+    - FreeSound without Clotho (fsd_nocl)
 
     .. warning::
         WavCaps download is experimental ; it requires a lot of disk space and can take very long time to download and extract, so you might expect errors.
@@ -115,7 +119,7 @@ class WavCaps(AACDataset[WavCapsItem]):
             │   ├── BBC_Sound_Effects
             │   │    └── (31201 flac files, ~142GB)
             │   ├── FreeSound
-            │   │    └── (262300 flac files, ~TODOGB) TODO : verif
+            │   │    └── (262300 flac files, ~1.4TB)
             │   └── SoundBible
             │        └── (1232 flac files, ~884MB)
             ├── Zip_files
