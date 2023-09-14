@@ -26,7 +26,7 @@ import tqdm
 from torch import Tensor
 from torch.hub import download_url_to_file
 from torchaudio.backend.common import AudioMetaData
-from typing_extensions import TypedDict
+from typing_extensions import TypedDict, NotRequired
 
 from aac_datasets.datasets.base import AACDataset, DatasetCard
 from aac_datasets.utils.paths import _get_root, _get_ffmpeg_path, _get_ytdl_path
@@ -49,7 +49,7 @@ class AudioCapsItem(TypedDict, total=True):
     # AudioCaps-specific attributes
     audiocaps_ids: List[int]
     start_time: int
-    tags: List[int]
+    tags: NotRequired[List[int]]
     youtube_id: str
 
 
@@ -211,10 +211,16 @@ class AudioCaps(AACDataset[AudioCapsItem]):
         ]
         raw_data["index"] = list(range(size))
 
+        column_names = list(AudioCapsItem.__required_keys__) + list(
+            AudioCapsItem.__optional_keys__
+        )
+        if not with_tags:
+            column_names.remove("tags")
+
         super().__init__(
             raw_data=raw_data,
             transform=transform,
-            column_names=AudioCapsItem.__required_keys__,
+            column_names=column_names,
             flat_captions=flat_captions,
             sr=sr,
             verbose=verbose,
