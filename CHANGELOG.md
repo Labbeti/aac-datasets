@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.4.0] 2023-09-14
+## [0.4.0] 2023-09-25
 ### Added
 - First experimental implementation of **WavCaps** dataset.
 - Subsets `dcase_t2a_audio` and `dcase_t2a_captions` from the DCASE Challenge task 6b, in Clotho dataset.
