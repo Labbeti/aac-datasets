@@ -132,3 +132,5 @@ dmypy.json
 .vscode/
 
 examples/CLOTHO_v2.1
+core-python*
+core-srun*

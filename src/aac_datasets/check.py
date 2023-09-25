@@ -10,9 +10,11 @@ from typing import Dict, Iterable
 
 import yaml
 
-from aac_datasets.datasets.audiocaps import AudioCaps
-from aac_datasets.datasets.clotho import Clotho
-from aac_datasets.datasets.macs import MACS
+from aac_datasets.datasets.audiocaps import AudioCaps, AudioCapsCard
+from aac_datasets.datasets.clotho import Clotho, ClothoCard
+from aac_datasets.datasets.macs import MACS, MACSCard
+from aac_datasets.datasets.wavcaps import WavCaps, WavCapsCard
+from aac_datasets.utils.paths import get_default_root
 
 
 pylog = logging.getLogger(__name__)
@@ -31,9 +33,10 @@ def check_directory(
     :returns: A dictionary of datanames containing the length of each subset.
     """
     data_infos = [
-        ("audiocaps", AudioCaps),
-        ("clotho", Clotho),
-        ("macs", MACS),
+        (AudioCapsCard.NAME, AudioCaps),
+        (ClothoCard.NAME, Clotho),
+        (MACSCard.NAME, MACS),
+        (WavCapsCard.NAME, WavCaps),
     ]
     data_infos = [
         (ds_name, class_) for ds_name, class_ in data_infos if ds_name in datasets
@@ -87,7 +90,7 @@ def _get_main_check_args() -> Namespace:
     parser.add_argument(
         "--root",
         type=str,
-        default=".",
+        default=get_default_root(),
         help="The path to the parent directory of the datasets.",
     )
     parser.add_argument(
@@ -100,7 +103,7 @@ def _get_main_check_args() -> Namespace:
         "--datasets",
         type=str,
         nargs="+",
-        default=("audiocaps", "clotho", "macs"),
+        default=(AudioCapsCard.NAME, ClothoCard.NAME, MACSCard.NAME, WavCapsCard.NAME),
         help="The datasets to check in root directory.",
     )
 

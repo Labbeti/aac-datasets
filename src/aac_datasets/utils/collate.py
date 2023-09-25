@@ -1,15 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from typing import Any, Dict, List, TypeVar, Union
+from typing import Any, Dict, List, Union
 
 import torch
 
 from torch import Tensor
 from torch.nn import functional as F
 
-
-T = TypeVar("T")
+from aac_datasets.utils.collections import list_dict_to_dict_list
 
 
 class BasicCollate:
@@ -98,33 +97,3 @@ def pad_last_dim(tensor: Tensor, target_length: int, pad_value: float) -> Tensor
     """
     pad_len = max(target_length - tensor.shape[-1], 0)
     return F.pad(tensor, [0, pad_len], value=pad_value)
-
-
-def list_dict_to_dict_list(
-    lst: List[Dict[str, T]],
-    key_mode: str = "intersect",
-) -> Dict[str, List[T]]:
-    """Convert list of dicts to dict of lists.
-
-    :param lst: The list of dict to merge.
-    :param key_mode: Can be "same" or "intersect".
-        If "same", all the dictionaries must contains the same keys otherwise a ValueError will be raised.
-        If "intersect", only the intersection of all keys will be used in output.
-    :returns: The dictionary of lists.
-    """
-    if len(lst) == 0:
-        return {}
-    keys = set(lst[0].keys())
-    if key_mode == "same":
-        if not all(keys == set(item.keys()) for item in lst[1:]):
-            raise ValueError("Invalid keys for batch.")
-    elif key_mode == "intersect":
-        for item in lst[1:]:
-            keys = keys.intersection(item.keys())
-    else:
-        KEY_MODES = ("same", "intersect")
-        raise ValueError(
-            f"Invalid argument key_mode={key_mode}. (expected one of {KEY_MODES})"
-        )
-
-    return {key: [item[key] for item in lst] for key in keys}

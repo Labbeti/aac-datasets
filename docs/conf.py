@@ -95,3 +95,6 @@ intersphinx_mapping = {
     "torch": ("https://pytorch.org/docs/master/", None),
     "torchaudio": ("https://pytorch.org/audio/stable/", None),
 }
+
+# TODO: to be used with sphinx>=7.1
+maximum_signature_line_length = 10

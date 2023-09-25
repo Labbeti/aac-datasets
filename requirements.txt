@@ -5,3 +5,5 @@ torchaudio>=0.10.1
 py7zr>=0.17.2
 pyyaml>=6.0
 tqdm>=4.64.0
+huggingface-hub>=0.15.1
+numpy>=1.21.2

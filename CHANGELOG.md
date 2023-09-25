@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.4.0] 2023-09-25
+### Added
+- First experimental implementation of **WavCaps** dataset.
+- Subsets `dcase_t2a_audio` and `dcase_t2a_captions` from the DCASE Challenge task 6b, in Clotho dataset.
+- Subset `train_v2` for AudioCaps dataset.
+- Dataset cards as separate dataclasses for each dataset.
+- Get and set global user paths for root, ffmpeg and ytdl.
+- Base class for all datasets to simplify manipulation of loaded data.
+
+### Changed
+- Rename `test` subset to `dcase_aac_test`, `analysis` subset to `dcase_aac_analysis` from the DCASE Challenge task 6a, in Clotho dataset.
+- Function `get_install_info` now returns `package_path`.
+
 ## [0.3.3] 2023-05-11
 ### Added
 - Script check.py now check if the audio files exists.

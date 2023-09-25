@@ -29,13 +29,15 @@ dependencies = [
     "py7zr>=0.17.2",
     "pyyaml>=6.0",
     "tqdm>=4.64.0",
+    "huggingface-hub>=0.15.1",
+    "numpy>=1.21.2",
 ]
 dynamic = ["version"]
 
 [project.urls]
 Homepage = "https://pypi.org/project/aac-datasets/"
 Documentation = "https://aac-datasets.readthedocs.io/"
-Repository = "https://github.com//Labbeti/aac-datasets.git"
+Repository = "https://github.com/Labbeti/aac-datasets.git"
 Changelog = "https://github.com/Labbeti/aac-datasets/blob/main/CHANGELOG.md"
 
 [project.scripts]
@@ -46,12 +48,12 @@ aac-datasets-info = "aac_datasets.info:print_install_info"
 
 [project.optional-dependencies]
 dev = [
-  "pytest==6.2.5",
-  "flake8==4.0.1",
-  "click==8.0.4",
-  "black==22.10.0",
-  "ipykernel==6.9.1",
-  "twine==4.0.1",
+    "pytest==6.2.5",
+    "flake8==4.0.1",
+    "click==8.0.4",
+    "black==22.10.0",
+    "ipykernel==6.9.1",
+    "twine==4.0.1",
 ]
 
 [tool.setuptools.packages.find]
