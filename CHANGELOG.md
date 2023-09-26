@@ -1,6 +1,9 @@
 # Change log
 
 All notable changes to this project will be documented in this file.
+## [0.4.1] UNRELEASED
+### Changed
+- Set log level to WARNING if verbose<=0 in check.py and download.py scripts.
 
 ## [0.4.0] 2023-09-25
 ### Added

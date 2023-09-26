@@ -261,15 +261,32 @@ def _get_main_download_args() -> Namespace:
     return args
 
 
-def _main_download() -> None:
+def _setup_logging(verbose: int = 1) -> None:
     format_ = "[%(asctime)s][%(name)s][%(levelname)s] - %(message)s"
     handler = logging.StreamHandler(sys.stdout)
     handler.setFormatter(logging.Formatter(format_))
     pkg_logger = logging.getLogger("aac_datasets")
-    pkg_logger.setLevel(logging.DEBUG)
-    pkg_logger.addHandler(handler)
 
+    found = False
+    for handler in pkg_logger.handlers:
+        if isinstance(handler, logging.StreamHandler) and handler.stream is sys.stdout:
+            found = True
+            break
+    if not found:
+        pkg_logger.addHandler(handler)
+
+    if verbose <= 0:
+        level = logging.WARNING
+    elif verbose == 1:
+        level = logging.INFO
+    else:
+        level = logging.DEBUG
+    pkg_logger.setLevel(level)
+
+
+def _main_download() -> None:
     args = _get_main_download_args()
+    _setup_logging(args.verbose)
 
     if args.verbose >= 2:
         pylog.debug(yaml.dump({"Arguments": args.__dict__}, sort_keys=False))
