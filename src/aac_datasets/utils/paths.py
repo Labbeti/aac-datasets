@@ -20,7 +20,7 @@ __DEFAULT_PATHS: Dict[str, Dict[str, Optional[str]]] = {
     "ytdl": {
         "user": None,
         "env": "AAC_DATASETS_YTDL_PATH",
-        "package": "youtube-dl",
+        "package": "ytdlp",
     },
     "ffmpeg": {
         "user": None,

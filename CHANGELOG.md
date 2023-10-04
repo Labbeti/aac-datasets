@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 ## [0.4.1] UNRELEASED
 ### Changed
 - Set log level to WARNING if verbose<=0 in check.py and download.py scripts.
+- Update download message for AudioCaps.
+- Use `ytdlp` instead of `youtube-dl` as backend to download AudioCaps audio files.
 
 ## [0.4.0] 2023-09-25
 ### Added

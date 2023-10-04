@@ -599,7 +599,9 @@ def _prepare_audiocaps_dataset(
     n_already_ok = 0
     n_already_err = 0
 
-    for line in tqdm.tqdm(captions_data, total=n_samples, disable=verbose < 1):
+    for i, line in enumerate(
+        tqdm.tqdm(captions_data, total=n_samples, disable=verbose < 1)
+    ):
         # Keys: audiocap_id, youtube_id, start_time, caption
         audiocap_id, youtube_id, start_time = [
             line[key] for key in ("audiocap_id", "youtube_id", "start_time")
@@ -613,6 +615,7 @@ def _prepare_audiocaps_dataset(
                 f'Start time "{start_time}" is not an integer (audiocap_id={audiocap_id}, youtube_id={youtube_id}).'
             )
         start_time = int(start_time)
+        prefix = f"[{audiocap_id:6s};{i:5d}/{n_samples}] "
 
         if not osp.isfile(fpath):
             success = _download_and_extract_from_youtube(
@@ -630,41 +633,42 @@ def _prepare_audiocaps_dataset(
                 if valid_file:
                     if verbose >= 2:
                         pylog.debug(
-                            f"[{audiocap_id:6s}] File '{youtube_id}' has been downloaded and verified."
+                            f"{prefix}File '{youtube_id}' has been downloaded and verified."
                         )
                     n_download_ok += 1
                 else:
                     if verbose >= 1:
                         pylog.warning(
-                            f"[{audiocap_id:6s}] File '{youtube_id}' has been downloaded but it is not valid and it will be removed."
+                            f"{prefix}File '{youtube_id}' has been downloaded but it is not valid and it will be removed."
                         )
                     os.remove(fpath)
                     n_download_err += 1
             else:
-                pylog.error(
-                    f"[{audiocap_id:6s}] Cannot extract audio from {youtube_id}."
-                )
+                if verbose >= 0:
+                    pylog.warning(
+                        f"{prefix}Cannot extract audio from {youtube_id}. (maybe the source video has been removed?)"
+                    )
                 n_download_err += 1
 
         elif verify_files:
             valid_file = _check_file(fpath, sr)
             if valid_file:
-                if verbose >= 2:
-                    pylog.debug(
-                        f"[{audiocap_id:6s}] File '{youtube_id}' is already downloaded and has been verified."
+                if verbose >= 1:
+                    pylog.info(
+                        f"{prefix}File '{youtube_id}' is already downloaded and has been verified."
                     )
                 n_already_ok += 1
             else:
                 if verbose >= 1:
                     pylog.warning(
-                        f"[{audiocap_id:6s}] File '{youtube_id}' is already downloaded but it is not valid and will be removed."
+                        f"{prefix}File '{youtube_id}' is already downloaded but it is not valid and will be removed."
                     )
                 os.remove(fpath)
                 n_already_err += 1
         else:
             if verbose >= 2:
                 pylog.debug(
-                    f"[{audiocap_id:6s}] File '{youtube_id}' is already downloaded but it is not verified due to verify_files={verify_files}."
+                    f"{prefix}File '{youtube_id}' is already downloaded but it is not verified due to verify_files={verify_files}."
                 )
             n_already_ok += 1
 

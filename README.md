@@ -102,8 +102,9 @@ numpy >= 1.21.2
 
 ### External requirements (AudioCaps only)
 
-The external requirements needed to download **AudioCaps** are **ffmpeg** and **youtube-dl** (yt-dlp should work too).
-These two programs can be download on Ubuntu using `sudo apt install ffmpeg youtube-dl`.
+The external requirements needed to download **AudioCaps** are **ffmpeg** and **yt-dlp**.
+**ffmpeg** can be install on Ubuntu using `sudo apt install ffmpeg` and **yt-dlp** from the [official repo](https://github.com/yt-dlp/yt-dlp).
+ <!-- programs can be downloaded on Ubuntu using `sudo apt install ffmpeg`. -->
 
 You can also override their paths for AudioCaps:
 ```python
@@ -111,7 +112,7 @@ from aac_datasets import AudioCaps
 dataset = AudioCaps(
     download=True,
     ffmpeg_path="/my/path/to/ffmpeg",
-    ytdl_path="/my/path/to/youtube_dl",
+    ytdl_path="/my/path/to/ytdlp",
 )
 ```
 
