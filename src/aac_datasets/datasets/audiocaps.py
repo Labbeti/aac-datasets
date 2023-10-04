@@ -620,14 +620,14 @@ def _prepare_audiocaps_dataset(
                         )
                     n_download_ok += 1
                 else:
-                    if verbose >= 1:
+                    if verbose >= 2:
                         pylog.warning(
                             f"{prefix}File '{youtube_id}' has been downloaded but it is not valid and it will be removed."
                         )
                     os.remove(fpath)
                     n_download_err += 1
             else:
-                if verbose >= 0:
+                if verbose >= 2:
                     pylog.warning(
                         f"{prefix}Cannot extract audio from {youtube_id}. (maybe the source video has been removed?)"
                     )
@@ -636,13 +636,13 @@ def _prepare_audiocaps_dataset(
         elif verify_files:
             valid_file = _check_file(fpath, sr)
             if valid_file:
-                if verbose >= 1:
+                if verbose >= 2:
                     pylog.info(
                         f"{prefix}File '{youtube_id}' is already downloaded and has been verified."
                     )
                 n_already_ok += 1
             else:
-                if verbose >= 1:
+                if verbose >= 2:
                     pylog.warning(
                         f"{prefix}File '{youtube_id}' is already downloaded but it is not valid and will be removed."
                     )
