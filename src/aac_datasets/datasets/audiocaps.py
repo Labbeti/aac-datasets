@@ -542,25 +542,8 @@ def _prepare_audiocaps_dataset(
     if not osp.isdir(root):
         raise RuntimeError(f"Cannot find root directory '{root}'.")
 
-    try:
-        subprocess.check_call(
-            [ytdl_path, "--help"],
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-        )
-    except (CalledProcessError, PermissionError, FileNotFoundError) as err:
-        pylog.error(f"Cannot use youtube-dl path '{ytdl_path}'. ({err})")
-        raise err
-
-    try:
-        subprocess.check_call(
-            [ffmpeg_path, "--help"],
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-        )
-    except (CalledProcessError, PermissionError, FileNotFoundError) as err:
-        pylog.error(f"Cannot use ffmpeg path '{ffmpeg_path}'. ({err})")
-        raise err
+    _check_ytdl(ytdl_path)
+    _check_ffmpeg(ffmpeg_path)
 
     if _is_prepared(root, subset, sr, -1) and not force:
         return None
@@ -765,6 +748,30 @@ def _download_and_extract_from_youtube(
         return exitcode == 0
     except (CalledProcessError, PermissionError):
         return False
+
+
+def _check_ytdl(ytdl_path: str) -> None:
+    try:
+        subprocess.check_call(
+            [ytdl_path, "--help"],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+    except (CalledProcessError, PermissionError, FileNotFoundError) as err:
+        pylog.error(f"Invalid ytdlp path '{ytdl_path}'. ({err})")
+        raise err
+
+
+def _check_ffmpeg(ffmpeg_path: str) -> None:
+    try:
+        subprocess.check_call(
+            [ffmpeg_path, "--help"],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+    except (CalledProcessError, PermissionError, FileNotFoundError) as err:
+        pylog.error(f"Invalid ffmpeg path '{ffmpeg_path}'. ({err})")
+        raise err
 
 
 def _check_file(fpath: str, expected_sr: Optional[int]) -> bool:
