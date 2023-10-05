@@ -25,8 +25,13 @@ import tqdm
 
 from torch import Tensor
 from torch.hub import download_url_to_file
-from torchaudio.backend.common import AudioMetaData
 from typing_extensions import TypedDict, NotRequired
+
+try:
+    # To support torchaudio >=2.1.0
+    from torchaudio import AudioMetaData  # type: ignore
+except ImportError:
+    from torchaudio.backend.common import AudioMetaData
 
 from aac_datasets.datasets.base import AACDataset, DatasetCard
 from aac_datasets.utils.paths import _get_root, _get_ffmpeg_path, _get_ytdl_path

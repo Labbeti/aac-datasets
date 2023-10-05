@@ -21,8 +21,13 @@ from typing import (
 import torchaudio
 import tqdm
 
-from torchaudio.backend.common import AudioMetaData
 from typing_extensions import TypedDict
+
+try:
+    # To support torchaudio >=2.1.0
+    from torchaudio import AudioMetaData  # type: ignore
+except ImportError:
+    from torchaudio.backend.common import AudioMetaData
 
 from torch import Tensor
 from torch.utils.data.dataset import Dataset
