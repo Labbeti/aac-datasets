@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 ## [0.4.1] UNRELEASED
+### Added
+- `DOWNLOAD_AUDIO` class variable for compatibility with [audiocaps-download 1.0](https://github.com/MorenoLaQuatra/audiocaps-download).
+
 ### Changed
 - Set log level to WARNING if verbose<=0 in check.py and download.py scripts.
 - Update download message for AudioCaps.

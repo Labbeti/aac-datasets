@@ -128,7 +128,7 @@ aac-datasets-download --root "." clotho --subsets "dev"
 
 ## Additional information
 ### Compatibility with audiocaps-download
-If you want to use [audiocaps-download](https://github.com/MorenoLaQuatra/audiocaps-download) package to download AudioCaps, you will have to respect the AudioCaps folder tree:
+If you want to use [audiocaps-download 1.0](https://github.com/MorenoLaQuatra/audiocaps-download) package to download AudioCaps, you will have to respect the AudioCaps folder tree:
 ```python
 from audiocaps_download import Downloader
 root = "your/path/to/root"
@@ -136,11 +136,12 @@ downloader = Downloader(root_path=f"{root}/AUDIOCAPS/audio_32000Hz/", n_jobs=16)
 downloader.download(format="wav")
 ```
 
-Then set the correct audio format before init AudioCaps :
+Then disable audio download and set the correct audio format before init AudioCaps :
 ```python
 from aac_datasets import AudioCaps
 AudioCaps.AUDIO_FORMAT = "wav"
-dataset = AudioCaps(root=root)
+AudioCaps.DOWNLOAD_AUDIO = False  # this will only download labels and metadata files
+dataset = AudioCaps(root=root, subset="train", download=True)
 ```
 
 ## References

@@ -198,13 +198,13 @@ class Clotho(AACDataset[ClothoItem]):
 
         if download:
             _prepare_clotho_dataset(
-                root,
-                version,
-                subset,
-                verbose,
-                Clotho.FORCE_PREPARE_DATA,
-                Clotho.VERIFY_FILES,
-                Clotho.CLEAN_ARCHIVES,
+                root=root,
+                version=version,
+                subset=subset,
+                verbose=verbose,
+                force=Clotho.FORCE_PREPARE_DATA,
+                verify_files=Clotho.VERIFY_FILES,
+                clean_archives=Clotho.CLEAN_ARCHIVES,
             )
 
         # Exclude some columns containing empty values for several subsets
@@ -242,7 +242,9 @@ class Clotho(AACDataset[ClothoItem]):
         for name in removed_columns:
             column_names.remove(name)
 
-        raw_data = _load_clotho_dataset(root, version, subset, verbose)
+        raw_data = _load_clotho_dataset(
+            root=root, version=version, subset=subset, verbose=verbose
+        )
 
         size = len(next(iter(raw_data.values())))
         raw_data["dataset"] = [ClothoCard.NAME] * size

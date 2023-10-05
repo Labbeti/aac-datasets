@@ -147,14 +147,19 @@ class MACS(AACDataset[MACSItem]):
 
         if download:
             _prepare_macs_dataset(
-                root,
-                subset,
-                verbose,
-                MACS.FORCE_PREPARE_DATA,
-                MACS.VERIFY_FILES,
-                MACS.CLEAN_ARCHIVES,
+                root=root,
+                subset=subset,
+                verbose=verbose,
+                force=MACS.FORCE_PREPARE_DATA,
+                verify_files=MACS.VERIFY_FILES,
+                clean_archives=MACS.CLEAN_ARCHIVES,
             )
-        raw_data, annotator_id_to_competence = _load_macs_dataset(root, subset, verbose)
+
+        raw_data, annotator_id_to_competence = _load_macs_dataset(
+            root=root,
+            subset=subset,
+            verbose=verbose,
+        )
 
         audio_dpath = _get_audio_dpath(root)
         size = len(next(iter(raw_data.values())))

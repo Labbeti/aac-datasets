@@ -124,6 +124,7 @@ class AudioCaps(AACDataset[AudioCapsItem]):
     AUDIO_DURATION: ClassVar[float] = 10.0
     AUDIO_FORMAT: ClassVar[str] = "flac"
     AUDIO_N_CHANNELS: ClassVar[int] = 1
+    DOWNLOAD_AUDIO: ClassVar[bool] = True
 
     # Initialization
     def __init__(
@@ -179,28 +180,29 @@ class AudioCaps(AACDataset[AudioCapsItem]):
 
         if download:
             _prepare_audiocaps_dataset(
-                root,
-                subset,
-                sr,
-                with_tags,
-                verbose,
-                AudioCaps.FORCE_PREPARE_DATA,
-                ytdl_path,
-                ffmpeg_path,
-                AudioCaps.AUDIO_FORMAT,
-                AudioCaps.AUDIO_DURATION,
-                AudioCaps.AUDIO_N_CHANNELS,
-                AudioCaps.VERIFY_FILES,
+                root=root,
+                subset=subset,
+                sr=sr,
+                with_tags=with_tags,
+                verbose=verbose,
+                force=AudioCaps.FORCE_PREPARE_DATA,
+                ytdl_path=ytdl_path,
+                ffmpeg_path=ffmpeg_path,
+                audio_format=AudioCaps.AUDIO_FORMAT,
+                audio_duration=AudioCaps.AUDIO_DURATION,
+                n_channels=AudioCaps.AUDIO_N_CHANNELS,
+                verify_files=AudioCaps.VERIFY_FILES,
+                download_audio=AudioCaps.DOWNLOAD_AUDIO,
             )
 
         raw_data, index_to_tagname = _load_audiocaps_dataset(
-            root,
-            subset,
-            sr,
-            with_tags,
-            exclude_removed_audio,
-            verbose,
-            AudioCaps.AUDIO_FORMAT,
+            root=root,
+            subset=subset,
+            sr=sr,
+            with_tags=with_tags,
+            exclude_removed_audio=exclude_removed_audio,
+            verbose=verbose,
+            audio_format=AudioCaps.AUDIO_FORMAT,
         )
         audio_subset_dpath = _get_audio_subset_dpath(root, subset, sr)
         size = len(next(iter(raw_data.values())))
@@ -538,6 +540,7 @@ def _prepare_audiocaps_dataset(
     audio_duration: float = 10.0,
     n_channels: int = 1,
     verify_files: bool = False,
+    download_audio: bool = True,
 ) -> None:
     if not osp.isdir(root):
         raise RuntimeError(f"Cannot find root directory '{root}'.")
@@ -565,95 +568,107 @@ def _prepare_audiocaps_dataset(
             )
         download_url_to_file(url, captions_fpath, progress=verbose >= 1)
 
-    start = time.perf_counter()
-    with open(captions_fpath, "r") as file:
-        n_samples = len(file.readlines())
+    if download_audio:
+        start = time.perf_counter()
+        with open(captions_fpath, "r") as file:
+            n_samples = len(file.readlines())
 
-    if verbose >= 1:
-        pylog.info(f"Start downloading files for {subset} AudioCaps split.")
+        if verbose >= 1:
+            pylog.info(f"Start downloading audio files for {subset} AudioCaps split.")
 
-    with open(captions_fpath, "r") as file:
-        # Download audio files
-        reader = csv.DictReader(file)
-        captions_data = list(reader)
+        with open(captions_fpath, "r") as file:
+            # Download audio files
+            reader = csv.DictReader(file)
+            captions_data = list(reader)
 
-    n_download_ok = 0
-    n_download_err = 0
-    n_already_ok = 0
-    n_already_err = 0
+        n_download_ok = 0
+        n_download_err = 0
+        n_already_ok = 0
+        n_already_err = 0
 
-    for i, line in enumerate(
-        tqdm.tqdm(captions_data, total=n_samples, disable=verbose < 1)
-    ):
-        # Keys: audiocap_id, youtube_id, start_time, caption
-        audiocap_id, youtube_id, start_time = [
-            line[key] for key in ("audiocap_id", "youtube_id", "start_time")
-        ]
-        fpath = osp.join(
-            audio_subset_dpath,
-            f"{youtube_id}_{start_time}.{audio_format}",
-        )
-        if not start_time.isdigit():
-            raise RuntimeError(
-                f'Start time "{start_time}" is not an integer (audiocap_id={audiocap_id}, youtube_id={youtube_id}).'
+        for i, line in enumerate(
+            tqdm.tqdm(captions_data, total=n_samples, disable=verbose < 1)
+        ):
+            # Keys: audiocap_id, youtube_id, start_time, caption
+            audiocap_id, youtube_id, start_time = [
+                line[key] for key in ("audiocap_id", "youtube_id", "start_time")
+            ]
+            fpath = osp.join(
+                audio_subset_dpath,
+                f"{youtube_id}_{start_time}.{audio_format}",
             )
-        start_time = int(start_time)
-        prefix = f"[{audiocap_id:6s};{i:5d}/{n_samples}] "
+            if not start_time.isdigit():
+                raise RuntimeError(
+                    f'Start time "{start_time}" is not an integer (audiocap_id={audiocap_id}, youtube_id={youtube_id}).'
+                )
+            start_time = int(start_time)
+            prefix = f"[{audiocap_id:6s};{i:5d}/{n_samples}] "
 
-        if not osp.isfile(fpath):
-            success = _download_and_extract_from_youtube(
-                youtube_id,
-                fpath,
-                start_time,
-                duration=audio_duration,
-                sr=sr,
-                ytdl_path=ytdl_path,
-                ffmpeg_path=ffmpeg_path,
-                n_channels=n_channels,
-            )
-            if success:
-                valid_file = _check_file(fpath, sr)
-                if valid_file:
-                    if verbose >= 2:
-                        pylog.debug(
-                            f"{prefix}File '{youtube_id}' has been downloaded and verified."
-                        )
-                    n_download_ok += 1
+            if not osp.isfile(fpath):
+                success = _download_and_extract_from_youtube(
+                    youtube_id=youtube_id,
+                    fpath_out=fpath,
+                    start_time=start_time,
+                    duration=audio_duration,
+                    sr=sr,
+                    ytdl_path=ytdl_path,
+                    ffmpeg_path=ffmpeg_path,
+                    n_channels=n_channels,
+                )
+                if success:
+                    valid_file = _check_file(fpath, sr)
+                    if valid_file:
+                        if verbose >= 2:
+                            pylog.debug(
+                                f"{prefix}File '{youtube_id}' has been downloaded and verified."
+                            )
+                        n_download_ok += 1
+                    else:
+                        if verbose >= 2:
+                            pylog.warning(
+                                f"{prefix}File '{youtube_id}' has been downloaded but it is not valid and it will be removed."
+                            )
+                        os.remove(fpath)
+                        n_download_err += 1
                 else:
                     if verbose >= 2:
                         pylog.warning(
-                            f"{prefix}File '{youtube_id}' has been downloaded but it is not valid and it will be removed."
+                            f"{prefix}Cannot extract audio from {youtube_id}. (maybe the source video has been removed?)"
+                        )
+                    n_download_err += 1
+
+            elif verify_files:
+                valid_file = _check_file(fpath, sr)
+                if valid_file:
+                    if verbose >= 2:
+                        pylog.info(
+                            f"{prefix}File '{youtube_id}' is already downloaded and has been verified."
+                        )
+                    n_already_ok += 1
+                else:
+                    if verbose >= 2:
+                        pylog.warning(
+                            f"{prefix}File '{youtube_id}' is already downloaded but it is not valid and will be removed."
                         )
                     os.remove(fpath)
-                    n_download_err += 1
+                    n_already_err += 1
             else:
                 if verbose >= 2:
-                    pylog.warning(
-                        f"{prefix}Cannot extract audio from {youtube_id}. (maybe the source video has been removed?)"
-                    )
-                n_download_err += 1
-
-        elif verify_files:
-            valid_file = _check_file(fpath, sr)
-            if valid_file:
-                if verbose >= 2:
-                    pylog.info(
-                        f"{prefix}File '{youtube_id}' is already downloaded and has been verified."
+                    pylog.debug(
+                        f"{prefix}File '{youtube_id}' is already downloaded but it is not verified due to verify_files={verify_files}."
                     )
                 n_already_ok += 1
-            else:
-                if verbose >= 2:
-                    pylog.warning(
-                        f"{prefix}File '{youtube_id}' is already downloaded but it is not valid and will be removed."
-                    )
-                os.remove(fpath)
-                n_already_err += 1
-        else:
-            if verbose >= 2:
-                pylog.debug(
-                    f"{prefix}File '{youtube_id}' is already downloaded but it is not verified due to verify_files={verify_files}."
-                )
-            n_already_ok += 1
+
+        if verbose >= 1:
+            duration = int(time.perf_counter() - start)
+            pylog.info(
+                f"Download and preparation of AudioCaps for subset '{subset}' done in {duration}s."
+            )
+            pylog.info(f"- {n_download_ok} downloads success,")
+            pylog.info(f"- {n_download_err} downloads failed,")
+            pylog.info(f"- {n_already_ok} already downloaded,")
+            pylog.info(f"- {n_already_err} already downloaded errors,")
+            pylog.info(f"- {n_samples} total samples.")
 
     if with_tags:
         for key in ("class_labels_indices", "unbalanced"):
@@ -665,17 +680,6 @@ def _prepare_audiocaps_dataset(
                 if verbose >= 1:
                     pylog.info(f"Downloading file '{fname}'...")
                 download_url_to_file(url, fpath, progress=verbose >= 1)
-
-    if verbose >= 1:
-        duration = int(time.perf_counter() - start)
-        pylog.info(
-            f"Download and preparation of AudioCaps for subset '{subset}' done in {duration}s."
-        )
-        pylog.info(f"- {n_download_ok} downloads success,")
-        pylog.info(f"- {n_download_err} downloads failed,")
-        pylog.info(f"- {n_already_ok} already downloaded,")
-        pylog.info(f"- {n_already_err} already downloaded errors,")
-        pylog.info(f"- {n_samples} total samples.")
 
     if verbose >= 2:
         pylog.debug(

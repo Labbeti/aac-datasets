@@ -197,19 +197,25 @@ class WavCaps(AACDataset[WavCapsItem]):
 
         if download:
             _prepare_wavcaps_dataset(
-                root,
-                subset,
-                revision,
-                hf_cache_dir,
-                WavCaps.RESUME_DL,
-                WavCaps.FORCE_PREPARE_DATA,
-                WavCaps.VERIFY_FILES,
-                WavCaps.CLEAN_ARCHIVES,
-                WavCaps.ZIP_PATH,
-                verbose,
+                root=root,
+                subset=subset,
+                revision=revision,
+                hf_cache_dir=hf_cache_dir,
+                resume_dl=WavCaps.RESUME_DL,
+                force=WavCaps.FORCE_PREPARE_DATA,
+                verify_files=WavCaps.VERIFY_FILES,
+                clean_archives=WavCaps.CLEAN_ARCHIVES,
+                zip_path=WavCaps.ZIP_PATH,
+                verbose=verbose,
             )
 
-        raw_data = _load_wavcaps_dataset(root, hf_cache_dir, revision, subset, verbose)
+        raw_data = _load_wavcaps_dataset(
+            root=root,
+            hf_cache_dir=hf_cache_dir,
+            revision=revision,
+            subset=subset,
+            verbose=verbose,
+        )
 
         size = len(next(iter(raw_data.values())))
         raw_data["dataset"] = [WavCapsCard.NAME] * size
