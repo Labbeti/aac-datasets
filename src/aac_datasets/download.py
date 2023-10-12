@@ -23,8 +23,8 @@ from aac_datasets.utils.paths import (
 pylog = logging.getLogger(__name__)
 
 
-_TRUE_VALUES = ("true", "1", "t")
-_FALSE_VALUES = ("false", "0", "f")
+_TRUE_VALUES = ("true", "1", "t", "yes", "y")
+_FALSE_VALUES = ("false", "0", "f", "no", "n")
 
 
 def download_audiocaps(
