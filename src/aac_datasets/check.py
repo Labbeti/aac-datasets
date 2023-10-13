@@ -3,7 +3,6 @@
 
 import logging
 import os.path as osp
-import sys
 
 from argparse import ArgumentParser, Namespace
 from typing import Dict, Iterable

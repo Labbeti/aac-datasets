@@ -8,7 +8,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 - Set log level to WARNING if verbose<=0 in check.py and download.py scripts.
 - Update download message for AudioCaps. ([#1](https://github.com/Labbeti/aac-datasets/issues/1))
-- Use `ytdlp` instead of `youtube-dl` as backend to download AudioCaps audio files.
+- Use `ytdlp` instead of `youtube-dl` as backend to download AudioCaps audio files.. ([#1](https://github.com/Labbeti/aac-datasets/issues/1))
 
 ## [0.4.0] 2023-09-25
 ### Added
