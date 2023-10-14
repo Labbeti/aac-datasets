@@ -14,7 +14,7 @@ from aac_datasets.datasets.audiocaps import AudioCaps, AudioCapsCard
 from aac_datasets.datasets.clotho import Clotho, ClothoCard
 from aac_datasets.datasets.macs import MACS, MACSCard
 from aac_datasets.datasets.wavcaps import WavCaps, WavCapsCard, HUGGINGFACE_HUB_CACHE
-from aac_datasets.utils.cmdline import str_to_bool, setup_logging
+from aac_datasets.utils.cmdline import _str_to_bool, _setup_logging
 from aac_datasets.utils.paths import (
     get_default_root,
     get_default_ffmpeg_path,
@@ -144,7 +144,7 @@ def _get_main_download_args() -> Namespace:
     )
     parser.add_argument(
         "--force",
-        type=str_to_bool,
+        type=_str_to_bool,
         default=False,
         help="Force download of files, even if they are already downloaded.",
     )
@@ -170,7 +170,7 @@ def _get_main_download_args() -> Namespace:
     )
     audiocaps_subparser.add_argument(
         "--with_tags",
-        type=str_to_bool,
+        type=_str_to_bool,
         default=True,
         help="Download additional audioset tags corresponding to audiocaps audio.",
     )
@@ -193,7 +193,7 @@ def _get_main_download_args() -> Namespace:
     )
     clotho_subparser.add_argument(
         "--clean_archives",
-        type=str_to_bool,
+        type=_str_to_bool,
         default=False,
         help="Remove archives files after extraction.",
     )
@@ -209,7 +209,7 @@ def _get_main_download_args() -> Namespace:
     macs_subparser = subparsers.add_parser(MACSCard.NAME)
     macs_subparser.add_argument(
         "--clean_archives",
-        type=str_to_bool,
+        type=_str_to_bool,
         default=False,
         help="Remove archives files after extraction.",
     )
@@ -218,7 +218,7 @@ def _get_main_download_args() -> Namespace:
     wavcaps_subparser = subparsers.add_parser(WavCapsCard.NAME)
     wavcaps_subparser.add_argument(
         "--clean_archives",
-        type=str_to_bool,
+        type=_str_to_bool,
         default=False,
         help="Remove archives files after extraction.",
     )
@@ -249,7 +249,7 @@ def _get_main_download_args() -> Namespace:
 
 def _main_download() -> None:
     args = _get_main_download_args()
-    setup_logging(aac_datasets.__package__, args.verbose)
+    _setup_logging(aac_datasets.__package__, args.verbose)
 
     if args.verbose >= 2:
         pylog.debug(yaml.dump({"Arguments": args.__dict__}, sort_keys=False))
