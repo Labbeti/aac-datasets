@@ -2,17 +2,19 @@
 # -*- coding: utf-8 -*-
 
 import logging
-import sys
 
 from argparse import ArgumentParser, Namespace
 from typing import Dict, Iterable, Optional
 
 import yaml
 
+import aac_datasets
+
 from aac_datasets.datasets.audiocaps import AudioCaps, AudioCapsCard
 from aac_datasets.datasets.clotho import Clotho, ClothoCard
 from aac_datasets.datasets.macs import MACS, MACSCard
 from aac_datasets.datasets.wavcaps import WavCaps, WavCapsCard, HUGGINGFACE_HUB_CACHE
+from aac_datasets.utils.cmdline import str_to_bool, setup_logging
 from aac_datasets.utils.paths import (
     get_default_root,
     get_default_ffmpeg_path,
@@ -21,10 +23,6 @@ from aac_datasets.utils.paths import (
 
 
 pylog = logging.getLogger(__name__)
-
-
-_TRUE_VALUES = ("true", "1", "t", "yes", "y")
-_FALSE_VALUES = ("false", "0", "f", "no", "n")
 
 
 def download_audiocaps(
@@ -127,18 +125,6 @@ def download_wavcaps(
     return datasets
 
 
-def _str_to_bool(s: str) -> bool:
-    s = str(s).strip().lower()
-    if s in _TRUE_VALUES:
-        return True
-    elif s in _FALSE_VALUES:
-        return False
-    else:
-        raise ValueError(
-            f"Invalid argument s={s}. (expected one of {_TRUE_VALUES + _FALSE_VALUES})"
-        )
-
-
 def _get_main_download_args() -> Namespace:
     parser = ArgumentParser(
         description="Download a dataset at specified root directory.",
@@ -158,7 +144,7 @@ def _get_main_download_args() -> Namespace:
     )
     parser.add_argument(
         "--force",
-        type=_str_to_bool,
+        type=str_to_bool,
         default=False,
         help="Force download of files, even if they are already downloaded.",
     )
@@ -184,7 +170,7 @@ def _get_main_download_args() -> Namespace:
     )
     audiocaps_subparser.add_argument(
         "--with_tags",
-        type=_str_to_bool,
+        type=str_to_bool,
         default=True,
         help="Download additional audioset tags corresponding to audiocaps audio.",
     )
@@ -207,7 +193,7 @@ def _get_main_download_args() -> Namespace:
     )
     clotho_subparser.add_argument(
         "--clean_archives",
-        type=_str_to_bool,
+        type=str_to_bool,
         default=False,
         help="Remove archives files after extraction.",
     )
@@ -223,7 +209,7 @@ def _get_main_download_args() -> Namespace:
     macs_subparser = subparsers.add_parser(MACSCard.NAME)
     macs_subparser.add_argument(
         "--clean_archives",
-        type=_str_to_bool,
+        type=str_to_bool,
         default=False,
         help="Remove archives files after extraction.",
     )
@@ -232,7 +218,7 @@ def _get_main_download_args() -> Namespace:
     wavcaps_subparser = subparsers.add_parser(WavCapsCard.NAME)
     wavcaps_subparser.add_argument(
         "--clean_archives",
-        type=_str_to_bool,
+        type=str_to_bool,
         default=False,
         help="Remove archives files after extraction.",
     )
@@ -261,32 +247,9 @@ def _get_main_download_args() -> Namespace:
     return args
 
 
-def _setup_logging(verbose: int = 1) -> None:
-    format_ = "[%(asctime)s][%(name)s][%(levelname)s] - %(message)s"
-    handler = logging.StreamHandler(sys.stdout)
-    handler.setFormatter(logging.Formatter(format_))
-    pkg_logger = logging.getLogger("aac_datasets")
-
-    found = False
-    for handler in pkg_logger.handlers:
-        if isinstance(handler, logging.StreamHandler) and handler.stream is sys.stdout:
-            found = True
-            break
-    if not found:
-        pkg_logger.addHandler(handler)
-
-    if verbose <= 0:
-        level = logging.WARNING
-    elif verbose == 1:
-        level = logging.INFO
-    else:
-        level = logging.DEBUG
-    pkg_logger.setLevel(level)
-
-
 def _main_download() -> None:
     args = _get_main_download_args()
-    _setup_logging(args.verbose)
+    setup_logging(aac_datasets.__package__, args.verbose)
 
     if args.verbose >= 2:
         pylog.debug(yaml.dump({"Arguments": args.__dict__}, sort_keys=False))
@@ -336,7 +299,12 @@ def _main_download() -> None:
         )
 
     else:
-        DATASETS = ("audiocaps", "clotho" or "macs")
+        DATASETS = (
+            AudioCapsCard.NAME,
+            ClothoCard.NAME,
+            MACSCard.NAME,
+            WavCapsCard.NAME,
+        )
         raise ValueError(
             f"Invalid argument {args.dataset}. (expected one of {DATASETS})"
         )
