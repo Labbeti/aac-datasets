@@ -35,7 +35,9 @@ def _setup_logging(pkg_name: str, verbose: int) -> None:
     if not found:
         pkg_logger.addHandler(handler)
 
-    if verbose <= 0:
+    if verbose < 0:
+        level = logging.ERROR
+    elif verbose == 0:
         level = logging.WARNING
     elif verbose == 1:
         level = logging.INFO
