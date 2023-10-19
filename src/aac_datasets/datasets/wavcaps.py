@@ -27,7 +27,7 @@ from typing_extensions import TypedDict
 from aac_datasets.datasets.base import AACDataset, DatasetCard
 from aac_datasets.utils.collections import list_dict_to_dict_list
 from aac_datasets.utils.download import safe_rmdir
-from aac_datasets.utils.paths import _get_root
+from aac_datasets.utils.paths import _get_root, _get_zip_path
 
 
 pylog = logging.getLogger(__name__)
@@ -159,7 +159,6 @@ class WavCaps(AACDataset[WavCapsItem]):
     REPO_ID: ClassVar[str] = "cvssp/WavCaps"
     RESUME_DL: ClassVar[bool] = True
     SIZE_CATEGORIES: Tuple[str, ...] = ("100K<n<1M",)
-    ZIP_PATH: ClassVar[str] = "zip"
 
     def __init__(
         self,
@@ -170,6 +169,7 @@ class WavCaps(AACDataset[WavCapsItem]):
         hf_cache_dir: Optional[str] = None,
         revision: Optional[str] = WavCapsCard.DEFAULT_REVISION,
         verbose: int = 1,
+        zip_path: Optional[str] = None,
     ) -> None:
         """
         :param root: The parent of the dataset root directory.
@@ -187,6 +187,8 @@ class WavCaps(AACDataset[WavCapsItem]):
             defaults to :attr:`~WavCapsCard.DEFAULT_REVISION`.
         :param verbose: Verbose level. Can be 0 or 1.
             defaults to 0.
+        :param zip_path: Path to zip executable path in shell.
+            defaults to "zip".
         """
         if subset not in WavCapsCard.SUBSETS:
             raise ValueError(
@@ -205,7 +207,7 @@ class WavCaps(AACDataset[WavCapsItem]):
                 force=WavCaps.FORCE_PREPARE_DATA,
                 verify_files=WavCaps.VERIFY_FILES,
                 clean_archives=WavCaps.CLEAN_ARCHIVES,
-                zip_path=WavCaps.ZIP_PATH,
+                zip_path=zip_path,
                 verbose=verbose,
             )
 
@@ -515,7 +517,7 @@ def _prepare_wavcaps_dataset(
     force: bool,
     verify_files: bool,
     clean_archives: bool,
-    zip_path: str,
+    zip_path: Optional[str],
     verbose: int,
 ) -> None:
     if subset == "as_noac":
@@ -544,6 +546,8 @@ def _prepare_wavcaps_dataset(
             zip_path,
             verbose,
         )
+
+    zip_path = _get_zip_path(zip_path)
 
     if subset not in WavCapsCard.SUBSETS:
         raise ValueError(
