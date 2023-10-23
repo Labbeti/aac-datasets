@@ -402,7 +402,10 @@ def _prepare_macs_dataset(
             hash_value = file_info["hash_value"]
             valid = validate_file(fpath, hash_value, hash_type="md5")
             if not valid:
-                raise RuntimeError(f"Invalid checksum for file {fname}.")
+                raise RuntimeError(
+                    f"Invalid checksum for file '{fname}'. (expected md5 checksum '{hash_value}')\n"
+                    f"Please try to remove manually the file '{fpath}' and rerun MACS download."
+                )
             elif verbose >= 2:
                 pylog.debug(f"File '{fname}' has a valid checksum.")
 
@@ -433,7 +436,10 @@ def _prepare_macs_dataset(
             hash_value = file_info["hash_value"]
             valid = validate_file(zip_fpath, hash_value, hash_type="md5")
             if not valid:
-                raise RuntimeError(f"Invalid checksum for file {zip_fname}.")
+                raise RuntimeError(
+                    f"Invalid checksum for file '{zip_fname}'. (expected md5 checksum '{hash_value}')\n"
+                    f"Please try to remove manually the file '{zip_fpath}' and rerun MACS download."
+                )
             elif verbose >= 2:
                 pylog.debug(f"File '{zip_fname}' has a valid checksum.")
 

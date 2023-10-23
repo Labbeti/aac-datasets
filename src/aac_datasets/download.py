@@ -19,6 +19,7 @@ from aac_datasets.utils.paths import (
     get_default_root,
     get_default_ffmpeg_path,
     get_default_ytdl_path,
+    get_default_zip_path,
 )
 
 
@@ -87,10 +88,12 @@ def download_macs(
     force: bool = False,
     download: bool = True,
     clean_archives: bool = False,
+    verify_files: bool = True,
 ) -> Dict[str, MACS]:
     """Download :class:`~aac_datasets.datasets.macs.MACS` dataset."""
     MACS.FORCE_PREPARE_DATA = force
     MACS.CLEAN_ARCHIVES = clean_archives
+    MACS.VERIFY_FILES = verify_files
 
     datasets = {}
     for subset in MACSCard.SUBSETS:
@@ -107,6 +110,7 @@ def download_wavcaps(
     subsets: Iterable[str] = WavCapsCard.SUBSETS,
     hf_cache_dir: Optional[str] = HUGGINGFACE_HUB_CACHE,
     revision: Optional[str] = WavCapsCard.DEFAULT_REVISION,
+    zip_path: str = ...,
 ) -> Dict[str, WavCaps]:
     """Download :class:`~aac_datasets.datasets.wavcaps.WavCaps` dataset."""
 
@@ -121,6 +125,7 @@ def download_wavcaps(
             hf_cache_dir=hf_cache_dir,
             revision=revision,
             verbose=verbose,
+            zip_path=zip_path,
         )
     return datasets
 
@@ -166,7 +171,7 @@ def _get_main_download_args() -> Namespace:
         "--ytdl_path",
         type=str,
         default=get_default_ytdl_path(),
-        help="Path to youtube-dl used to extract metadata from a youtube video.",
+        help="Path to yt-dl program used to extract metadata from a youtube video.",
     )
     audiocaps_subparser.add_argument(
         "--with_tags",
@@ -213,6 +218,12 @@ def _get_main_download_args() -> Namespace:
         default=False,
         help="Remove archives files after extraction.",
     )
+    macs_subparser.add_argument(
+        "--verify_files",
+        type=_str_to_bool,
+        default=True,
+        help="Verify if downloaded files have a valid checksum.",
+    )
     # Note : MACS only have 1 subset, so we do not add MACS subsets arg
 
     wavcaps_subparser = subparsers.add_parser(WavCapsCard.NAME)
@@ -241,6 +252,12 @@ def _get_main_download_args() -> Namespace:
         type=str,
         default=WavCapsCard.DEFAULT_REVISION,
         help="Revision of the WavCaps dataset.",
+    )
+    wavcaps_subparser.add_argument(
+        "--zip_path",
+        type=str,
+        default=get_default_zip_path(),
+        help="Path to zip executable to combine and extract WavCaps archives.",
     )
 
     args = parser.parse_args()
@@ -296,6 +313,7 @@ def _main_download() -> None:
             subsets=args.subsets,
             hf_cache_dir=args.hf_cache_dir,
             revision=args.revision,
+            zip_path=args.zip_path,
         )
 
     else:
