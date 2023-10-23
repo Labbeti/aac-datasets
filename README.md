@@ -158,11 +158,11 @@ dataset = AudioCaps(root=root, subset="train", download=True)
 [1] X. Mei et al., “WavCaps: A ChatGPT-Assisted Weakly-Labelled Audio Captioning Dataset for Audio-Language Multimodal Research,” arXiv preprint arXiv:2303.17395, 2023, [Online]. Available: https://arxiv.org/pdf/2303.17395.pdf 
 
 ## Cite the aac-datasets package
-If you use this software, please consider cite it as below :
+If you use this software, please consider cite it as "Labbe, E. (2013). aac-datasets: Audio Captioning datasets for PyTorch.", or use the following BibTeX citation:
 
 ```
 @software{
-    Labbe_aac_datasets_2022,
+    Labbe_aac_datasets_2023,
     author = {Labbé, Etienne},
     license = {MIT},
     month = {09},
