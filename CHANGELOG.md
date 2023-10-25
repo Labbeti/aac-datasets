@@ -3,12 +3,12 @@
 All notable changes to this project will be documented in this file.
 ## [0.4.1] UNRELEASED
 ### Added
-- `DOWNLOAD_AUDIO` class variable for compatibility with [audiocaps-download 1.0](https://github.com/MorenoLaQuatra/audiocaps-download).
+- `AudioCaps.DOWNLOAD_AUDIO` class variable for compatibility with [audiocaps-download 1.0](https://github.com/MorenoLaQuatra/audiocaps-download).
 
 ### Changed
 - Set log level to WARNING if verbose<=0 in check.py and download.py scripts.
-- Update download message for AudioCaps. ([#1](https://github.com/Labbeti/aac-datasets/issues/1))
-- Use `ytdlp` instead of `youtube-dl` as backend to download AudioCaps audio files.. ([#1](https://github.com/Labbeti/aac-datasets/issues/1))
+- Update default download message for AudioCaps. ([#1](https://github.com/Labbeti/aac-datasets/issues/1))
+- Use `yt-dlp` instead of `youtube-dl` as backend to download AudioCaps audio files.. ([#1](https://github.com/Labbeti/aac-datasets/issues/1))
 
 ## [0.4.0] 2023-09-25
 ### Added
