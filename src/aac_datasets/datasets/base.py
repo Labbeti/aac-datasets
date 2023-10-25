@@ -106,12 +106,22 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
         return self._flat_captions
 
     @property
+    def num_columns(self) -> int:
+        """Number of columns in the dataset."""
+        return len(self.column_names)
+
+    @property
+    def num_rows(self) -> int:
+        """Number of rows in the dataset (same as len())."""
+        return len(self)
+
+    @property
     def raw_data(self) -> Dict[str, List[Any]]:
         return self._raw_data
 
     @property
     def shape(self) -> Tuple[int, int]:
-        """The shape of the dataset."""
+        """Shape of the dataset (number of columns, number of rows)."""
         return len(self), len(self.column_names)
 
     @property
