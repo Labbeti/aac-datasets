@@ -2,29 +2,28 @@
 # -*- coding: utf-8 -*-
 
 import logging
-import sys
 
 from argparse import ArgumentParser, Namespace
 from typing import Dict, Iterable, Optional
 
 import yaml
 
+import aac_datasets
+
 from aac_datasets.datasets.audiocaps import AudioCaps, AudioCapsCard
 from aac_datasets.datasets.clotho import Clotho, ClothoCard
 from aac_datasets.datasets.macs import MACS, MACSCard
 from aac_datasets.datasets.wavcaps import WavCaps, WavCapsCard, HUGGINGFACE_HUB_CACHE
+from aac_datasets.utils.cmdline import _str_to_bool, _setup_logging
 from aac_datasets.utils.paths import (
     get_default_root,
     get_default_ffmpeg_path,
     get_default_ytdl_path,
+    get_default_zip_path,
 )
 
 
 pylog = logging.getLogger(__name__)
-
-
-_TRUE_VALUES = ("true", "1", "t")
-_FALSE_VALUES = ("false", "0", "f")
 
 
 def download_audiocaps(
@@ -89,10 +88,12 @@ def download_macs(
     force: bool = False,
     download: bool = True,
     clean_archives: bool = False,
+    verify_files: bool = True,
 ) -> Dict[str, MACS]:
     """Download :class:`~aac_datasets.datasets.macs.MACS` dataset."""
     MACS.FORCE_PREPARE_DATA = force
     MACS.CLEAN_ARCHIVES = clean_archives
+    MACS.VERIFY_FILES = verify_files
 
     datasets = {}
     for subset in MACSCard.SUBSETS:
@@ -109,6 +110,7 @@ def download_wavcaps(
     subsets: Iterable[str] = WavCapsCard.SUBSETS,
     hf_cache_dir: Optional[str] = HUGGINGFACE_HUB_CACHE,
     revision: Optional[str] = WavCapsCard.DEFAULT_REVISION,
+    zip_path: str = ...,
 ) -> Dict[str, WavCaps]:
     """Download :class:`~aac_datasets.datasets.wavcaps.WavCaps` dataset."""
 
@@ -123,20 +125,9 @@ def download_wavcaps(
             hf_cache_dir=hf_cache_dir,
             revision=revision,
             verbose=verbose,
+            zip_path=zip_path,
         )
     return datasets
-
-
-def _str_to_bool(s: str) -> bool:
-    s = str(s).strip().lower()
-    if s in _TRUE_VALUES:
-        return True
-    elif s in _FALSE_VALUES:
-        return False
-    else:
-        raise ValueError(
-            f"Invalid argument s={s}. (expected one of {_TRUE_VALUES + _FALSE_VALUES})"
-        )
 
 
 def _get_main_download_args() -> Namespace:
@@ -180,7 +171,7 @@ def _get_main_download_args() -> Namespace:
         "--ytdl_path",
         type=str,
         default=get_default_ytdl_path(),
-        help="Path to youtube-dl used to extract metadata from a youtube video.",
+        help="Path to yt-dl program used to extract metadata from a youtube video.",
     )
     audiocaps_subparser.add_argument(
         "--with_tags",
@@ -227,6 +218,12 @@ def _get_main_download_args() -> Namespace:
         default=False,
         help="Remove archives files after extraction.",
     )
+    macs_subparser.add_argument(
+        "--verify_files",
+        type=_str_to_bool,
+        default=True,
+        help="Verify if downloaded files have a valid checksum.",
+    )
     # Note : MACS only have 1 subset, so we do not add MACS subsets arg
 
     wavcaps_subparser = subparsers.add_parser(WavCapsCard.NAME)
@@ -256,20 +253,20 @@ def _get_main_download_args() -> Namespace:
         default=WavCapsCard.DEFAULT_REVISION,
         help="Revision of the WavCaps dataset.",
     )
+    wavcaps_subparser.add_argument(
+        "--zip_path",
+        type=str,
+        default=get_default_zip_path(),
+        help="Path to zip executable to combine and extract WavCaps archives.",
+    )
 
     args = parser.parse_args()
     return args
 
 
 def _main_download() -> None:
-    format_ = "[%(asctime)s][%(name)s][%(levelname)s] - %(message)s"
-    handler = logging.StreamHandler(sys.stdout)
-    handler.setFormatter(logging.Formatter(format_))
-    pkg_logger = logging.getLogger("aac_datasets")
-    pkg_logger.setLevel(logging.DEBUG)
-    pkg_logger.addHandler(handler)
-
     args = _get_main_download_args()
+    _setup_logging(aac_datasets.__package__, args.verbose)
 
     if args.verbose >= 2:
         pylog.debug(yaml.dump({"Arguments": args.__dict__}, sort_keys=False))
@@ -316,10 +313,16 @@ def _main_download() -> None:
             subsets=args.subsets,
             hf_cache_dir=args.hf_cache_dir,
             revision=args.revision,
+            zip_path=args.zip_path,
         )
 
     else:
-        DATASETS = ("audiocaps", "clotho" or "macs")
+        DATASETS = (
+            AudioCapsCard.NAME,
+            ClothoCard.NAME,
+            MACSCard.NAME,
+            WavCapsCard.NAME,
+        )
         raise ValueError(
             f"Invalid argument {args.dataset}. (expected one of {DATASETS})"
         )

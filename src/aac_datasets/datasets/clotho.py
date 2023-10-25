@@ -24,7 +24,7 @@ from torch.hub import download_url_to_file
 from typing_extensions import TypedDict, NotRequired
 
 from aac_datasets.datasets.base import AACDataset, DatasetCard
-from aac_datasets.utils.download import validate_file
+from aac_datasets.utils.download import hash_file
 from aac_datasets.utils.paths import _get_root
 
 
@@ -198,13 +198,13 @@ class Clotho(AACDataset[ClothoItem]):
 
         if download:
             _prepare_clotho_dataset(
-                root,
-                version,
-                subset,
-                verbose,
-                Clotho.FORCE_PREPARE_DATA,
-                Clotho.VERIFY_FILES,
-                Clotho.CLEAN_ARCHIVES,
+                root=root,
+                version=version,
+                subset=subset,
+                verbose=verbose,
+                force=Clotho.FORCE_PREPARE_DATA,
+                verify_files=Clotho.VERIFY_FILES,
+                clean_archives=Clotho.CLEAN_ARCHIVES,
             )
 
         # Exclude some columns containing empty values for several subsets
@@ -242,7 +242,9 @@ class Clotho(AACDataset[ClothoItem]):
         for name in removed_columns:
             column_names.remove(name)
 
-        raw_data = _load_clotho_dataset(root, version, subset, verbose)
+        raw_data = _load_clotho_dataset(
+            root=root, version=version, subset=subset, verbose=verbose
+        )
 
         size = len(next(iter(raw_data.values())))
         raw_data["dataset"] = [ClothoCard.NAME] * size
@@ -554,9 +556,13 @@ def _prepare_clotho_dataset(
             pylog.info(f"File '{fname}' is already downloaded.")
 
         if verify_files:
-            valid = validate_file(fpath, hash_value, hash_type="md5")
-            if not valid:
-                raise RuntimeError(f"Invalid checksum for file {fname}.")
+            hash_value = file_info["hash_value"]
+            file_hash_value = hash_file(fpath, hash_type="md5")
+            if file_hash_value != hash_value:
+                raise RuntimeError(
+                    f"Invalid checksum for file '{fname}'. (expected md5 checksum '{hash_value}' but found '{file_hash_value}')\n"
+                    f"Please try to remove manually the file '{fpath}' and rerun MACS download."
+                )
             elif verbose >= 2:
                 pylog.debug(f"File '{fname}' has a valid checksum.")
 

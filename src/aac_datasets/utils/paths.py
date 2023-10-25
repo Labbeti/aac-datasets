@@ -20,12 +20,17 @@ __DEFAULT_PATHS: Dict[str, Dict[str, Optional[str]]] = {
     "ytdl": {
         "user": None,
         "env": "AAC_DATASETS_YTDL_PATH",
-        "package": "youtube-dl",
+        "package": "ytdlp",
     },
     "ffmpeg": {
         "user": None,
         "env": "AAC_DATASETS_FFMPEG_PATH",
         "package": "ffmpeg",
+    },
+    "zip": {
+        "user": None,
+        "env": "AAC_DATASETS_ZIP_PATH",
+        "package": "zip",
     },
 }
 
@@ -61,6 +66,16 @@ def get_default_ffmpeg_path() -> str:
     return __get_default_path("ffmpeg")
 
 
+def get_default_zip_path() -> str:
+    """Returns the default zip executable path.
+
+    If :func:`~aac_datasets.utils.path.set_default_zip_path` has been used before with a string argument, it will return the value given to this function.
+    Else if the environment variable AAC_DATASETS_ZIP_PATH has been set to a string, it will return its value.
+    Else it will be equal to "zip" by default.
+    """
+    return __get_default_path("zip")
+
+
 def set_default_root(cache_path: Optional[str]) -> None:
     """Override default root directory path."""
     __set_default_path("root", cache_path)
@@ -76,17 +91,26 @@ def set_default_ffmpeg_path(tmp_path: Optional[str]) -> None:
     __set_default_path("ffmpeg", tmp_path)
 
 
+def set_default_zip_path(tmp_path: Optional[str]) -> None:
+    """Override default zip executable path."""
+    __set_default_path("zip", tmp_path)
+
+
 # Private functions
-def _get_root(root: Union[str, None] = ...) -> str:
+def _get_root(root: Union[str, None] = None) -> str:
     return __get_path("root", root)
 
 
-def _get_ytdl_path(ytdl_path: Union[str, None] = ...) -> str:
+def _get_ytdl_path(ytdl_path: Union[str, None] = None) -> str:
     return __get_path("ytdl", ytdl_path)
 
 
-def _get_ffmpeg_path(ffmpeg_path: Union[str, None] = ...) -> str:
+def _get_ffmpeg_path(ffmpeg_path: Union[str, None] = None) -> str:
     return __get_path("ffmpeg", ffmpeg_path)
+
+
+def _get_zip_path(zip_path: Union[str, None] = None) -> str:
+    return __get_path("zip", zip_path)
 
 
 def __get_default_path(path_name: str) -> str:
@@ -120,7 +144,7 @@ def __set_default_path(
     __DEFAULT_PATHS[path_name]["user"] = path
 
 
-def __get_path(path_name: str, path: Union[str, None] = ...) -> str:
+def __get_path(path_name: str, path: Union[str, None] = None) -> str:
     if path is ... or path is None:
         return __get_default_path(path_name)
     else:

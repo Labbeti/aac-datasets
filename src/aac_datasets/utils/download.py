@@ -48,12 +48,12 @@ def validate_file(
     :param hash_type: The hash type. defaults to "sha256".
     :returns: True if the file hash corresponds to the hash value.
     """
-    hash_value_found = _hash_file(fpath, hash_type)
+    hash_value_found = hash_file(fpath, hash_type)
     is_valid = hash_value_found == hash_value
     return is_valid
 
 
-def _hash_file(
+def hash_file(
     fpath: Union[str, Path],
     hash_type: str,
     chunk_size: int = DEFAULT_CHUNK_SIZE,

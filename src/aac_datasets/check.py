@@ -3,18 +3,20 @@
 
 import logging
 import os.path as osp
-import sys
 
 from argparse import ArgumentParser, Namespace
 from typing import Dict, Iterable
 
 import yaml
 
+import aac_datasets
+
 from aac_datasets.datasets.audiocaps import AudioCaps, AudioCapsCard
 from aac_datasets.datasets.clotho import Clotho, ClothoCard
 from aac_datasets.datasets.macs import MACS, MACSCard
 from aac_datasets.datasets.wavcaps import WavCaps, WavCapsCard
 from aac_datasets.utils.paths import get_default_root
+from aac_datasets.download import _setup_logging
 
 
 pylog = logging.getLogger(__name__)
@@ -112,14 +114,8 @@ def _get_main_check_args() -> Namespace:
 
 
 def _main_check() -> None:
-    format_ = "[%(asctime)s][%(name)s][%(levelname)s] - %(message)s"
-    handler = logging.StreamHandler(sys.stdout)
-    handler.setFormatter(logging.Formatter(format_))
-    pkg_logger = logging.getLogger("aac_datasets")
-    pkg_logger.setLevel(logging.DEBUG)
-    pkg_logger.addHandler(handler)
-
     args = _get_main_check_args()
+    _setup_logging(aac_datasets.__package__, args.verbose)
 
     if args.verbose >= 2:
         pylog.debug(yaml.dump({"Arguments": args.__dict__}, sort_keys=False))

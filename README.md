@@ -102,8 +102,9 @@ numpy >= 1.21.2
 
 ### External requirements (AudioCaps only)
 
-The external requirements needed to download **AudioCaps** are **ffmpeg** and **youtube-dl** (yt-dlp should work too).
-These two programs can be download on Ubuntu using `sudo apt install ffmpeg youtube-dl`.
+The external requirements needed to download **AudioCaps** are **ffmpeg** and **yt-dlp**.
+**ffmpeg** can be install on Ubuntu using `sudo apt install ffmpeg` and **yt-dlp** from the [official repo](https://github.com/yt-dlp/yt-dlp).
+ <!-- programs can be downloaded on Ubuntu using `sudo apt install ffmpeg`. -->
 
 You can also override their paths for AudioCaps:
 ```python
@@ -111,7 +112,7 @@ from aac_datasets import AudioCaps
 dataset = AudioCaps(
     download=True,
     ffmpeg_path="/my/path/to/ffmpeg",
-    ytdl_path="/my/path/to/youtube_dl",
+    ytdl_path="/my/path/to/ytdlp",
 )
 ```
 
@@ -123,6 +124,24 @@ dataset = Clotho(root=".", subset="dev", download=True)
 However, if you want to download datasets from a script, you can also use the following command :
 ```bash
 aac-datasets-download --root "." clotho --subsets "dev"
+```
+
+## Additional information
+### Compatibility with audiocaps-download
+If you want to use [audiocaps-download 1.0](https://github.com/MorenoLaQuatra/audiocaps-download) package to download AudioCaps, you will have to respect the AudioCaps folder tree:
+```python
+from audiocaps_download import Downloader
+root = "your/path/to/root"
+downloader = Downloader(root_path=f"{root}/AUDIOCAPS/audio_32000Hz/", n_jobs=16)
+downloader.download(format="wav")
+```
+
+Then disable audio download and set the correct audio format before init AudioCaps :
+```python
+from aac_datasets import AudioCaps
+AudioCaps.AUDIO_FORMAT = "wav"
+AudioCaps.DOWNLOAD_AUDIO = False  # this will only download labels and metadata files
+dataset = AudioCaps(root=root, subset="train", download=True)
 ```
 
 ## References
@@ -139,17 +158,17 @@ aac-datasets-download --root "." clotho --subsets "dev"
 [1] X. Mei et al., “WavCaps: A ChatGPT-Assisted Weakly-Labelled Audio Captioning Dataset for Audio-Language Multimodal Research,” arXiv preprint arXiv:2303.17395, 2023, [Online]. Available: https://arxiv.org/pdf/2303.17395.pdf 
 
 ## Cite the aac-datasets package
-If you use this software, please consider cite it as below :
+If you use this software, please consider cite it as "Labbe, E. (2013). aac-datasets: Audio Captioning datasets for PyTorch.", or use the following BibTeX citation:
 
 ```
 @software{
-    Labbe_aac_datasets_2022,
+    Labbe_aac_datasets_2023,
     author = {Labbé, Etienne},
     license = {MIT},
-    month = {09},
+    month = {10},
     title = {{aac-datasets}},
     url = {https://github.com/Labbeti/aac-datasets/},
-    version = {0.4.0},
+    version = {0.4.1},
     year = {2023}
 }
 ```
