@@ -26,7 +26,7 @@ from torch.hub import download_url_to_file
 from typing_extensions import TypedDict
 
 from aac_datasets.datasets.base import AACDataset, DatasetCard
-from aac_datasets.utils.download import validate_file, hash_file
+from aac_datasets.utils.download import hash_file
 from aac_datasets.utils.paths import _get_root
 
 

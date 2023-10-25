@@ -165,10 +165,10 @@ If you use this software, please consider cite it as "Labbe, E. (2013). aac-data
     Labbe_aac_datasets_2023,
     author = {Labbé, Etienne},
     license = {MIT},
-    month = {09},
+    month = {10},
     title = {{aac-datasets}},
     url = {https://github.com/Labbeti/aac-datasets/},
-    version = {0.4.0},
+    version = {0.4.1},
     year = {2023}
 }
 ```
