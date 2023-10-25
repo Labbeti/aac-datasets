@@ -26,7 +26,7 @@ from torch.hub import download_url_to_file
 from typing_extensions import TypedDict
 
 from aac_datasets.datasets.base import AACDataset, DatasetCard
-from aac_datasets.utils.download import validate_file
+from aac_datasets.utils.download import validate_file, hash_file
 from aac_datasets.utils.paths import _get_root
 
 
@@ -400,10 +400,10 @@ def _prepare_macs_dataset(
 
         if verify_files:
             hash_value = file_info["hash_value"]
-            valid = validate_file(fpath, hash_value, hash_type="md5")
-            if not valid:
+            file_hash_value = hash_file(fpath, hash_type="md5")
+            if file_hash_value != hash_value:
                 raise RuntimeError(
-                    f"Invalid checksum for file '{fname}'. (expected md5 checksum '{hash_value}')\n"
+                    f"Invalid checksum for file '{fname}'. (expected md5 checksum '{hash_value}' but found '{file_hash_value}')\n"
                     f"Please try to remove manually the file '{fpath}' and rerun MACS download."
                 )
             elif verbose >= 2:
@@ -434,10 +434,10 @@ def _prepare_macs_dataset(
 
         if verify_files:
             hash_value = file_info["hash_value"]
-            valid = validate_file(zip_fpath, hash_value, hash_type="md5")
-            if not valid:
+            file_hash_value = hash_file(zip_fpath, hash_type="md5")
+            if file_hash_value != hash_value:
                 raise RuntimeError(
-                    f"Invalid checksum for file '{zip_fname}'. (expected md5 checksum '{hash_value}')\n"
+                    f"Invalid checksum for file '{zip_fname}'. (expected md5 checksum '{hash_value}' but found '{file_hash_value}')\n"
                     f"Please try to remove manually the file '{zip_fpath}' and rerun MACS download."
                 )
             elif verbose >= 2:
