@@ -561,7 +561,7 @@ def _prepare_clotho_dataset(
             if file_hash_value != hash_value:
                 raise RuntimeError(
                     f"Invalid checksum for file '{fname}'. (expected md5 checksum '{hash_value}' but found '{file_hash_value}')\n"
-                    f"Please try to remove manually the file '{fpath}' and rerun MACS download."
+                    f"Please try to remove manually the file '{fpath}' and rerun {ClothoCard.PRETTY_NAME} download."
                 )
             elif verbose >= 2:
                 pylog.debug(f"File '{fname}' has a valid checksum.")
