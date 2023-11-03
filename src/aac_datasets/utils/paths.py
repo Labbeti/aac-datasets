@@ -5,13 +5,14 @@ import logging
 import os
 import os.path as osp
 
-from typing import Dict, Optional, Union
+from pathlib import Path
+from typing import Dict, Union, overload
 
 
 pylog = logging.getLogger(__name__)
 
 
-__DEFAULT_PATHS: Dict[str, Dict[str, Optional[str]]] = {
+__DEFAULT_GLOBALS: Dict[str, Dict[str, Union[str, None]]] = {
     "root": {
         "user": None,
         "env": "AAC_DATASETS_ROOT",
@@ -43,7 +44,7 @@ def get_default_root() -> str:
     Else if the environment variable AAC_DATASETS_ROOT has been set to a string, it will return its value.
     Else it will be equal to "." by default.
     """
-    return __get_default_path("root")
+    return __get_default_value("root")
 
 
 def get_default_ytdl_path() -> str:
@@ -53,7 +54,7 @@ def get_default_ytdl_path() -> str:
     Else if the environment variable AAC_DATASETS_YTDL_PATH has been set to a string, it will return its value.
     Else it will be equal to "youtube-dl" by default.
     """
-    return __get_default_path("ytdl")
+    return __get_default_value("ytdl")
 
 
 def get_default_ffmpeg_path() -> str:
@@ -63,7 +64,7 @@ def get_default_ffmpeg_path() -> str:
     Else if the environment variable AAC_DATASETS_FFMPEG_PATH has been set to a string, it will return its value.
     Else it will be equal to "ffmpeg" by default.
     """
-    return __get_default_path("ffmpeg")
+    return __get_default_value("ffmpeg")
 
 
 def get_default_zip_path() -> str:
@@ -73,86 +74,99 @@ def get_default_zip_path() -> str:
     Else if the environment variable AAC_DATASETS_ZIP_PATH has been set to a string, it will return its value.
     Else it will be equal to "zip" by default.
     """
-    return __get_default_path("zip")
+    return __get_default_value("zip")
 
 
-def set_default_root(cache_path: Optional[str]) -> None:
+def set_default_root(cache_path: Union[str, Path, None]) -> None:
     """Override default root directory path."""
-    __set_default_path("root", cache_path)
+    __set_default_value("root", cache_path)
 
 
-def set_default_ytdl_path(java_path: Optional[str]) -> None:
+def set_default_ytdl_path(java_path: Union[str, Path, None]) -> None:
     """Override default youtube-dl executable path."""
-    __set_default_path("ytdl", java_path)
+    __set_default_value("ytdl", java_path)
 
 
-def set_default_ffmpeg_path(tmp_path: Optional[str]) -> None:
+def set_default_ffmpeg_path(tmp_path: Union[str, Path, None]) -> None:
     """Override default ffmpeg executable path."""
-    __set_default_path("ffmpeg", tmp_path)
+    __set_default_value("ffmpeg", tmp_path)
 
 
-def set_default_zip_path(tmp_path: Optional[str]) -> None:
+def set_default_zip_path(tmp_path: Union[str, Path, None]) -> None:
     """Override default zip executable path."""
-    __set_default_path("zip", tmp_path)
+    __set_default_value("zip", tmp_path)
 
 
 # Private functions
-def _get_root(root: Union[str, None] = None) -> str:
-    return __get_path("root", root)
+def _get_root(root: Union[str, Path, None] = None) -> str:
+    return __get_value("root", root)
 
 
-def _get_ytdl_path(ytdl_path: Union[str, None] = None) -> str:
-    return __get_path("ytdl", ytdl_path)
+def _get_ytdl_path(ytdl_path: Union[str, Path, None] = None) -> str:
+    return __get_value("ytdl", ytdl_path)
 
 
-def _get_ffmpeg_path(ffmpeg_path: Union[str, None] = None) -> str:
-    return __get_path("ffmpeg", ffmpeg_path)
+def _get_ffmpeg_path(ffmpeg_path: Union[str, Path, None] = None) -> str:
+    return __get_value("ffmpeg", ffmpeg_path)
 
 
-def _get_zip_path(zip_path: Union[str, None] = None) -> str:
-    return __get_path("zip", zip_path)
+def _get_zip_path(zip_path: Union[str, Path, None] = None) -> str:
+    return __get_value("zip", zip_path)
 
 
-def __get_default_path(path_name: str) -> str:
-    paths = __DEFAULT_PATHS[path_name]
+def __get_default_value(value_name: str) -> str:
+    values = __DEFAULT_GLOBALS[value_name]
 
-    for name, path_or_var in paths.items():
-        if path_or_var is None:
+    for source, value_or_env_varname in values.items():
+        if value_or_env_varname is None:
             continue
 
-        if name.startswith("env"):
-            path = os.getenv(path_or_var, None)
+        if source.startswith("env"):
+            path = os.getenv(value_or_env_varname, None)
         else:
-            path = path_or_var
+            path = value_or_env_varname
 
         if path is not None:
-            path = __process_path(path)
+            path = __process_value(path)
             return path
 
-    pylog.error(f"Paths values: {paths}")
+    pylog.error(f"Paths values: {values}")
     raise RuntimeError(
-        f"Invalid default path for path_name={path_name}. (all default paths are None)"
+        f"Invalid default path for path_name={value_name}. (all default paths are None)"
     )
 
 
-def __set_default_path(
-    path_name: str,
-    path: Optional[str],
+def __set_default_value(
+    value_name: str,
+    value: Union[str, Path, None],
 ) -> None:
-    if path is not ... and path is not None:
-        path = __process_path(path)
-    __DEFAULT_PATHS[path_name]["user"] = path
+    value = __process_value(value)
+    __DEFAULT_GLOBALS[value_name]["user"] = value
 
 
-def __get_path(path_name: str, path: Union[str, None] = None) -> str:
-    if path is ... or path is None:
-        return __get_default_path(path_name)
+def __get_value(value_name: str, value: Union[str, Path, None] = None) -> str:
+    if value is ... or value is None:
+        return __get_default_value(value_name)
     else:
-        path = __process_path(path)
-        return path
+        value = __process_value(value)
+        return value
 
 
-def __process_path(path: str) -> str:
-    path = osp.expanduser(path)
-    path = osp.expandvars(path)
-    return path
+@overload
+def __process_value(value: None) -> None:
+    ...
+
+
+@overload
+def __process_value(value: Union[str, Path]) -> str:
+    ...
+
+
+def __process_value(value: Union[str, Path, None]) -> Union[str, None]:
+    if value is None or value is ...:
+        return None
+
+    value = str(value)
+    value = osp.expanduser(value)
+    value = osp.expandvars(value)
+    return value
