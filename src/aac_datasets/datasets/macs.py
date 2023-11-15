@@ -9,6 +9,7 @@ import os.path as osp
 import shutil
 import zipfile
 
+from pathlib import Path
 from typing import (
     Any,
     Callable,
@@ -17,6 +18,7 @@ from typing import (
     List,
     Optional,
     Tuple,
+    Union,
 )
 
 import yaml
@@ -115,7 +117,7 @@ class MACS(AACDataset[MACSItem]):
     # Initialization
     def __init__(
         self,
-        root: str = ...,
+        root: Union[str, Path, None] = None,
         subset: str = "full",
         download: bool = False,
         transform: Optional[Callable] = None,

@@ -10,7 +10,7 @@ import subprocess
 import zipfile
 
 from pathlib import Path
-from typing import Any, Callable, ClassVar, Dict, List, Optional, Tuple
+from typing import Any, Callable, ClassVar, Dict, List, Optional, Tuple, Union
 
 import tqdm
 
@@ -162,7 +162,7 @@ class WavCaps(AACDataset[WavCapsItem]):
 
     def __init__(
         self,
-        root: str = ...,
+        root: Union[str, Path, None] = None,
         subset: str = "as",
         download: bool = False,
         transform: Optional[Callable] = None,

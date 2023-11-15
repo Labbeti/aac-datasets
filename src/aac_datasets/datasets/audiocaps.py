@@ -8,6 +8,7 @@ import os.path as osp
 import subprocess
 import time
 
+from pathlib import Path
 from subprocess import CalledProcessError
 from typing import (
     Any,
@@ -17,6 +18,7 @@ from typing import (
     List,
     Optional,
     Tuple,
+    Union,
 )
 
 import torch
@@ -134,7 +136,7 @@ class AudioCaps(AACDataset[AudioCapsItem]):
     # Initialization
     def __init__(
         self,
-        root: str = ...,
+        root: Union[str, Path, None] = None,
         subset: str = "train",
         download: bool = False,
         transform: Optional[Callable[[Dict[str, Any]], Any]] = None,
@@ -143,8 +145,8 @@ class AudioCaps(AACDataset[AudioCapsItem]):
         exclude_removed_audio: bool = True,
         with_tags: bool = False,
         sr: int = 32_000,
-        ffmpeg_path: str = ...,
-        ytdl_path: str = ...,
+        ffmpeg_path: Union[str, Path, None] = None,
+        ytdl_path: Union[str, Path, None] = None,
     ) -> None:
         """
         :param root: Dataset root directory.
@@ -538,9 +540,9 @@ def _prepare_audiocaps_dataset(
     sr: int,
     with_tags: bool,
     verbose: int,
-    force: bool = False,
-    ytdl_path: str = ...,
-    ffmpeg_path: str = ...,
+    force: bool,
+    ytdl_path: Union[str, Path, None] = None,
+    ffmpeg_path: Union[str, Path, None] = None,
     audio_format: str = "flac",
     audio_duration: float = 10.0,
     n_channels: int = 1,
@@ -549,6 +551,9 @@ def _prepare_audiocaps_dataset(
 ) -> None:
     if not osp.isdir(root):
         raise RuntimeError(f"Cannot find root directory '{root}'.")
+
+    ytdl_path = _get_ytdl_path(ytdl_path)
+    ffmpeg_path = _get_ffmpeg_path(ffmpeg_path)
 
     _check_ytdl(ytdl_path)
     _check_ffmpeg(ffmpeg_path)
@@ -701,10 +706,12 @@ def _download_and_extract_from_youtube(
     n_channels: int = 1,
     target_format: str = "flac",
     acodec: str = "flac",
-    ytdl_path: str = ...,
-    ffmpeg_path: str = ...,
+    ytdl_path: Union[str, Path, None] = None,
+    ffmpeg_path: Union[str, Path, None] = None,
 ) -> bool:
     """Download audio from youtube with youtube-dl and ffmpeg."""
+    ytdl_path = _get_ytdl_path(ytdl_path)
+    ffmpeg_path = _get_ffmpeg_path(ffmpeg_path)
 
     # Get audio download link with youtube-dl, without start time
     link = _get_youtube_link(youtube_id, None)

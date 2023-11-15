@@ -7,6 +7,7 @@ import logging
 import os
 import os.path as osp
 
+from pathlib import Path
 from typing import (
     Any,
     Callable,
@@ -15,6 +16,7 @@ from typing import (
     List,
     Optional,
     Tuple,
+    Union,
 )
 from zipfile import ZipFile
 
@@ -152,7 +154,7 @@ class Clotho(AACDataset[ClothoItem]):
     # Initialization
     def __init__(
         self,
-        root: str = ...,
+        root: Union[str, Path, None] = None,
         subset: str = "dev",
         download: bool = False,
         transform: Optional[Callable] = None,

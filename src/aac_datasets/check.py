@@ -31,7 +31,7 @@ def check_directory(
 
     :param root: The directory to check.
     :param verbose: The verbose level. defaults to 0.
-    :param datasets: The datasets to search in root directory. defaults to ("audiocaps", "clotho", "macs").
+    :param datasets: The datasets to search in root directory. defaults to ("audiocaps", "clotho", "macs", "wavcaps").
     :returns: A dictionary of datanames containing the length of each subset.
     """
     data_infos = [
@@ -53,7 +53,7 @@ def check_directory(
             pylog.info(f"Searching for {ds_name}...")
 
         found_dsets = {}
-        for subset in ds_class.SUBSETS:
+        for subset in ds_class.CARD.SUBSETS:
             try:
                 ds = ds_class(root, subset, verbose=0)
                 found_dsets[subset] = ds
