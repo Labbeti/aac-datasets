@@ -427,7 +427,8 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
 
     def _load_audio(self, idx: int) -> Tensor:
         fpath = self.at(idx, "fpath")
-        audio, sr = torchaudio.load(fpath)  # type: ignore
+        audio_and_sr: Tuple[Tensor, int] = torchaudio.load(fpath)  # type: ignore
+        audio, sr = audio_and_sr
 
         # Sanity check
         if audio.nelement() == 0:
