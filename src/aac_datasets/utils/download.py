@@ -13,15 +13,15 @@ DEFAULT_CHUNK_SIZE = 256 * 1024**2  # 256 MiB
 
 
 def safe_rmdir(
-    root: str,
+    root: Union[str, Path],
     rm_root: bool = True,
     error_on_non_empty_dir: bool = True,
 ) -> List[str]:
     """Remove all empty sub-directories.
 
     :param root: Root directory path.
-    :param rm_root: If True, remove the root directory. defaults to True.
-    :param error_on_non_empty_dir: If True, raises a RuntimeError if a subdirectory contains 1 file.
+    :param rm_root: If True, remove the root directory too. defaults to True.
+    :param error_on_non_empty_dir: If True, raises a RuntimeError if a subdirectory contains at least 1 file. Otherwise it will leave non-empty directories. defaults to True.
     :returns: The list of directories paths deleted.
     """
     deleted = []
