@@ -104,7 +104,7 @@ numpy >= 1.21.2
 
 The external requirements needed to download **AudioCaps** are **ffmpeg** and **yt-dlp**.
 **ffmpeg** can be install on Ubuntu using `sudo apt install ffmpeg` and **yt-dlp** from the [official repo](https://github.com/yt-dlp/yt-dlp).
- <!-- programs can be downloaded on Ubuntu using `sudo apt install ffmpeg`. -->
+<!-- programs can be downloaded on Ubuntu using `sudo apt install ffmpeg`. -->
 
 You can also override their paths for AudioCaps:
 ```python

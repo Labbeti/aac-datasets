@@ -25,8 +25,9 @@ The python requirements are automatically installed when using pip on this repos
 External requirements (AudioCaps only)
 ######################################
 
-The external requirements needed to download **AudioCaps** are **ffmpeg** and **youtube-dl** (yt-dlp should work too).
-These two programs can be download on Ubuntu using `sudo apt install ffmpeg youtube-dl`.
+The external requirements needed to download **AudioCaps** are **ffmpeg** and **yt-dlp**.
+.. These two programs can be download on Ubuntu using `sudo apt install ffmpeg youtube-dl`.
+**ffmpeg** can be install on Ubuntu using `sudo apt install ffmpeg` and **yt-dlp** from the [official repo](https://github.com/yt-dlp/yt-dlp).
 
 You can also override their paths for AudioCaps:
 
