@@ -63,8 +63,7 @@ class AdvancedCollate:
                     batch_dic[key] = values
                     continue
 
-            are_stackables = [value.shape == values[0].shape for value in values]
-            if all(are_stackables):
+            if can_be_stacked(values):
                 values = torch.stack(values)
                 batch_dic[key] = values
                 continue
@@ -97,3 +96,12 @@ def pad_last_dim(tensor: Tensor, target_length: int, pad_value: float) -> Tensor
     """
     pad_len = max(target_length - tensor.shape[-1], 0)
     return F.pad(tensor, [0, pad_len], value=pad_value)
+
+
+def can_be_stacked(tensors: List[Tensor]) -> bool:
+    """Returns true if a list of tensors can be stacked with torch.stack function."""
+    if len(tensors) == 0:
+        return False
+    shape0 = tensors[0].shape
+    are_stackables = [tensor.shape == shape0 for tensor in tensors]
+    return all(are_stackables)
