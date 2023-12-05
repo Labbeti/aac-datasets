@@ -21,6 +21,7 @@ The python requirements are automatically installed when using pip on this repos
     pyyaml >= 6.0
     tqdm >= 4.64.0
     huggingface-hub>=0.15.1
+    numpy>=1.21.2
 
 External requirements (AudioCaps only)
 ######################################
