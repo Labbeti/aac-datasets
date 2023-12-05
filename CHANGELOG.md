@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.4.2] UNRELEASED
+### Changed
+- Update typing for paths with python class `Path`.
+
 ## [0.4.1] 2023-10-25
 ### Added
 - `AudioCaps.DOWNLOAD_AUDIO` class variable for compatibility with [audiocaps-download 1.0](https://github.com/MorenoLaQuatra/audiocaps-download).
