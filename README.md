@@ -56,19 +56,36 @@ for batch in dataloader:
     ...
 ```
 
-## Datasets stats
+## Download datasets
+To download a dataset, you can use `download` argument in dataset construction :
+```python
+dataset = Clotho(root=".", subset="dev", download=True)
+```
+However, if you want to download datasets from a script, you can also use the following command :
+```bash
+aac-datasets-download --root "." clotho --subsets "dev"
+```
+
+## Datasets information
 Here is the statistics for each dataset :
 
-| | AudioCaps | Clotho | MACS | WavCaps |
+<!-- | | AudioCaps | Clotho | MACS | WavCaps |
 |:---:|:---:|:---:|:---:|:---:|
-| Subsets | train, val, test | dev, val, eval, dcase_aac_test, dcase_aac_analysis, dcase_t2a_audio, dcase_t2a_captions | full | as, as_noac, bbc, fsd, fsd_nocl, sb |
+| Subsets | `train`, `val`, `test` | `dev`, `val`, `eval`, `dcase_aac_test`, `dcase_aac_analysis`, `dcase_t2a_audio`, `dcase_t2a_captions` | `full` | `as`, `as_noac`, `bbc`, `fsd`, `fsd_nocl`, `sb` |
 | Sample rate (kHz) | 32 | 44.1 | 48 | 32 |
 | Estimated size (GB) | 43 | 53 | 13 | 941 |
-| Audio source | AudioSet | FreeSound | TAU Urban Acoustic Scenes 2019 | AudioSet, BBC Sound Effects, FreeSound, SoundBible |
+| Audio source | AudioSet | FreeSound | TAU Urban Acoustic Scenes 2019 | AudioSet, BBC Sound Effects, FreeSound, SoundBible | -->
 
-For Clotho, the dev subset should be used for training, val for validation and eval for testing.
+| Dataset | Sampling<br>rate (kHz) | Estimated<br>size (GB) | Source | Subsets |
+|:---:|:---:|:---:|:---:|:---:|
+| AudioCaps | 32 | 43 | AudioSet | `train`<br>`val`<br>`test`
+| Clotho | 44.1 | 53  | Freesound | `dev`<br>`val`<br>`eval`<br>`dcase_aac_test`<br>`dcase_aac_analysis`<br>`dcase_t2a_audio`<br>`dcase_t2a_captions` |
+| MACS | 48 | 13 | TAU Urban Acoustic Scenes 2019 | `full` |
+| WavCaps | 32 | 941 | AudioSet<br>BBC Sound Effects<br>FreeSound<br>SoundBible | `as`<br>`as_noac`<br>`bbc`<br>`fsd`<br>`fsd_nocl`<br>`sb` |
 
-Here is the **train** subset statistics for AudioCaps, Clotho and MACS datasets :
+For Clotho, the **dev** subset should be used for training, val for validation and eval for testing.
+
+Here is additional statistics on the train subset for AudioCaps, Clotho and MACS:
 
 | | AudioCaps/train | Clotho/dev | MACS/full |
 |:---:|:---:|:---:|:---:|
@@ -86,7 +103,7 @@ Here is the **train** subset statistics for AudioCaps, Clotho and MACS datasets 
 
 ## Requirements
 
-This package has been developped for Ubuntu 20.04, and it is expected to work on most Linux distributions.
+This package has been developped for Ubuntu 20.04, and it is expected to work on most Linux-based distributions.
 ### Python packages
 
 Python requirements are automatically installed when using pip on this repository.
@@ -114,16 +131,6 @@ dataset = AudioCaps(
     ffmpeg_path="/my/path/to/ffmpeg",
     ytdl_path="/my/path/to/ytdlp",
 )
-```
-
-## Download datasets
-To download a dataset, you can use `download` argument in dataset construction :
-```python
-dataset = Clotho(root=".", subset="dev", download=True)
-```
-However, if you want to download datasets from a script, you can also use the following command :
-```bash
-aac-datasets-download --root "." clotho --subsets "dev"
 ```
 
 ## Additional information
