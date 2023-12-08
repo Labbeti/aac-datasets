@@ -16,7 +16,7 @@ pylog = logging.getLogger(__name__)
 def get_default_root() -> str:
     """Returns the default root directory path.
 
-    If :func:`~aac_datasets.utils.path.set_default_root` has been used before with a string argument, it will return the value given to this function.
+    If :func:`~aac_datasets.utils.globals.set_default_root` has been used before with a string argument, it will return the value given to this function.
     Else if the environment variable AAC_DATASETS_ROOT has been set to a string, it will return its value.
     Else it will be equal to "." by default.
     """
@@ -26,7 +26,7 @@ def get_default_root() -> str:
 def get_default_ffmpeg_path() -> str:
     """Returns the default ffmpeg executable path.
 
-    If :func:`~aac_datasets.utils.path.set_default_ffmpeg_path` has been used before with a string argument, it will return the value given to this function.
+    If :func:`~aac_datasets.utils.globals.set_default_ffmpeg_path` has been used before with a string argument, it will return the value given to this function.
     Else if the environment variable AAC_DATASETS_FFMPEG_PATH has been set to a string, it will return its value.
     Else it will be equal to "ffmpeg" by default.
     """
@@ -36,7 +36,7 @@ def get_default_ffmpeg_path() -> str:
 def get_default_ytdl_path() -> str:
     """Returns the default youtube-dl executable path.
 
-    If :func:`~aac_datasets.utils.path.set_default_ytdl_path` has been used before with a string argument, it will return the value given to this function.
+    If :func:`~aac_datasets.utils.globals.set_default_ytdl_path` has been used before with a string argument, it will return the value given to this function.
     Else if the environment variable AAC_DATASETS_YTDL_PATH has been set to a string, it will return its value.
     Else it will be equal to "youtube-dl" by default.
     """
@@ -46,7 +46,7 @@ def get_default_ytdl_path() -> str:
 def get_default_zip_path() -> str:
     """Returns the default zip executable path.
 
-    If :func:`~aac_datasets.utils.path.set_default_zip_path` has been used before with a string argument, it will return the value given to this function.
+    If :func:`~aac_datasets.utils.globals.set_default_zip_path` has been used before with a string argument, it will return the value given to this function.
     Else if the environment variable AAC_DATASETS_ZIP_PATH has been set to a string, it will return its value.
     Else it will be equal to "zip" by default.
     """
@@ -64,7 +64,7 @@ def set_default_ffmpeg_path(tmp_path: Union[str, Path, None]) -> None:
 
 
 def set_default_ytdl_path(java_path: Union[str, Path, None]) -> None:
-    """Override default youtube-dl executable path."""
+    """Override default yt-dl executable path."""
     __set_default_value("ytdl", java_path)
 
 
@@ -99,17 +99,17 @@ def __get_default_value(value_name: str) -> str:
             continue
 
         if source.startswith("env"):
-            path = os.getenv(value_or_env_varname, None)
+            value = os.getenv(value_or_env_varname, None)
         else:
-            path = value_or_env_varname
+            value = value_or_env_varname
 
-        if path is not None:
-            path = process_func(path)
-            return path
+        if value is not None:
+            value = process_func(value)
+            return value
 
-    pylog.error(f"Paths values: {values}")
+    pylog.error(f"Values: {values}")
     raise RuntimeError(
-        f"Invalid default path for path_name={value_name}. (all default paths are None)"
+        f"Invalid default value for value_name={value_name}. (all default values are None)"
     )
 
 
