@@ -15,7 +15,7 @@ from aac_datasets.datasets.audiocaps import AudioCaps, AudioCapsCard
 from aac_datasets.datasets.clotho import Clotho, ClothoCard
 from aac_datasets.datasets.macs import MACS, MACSCard
 from aac_datasets.datasets.wavcaps import WavCaps, WavCapsCard
-from aac_datasets.utils.paths import get_default_root
+from aac_datasets.utils.globals import get_default_root
 from aac_datasets.download import _setup_logging
 
 

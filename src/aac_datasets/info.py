@@ -13,7 +13,7 @@ import yaml
 
 import aac_datasets
 
-from aac_datasets.utils.paths import (
+from aac_datasets.utils.globals import (
     get_default_root,
     get_default_ffmpeg_path,
     get_default_ytdl_path,

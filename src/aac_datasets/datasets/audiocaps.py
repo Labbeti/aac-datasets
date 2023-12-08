@@ -36,7 +36,7 @@ except ImportError:
     from torchaudio.backend.common import AudioMetaData
 
 from aac_datasets.datasets.base import AACDataset, DatasetCard
-from aac_datasets.utils.paths import _get_root, _get_ffmpeg_path, _get_ytdl_path
+from aac_datasets.utils.globals import _get_root, _get_ffmpeg_path, _get_ytdl_path
 
 
 pylog = logging.getLogger(__name__)

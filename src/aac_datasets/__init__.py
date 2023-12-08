@@ -17,7 +17,7 @@ from .datasets.audiocaps import AudioCaps
 from .datasets.clotho import Clotho
 from .datasets.macs import MACS
 from .datasets.wavcaps import WavCaps
-from .utils.paths import (
+from .utils.globals import (
     get_default_ffmpeg_path,
     get_default_root,
     get_default_ytdl_path,

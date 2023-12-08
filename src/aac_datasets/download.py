@@ -15,7 +15,7 @@ from aac_datasets.datasets.clotho import Clotho, ClothoCard
 from aac_datasets.datasets.macs import MACS, MACSCard
 from aac_datasets.datasets.wavcaps import WavCaps, WavCapsCard, HUGGINGFACE_HUB_CACHE
 from aac_datasets.utils.cmdline import _str_to_bool, _setup_logging
-from aac_datasets.utils.paths import (
+from aac_datasets.utils.globals import (
     get_default_root,
     get_default_ffmpeg_path,
     get_default_ytdl_path,

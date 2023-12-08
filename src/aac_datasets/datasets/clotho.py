@@ -27,7 +27,7 @@ from typing_extensions import TypedDict, NotRequired
 
 from aac_datasets.datasets.base import AACDataset, DatasetCard
 from aac_datasets.utils.download import hash_file
-from aac_datasets.utils.paths import _get_root
+from aac_datasets.utils.globals import _get_root
 
 
 pylog = logging.getLogger(__name__)

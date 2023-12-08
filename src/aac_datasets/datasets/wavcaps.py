@@ -27,7 +27,7 @@ from typing_extensions import TypedDict
 from aac_datasets.datasets.base import AACDataset, DatasetCard
 from aac_datasets.utils.collections import list_dict_to_dict_list
 from aac_datasets.utils.download import safe_rmdir
-from aac_datasets.utils.paths import _get_root, _get_zip_path
+from aac_datasets.utils.globals import _get_root, _get_zip_path
 
 
 pylog = logging.getLogger(__name__)
