@@ -95,9 +95,6 @@ def __get_default_value(value_name: str) -> str:
     process_func = __DEFAULT_GLOBALS[value_name]["process"]
 
     for source, value_or_env_varname in values.items():
-        if value_or_env_varname is None:
-            continue
-
         if source.startswith("env"):
             value = os.getenv(value_or_env_varname, None)
         else:
