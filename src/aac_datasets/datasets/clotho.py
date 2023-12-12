@@ -99,7 +99,7 @@ class ClothoCard(DatasetCard):
 class Clotho(AACDataset[ClothoItem]):
     r"""Unofficial Clotho PyTorch dataset.
 
-    Subsets available are 'train', 'val', 'eval', 'test' and 'analysis'.
+    Subsets available are 'train', 'val', 'eval', 'dcase_aac_test', 'dcase_aac_analysis', 'dcase_t2a_audio' and 'dcase_t2a_captions'.
 
     Audio are waveform sounds of 15 to 30 seconds, sampled at 44100 Hz.
     Target is a list of 5 different sentences strings describing an audio sample.
