@@ -100,7 +100,7 @@ class AudioCaps(AACDataset[AudioCapsItem]):
     Audio is a waveform tensor of shape (1, n_times) of 10 seconds max, sampled at 32kHz by default.
     Target is a list of strings containing the captions.
     The 'train' subset has only 1 caption per sample and 'val' and 'test' have 5 captions.
-    Download requires 'youtube-dl' and 'ffmpeg' commands.
+    Download requires 'yt-dlp' and 'ffmpeg' commands.
 
     AudioCaps paper : https://www.aclweb.org/anthology/N19-1011.pdf
 
@@ -173,8 +173,8 @@ class AudioCaps(AACDataset[AudioCapsItem]):
             defaults to 32000.
         :param ffmpeg_path: Path to ffmpeg executable file.
             defaults to "ffmpeg".
-        :param ytdl_path: Path to youtube-dl or ytdlp executable.
-            defaults to "youtube-dl".
+        :param ytdl_path: Path to yt-dlp or ytdlp executable.
+            defaults to "yt-dlp".
         """
         if subset not in AudioCapsCard.SUBSETS:
             raise ValueError(
@@ -709,11 +709,11 @@ def _download_and_extract_from_youtube(
     ytdl_path: Union[str, Path, None] = None,
     ffmpeg_path: Union[str, Path, None] = None,
 ) -> bool:
-    """Download audio from youtube with youtube-dl and ffmpeg."""
+    """Download audio from youtube with yt-dlp and ffmpeg."""
     ytdl_path = _get_ytdl_path(ytdl_path)
     ffmpeg_path = _get_ffmpeg_path(ffmpeg_path)
 
-    # Get audio download link with youtube-dl, without start time
+    # Get audio download link with yt-dlp, without start time
     link = _get_youtube_link(youtube_id, None)
     get_url_command = [
         ytdl_path,

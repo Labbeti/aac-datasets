@@ -34,11 +34,11 @@ def get_default_ffmpeg_path() -> str:
 
 
 def get_default_ytdl_path() -> str:
-    """Returns the default youtube-dl executable path.
+    """Returns the default yt-dlp executable path.
 
     If :func:`~aac_datasets.utils.globals.set_default_ytdl_path` has been used before with a string argument, it will return the value given to this function.
     Else if the environment variable AAC_DATASETS_YTDL_PATH has been set to a string, it will return its value.
-    Else it will be equal to "youtube-dl" by default.
+    Else it will be equal to "yt-dlp" by default.
     """
     return __get_default_value("ytdl")
 
