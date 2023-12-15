@@ -52,6 +52,7 @@ class WavCapsCard(DatasetCard):
     }
     """
     DEFAULT_REVISION: str = "85a0c21e26fa7696a5a74ce54fada99a9b43c6de"
+    DEFAULT_SUBSET: str = "as_noac"
     DESCRIPTION: str = "WavCaps: A ChatGPT-Assisted Weakly-Labelled Audio Captioning Dataset for Audio-Language Multimodal Research."
     EXPECTED_SIZES: ClassVar[Dict[str, int]] = {
         "AudioSet_SL": 108317,
@@ -75,7 +76,7 @@ def load_wavcaps_dataset(
     root: Union[str, Path, None] = None,
     hf_cache_dir: Optional[str] = None,
     revision: Optional[str] = None,
-    subset: str = "as_noac",
+    subset: str = WavCapsCard.DEFAULT_SUBSET,
     verbose: int = 0,
 ) -> Dict[str, List[Any]]:
     """Load WavCaps metadata."""
@@ -231,7 +232,7 @@ def load_wavcaps_dataset(
 
 def prepare_wavcaps_dataset(
     root: Union[str, Path, None] = None,
-    subset: str = "as_noac",
+    subset: str = WavCapsCard.DEFAULT_SUBSET,
     revision: Optional[str] = None,
     hf_cache_dir: Optional[str] = None,
     repo_id: Optional[str] = None,

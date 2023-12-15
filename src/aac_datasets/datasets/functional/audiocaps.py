@@ -53,6 +53,7 @@ class AudioCapsCard(DatasetCard):
         url          = {https://aclanthology.org/N19-1011},
     }
     """
+    DEFAULT_SUBSET: str = "train"
     HOMEPAGE: str = "https://audiocaps.github.io/"
     LANGUAGE: Tuple[str, ...] = ("en",)
     LANGUAGE_DETAILS: Tuple[str, ...] = ("en-US",)
@@ -64,23 +65,24 @@ class AudioCapsCard(DatasetCard):
 
 
 def load_audiocaps_dataset(
-    root: str,
-    subset: str,
-    sr: int,
-    with_tags: bool,
-    exclude_removed_audio: bool,
-    verbose: int,
+    root: Union[str, Path, None] = None,
+    subset: str = AudioCapsCard.DEFAULT_SUBSET,
+    sr: int = 32_000,
+    with_tags: bool = False,
+    exclude_removed_audio: bool = True,
+    verbose: int = 0,
     audio_format: str = "flac",
 ) -> Tuple[Dict[str, List[Any]], List[str]]:
     """Load AudioCaps metadata."""
-    if not _is_prepared(root, subset, sr, verbose):
-        raise RuntimeError(
-            f"Cannot load data: audiocaps_{subset} is not prepared in data root={root}. Please use download=True in dataset constructor."
-        )
 
     root = _get_root(root)
     audiocaps_root = _get_audiocaps_dpath(root, sr)
     audio_subset_dpath = _get_audio_subset_dpath(root, subset, sr)
+
+    if not _is_prepared(root, subset, sr, verbose):
+        raise RuntimeError(
+            f"Cannot load data: audiocaps_{subset} is not prepared in data root={root}. Please use download=True in dataset constructor."
+        )
 
     links = _AUDIOCAPS_LINKS[subset]
     captions_fname = links["captions"]["fname"]
@@ -225,7 +227,7 @@ def load_audiocaps_dataset(
 
 def prepare_audiocaps_dataset(
     root: Union[str, Path, None] = None,
-    subset: str = "train",
+    subset: str = AudioCapsCard.DEFAULT_SUBSET,
     sr: int = 32_000,
     with_tags: bool = False,
     verbose: int = 0,
@@ -239,6 +241,7 @@ def prepare_audiocaps_dataset(
     download_audio: bool = True,
 ) -> None:
     """Prepare AudioCaps metadata."""
+
     root = _get_root(root)
     ytdl_path = _get_ytdl_path(ytdl_path)
     ffmpeg_path = _get_ffmpeg_path(ffmpeg_path)

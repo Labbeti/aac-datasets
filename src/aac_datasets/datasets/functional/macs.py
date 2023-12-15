@@ -46,7 +46,8 @@ class MACSCard(DatasetCard):
         doi.         = {10.5281/zenodo.5770113}
     }
     """
-    DESCRIPTION = "Multi-Annotator Captioned Soundscapes dataset."
+    DEFAULT_SUBSET: str = "full"
+    DESCRIPTION: str = "Multi-Annotator Captioned Soundscapes dataset."
     HOMEPAGE: str = "https://zenodo.org/record/5114771"
     LANGUAGE: Tuple[str, ...] = ("en",)
     LANGUAGE_DETAILS: Tuple[str, ...] = ("en-US",)
@@ -63,10 +64,11 @@ class MACSCard(DatasetCard):
 
 def load_macs_dataset(
     root: Union[str, Path, None] = None,
-    subset: str = "full",
+    subset: str = MACSCard.DEFAULT_SUBSET,
     verbose: int = 0,
 ) -> Tuple[Dict[str, List[Any]], Dict[int, float]]:
     """Load MACS metadata."""
+
     root = _get_root(root)
     if not _is_prepared(root):
         raise RuntimeError(
@@ -158,13 +160,14 @@ def load_macs_dataset(
 
 def prepare_macs_dataset(
     root: Union[str, Path, None] = None,
-    subset: str = "full",
+    subset: str = MACSCard.DEFAULT_SUBSET,
     verbose: int = 0,
     force: bool = False,
     verify_files: bool = True,
     clean_archives: bool = True,
 ) -> None:
     """Prepare MACS metadata."""
+
     root = _get_root(root)
     if not osp.isdir(root):
         raise RuntimeError(f"Cannot find root directory '{root}'.")
