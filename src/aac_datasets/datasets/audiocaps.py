@@ -643,7 +643,7 @@ def _prepare_audiocaps_dataset(
                 else:
                     if verbose >= 2:
                         pylog.warning(
-                            f"{prefix}Cannot extract audio from {youtube_id}. (maybe the source video has been removed?)"
+                            f"{prefix}Cannot extract audio '{youtube_id}'. (maybe the source video has been removed?)"
                         )
                     n_download_err += 1
 
