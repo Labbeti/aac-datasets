@@ -4,7 +4,8 @@
 import logging
 
 from argparse import ArgumentParser, Namespace
-from typing import Dict, Iterable, Optional
+from pathlib import Path
+from typing import Dict, Iterable, Optional, Union
 
 import yaml
 
@@ -13,8 +14,8 @@ import aac_datasets
 from aac_datasets.datasets.audiocaps import AudioCaps, AudioCapsCard
 from aac_datasets.datasets.clotho import Clotho, ClothoCard
 from aac_datasets.datasets.macs import MACS, MACSCard
-from aac_datasets.datasets.wavcaps import WavCaps, WavCapsCard, HUGGINGFACE_HUB_CACHE
-from aac_datasets.utils.cmdline import _str_to_bool, _setup_logging
+from aac_datasets.datasets.wavcaps import WavCaps, WavCapsCard
+from aac_datasets.utils.cmdline import _str_to_bool, _str_to_opt_str, _setup_logging
 from aac_datasets.utils.globals import (
     get_default_root,
     get_default_ffmpeg_path,
@@ -27,12 +28,12 @@ pylog = logging.getLogger(__name__)
 
 
 def download_audiocaps(
-    root: str = ...,
+    root: Union[str, Path, None] = None,
     verbose: int = 1,
     force: bool = False,
     download: bool = True,
-    ffmpeg_path: str = ...,
-    ytdl_path: str = ...,
+    ffmpeg_path: Union[str, Path, None] = None,
+    ytdl_path: Union[str, Path, None] = None,
     with_tags: bool = False,
     subsets: Iterable[str] = AudioCapsCard.SUBSETS,
 ) -> Dict[str, AudioCaps]:
@@ -53,7 +54,7 @@ def download_audiocaps(
 
 
 def download_clotho(
-    root: str = ...,
+    root: Union[str, Path, None] = None,
     verbose: int = 1,
     force: bool = False,
     download: bool = True,
@@ -83,7 +84,7 @@ def download_clotho(
 
 
 def download_macs(
-    root: str = ...,
+    root: Union[str, Path, None] = None,
     verbose: int = 1,
     force: bool = False,
     download: bool = True,
@@ -102,15 +103,15 @@ def download_macs(
 
 
 def download_wavcaps(
-    root: str = ...,
+    root: Union[str, Path, None] = None,
     verbose: int = 1,
     force: bool = False,
     download: bool = True,
     clean_archives: bool = False,
     subsets: Iterable[str] = WavCapsCard.SUBSETS,
-    hf_cache_dir: Optional[str] = HUGGINGFACE_HUB_CACHE,
+    hf_cache_dir: Optional[str] = None,
     revision: Optional[str] = WavCapsCard.DEFAULT_REVISION,
-    zip_path: str = ...,
+    zip_path: Union[str, Path, None] = None,
 ) -> Dict[str, WavCaps]:
     """Download :class:`~aac_datasets.datasets.wavcaps.WavCaps` dataset."""
 
@@ -243,8 +244,8 @@ def _get_main_download_args() -> Namespace:
     )
     wavcaps_subparser.add_argument(
         "--hf_cache_dir",
-        type=str,
-        default=HUGGINGFACE_HUB_CACHE,
+        type=_str_to_opt_str,
+        default=None,
         help="Hugging face cache dir.",
     )
     wavcaps_subparser.add_argument(

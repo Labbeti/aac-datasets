@@ -36,10 +36,6 @@ from torch.utils.data.dataset import Dataset
 pylog = logging.getLogger(__name__)
 
 
-class DatasetCard:
-    pass
-
-
 ItemType = TypeVar("ItemType", bound=TypedDict, covariant=True)
 
 

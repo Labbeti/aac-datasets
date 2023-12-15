@@ -21,6 +21,14 @@ def _str_to_bool(s: str) -> bool:
         )
 
 
+def _str_to_opt_str(s: str) -> Optional[str]:
+    s = str(s)
+    if s.lower() == "none":
+        return None
+    else:
+        return s
+
+
 def _setup_logging(pkg_name: str, verbose: int, set_format: bool = True) -> None:
     handler = logging.StreamHandler(sys.stdout)
     if set_format:
