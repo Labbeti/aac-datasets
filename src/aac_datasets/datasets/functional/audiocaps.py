@@ -375,20 +375,53 @@ def prepare_audiocaps_dataset(
             pylog.info(f"- {n_samples} total samples.")
 
     if with_tags:
-        for key in ("class_labels_indices", "unbalanced"):
-            infos = _AUDIOSET_LINKS[key]
-            url = infos["url"]
-            fname = infos["fname"]
-            fpath = osp.join(audiocaps_root, fname)
-            if not osp.isfile(fpath):
-                if verbose >= 1:
-                    pylog.info(f"Downloading file '{fname}'...")
-                download_url_to_file(url, fpath, progress=verbose >= 1)
+        prepare_class_labels_indices(root)
 
     if verbose >= 2:
         pylog.debug(
             f"Dataset {AudioCapsCard.PRETTY_NAME} (subset={subset}) has been prepared."
         )
+
+
+def load_class_labels_indices(
+    root: Union[str, Path, None] = None,
+    sr: int = 32_000,
+) -> List[Dict[str, str]]:
+    root = _get_root(root)
+    class_labels_indices_fname = _AUDIOSET_LINKS["class_labels_indices"]["fname"]
+    class_labels_indices_fpath = osp.join(
+        _get_audiocaps_dpath(root, sr),
+        class_labels_indices_fname
+    )
+    if not osp.isfile(class_labels_indices_fpath):
+        raise ValueError(
+            f"Cannot find class_labels_indices file in root='{root}'."
+            f"Maybe use AudioCaps(root, download=True, with_tags=True) before or use a different root directory."
+        )
+
+    with open(class_labels_indices_fpath, "r") as file:
+        reader = csv.DictReader(file)
+        audioset_classes_data = list(reader)
+    return audioset_classes_data
+
+
+def prepare_class_labels_indices(
+    root: Union[str, Path, None] = None,
+    sr: int = 32_000,
+    verbose: int = 0,
+) -> None:
+    root = _get_root(root)
+    audiocaps_root = _get_audiocaps_dpath(root, sr)
+
+    for key in ("class_labels_indices", "unbalanced"):
+        infos = _AUDIOSET_LINKS[key]
+        url = infos["url"]
+        fname = infos["fname"]
+        fpath = osp.join(audiocaps_root, fname)
+        if not osp.isfile(fpath):
+            if verbose >= 1:
+                pylog.info(f"Downloading file '{fname}'...")
+            download_url_to_file(url, fpath, progress=verbose >= 1)
 
 
 def _get_audiocaps_dpath(root: str, sr: int) -> str:
@@ -615,23 +648,3 @@ _AUDIOSET_LINKS = {
         "url": "http://storage.googleapis.com/us_audioset/youtube_corpus/v1/csv/unbalanced_train_segments.csv",
     },
 }
-
-
-def load_class_labels_indices(
-    root: str,
-    sr: int = 32_000,
-) -> List[Dict[str, str]]:
-    class_labels_indices_fpath = osp.join(
-        _get_audiocaps_dpath(root, sr),
-        _AUDIOSET_LINKS["class_labels_indices"]["fname"],
-    )
-    if not osp.isfile(class_labels_indices_fpath):
-        raise ValueError(
-            f"Cannot find class_labels_indices file in root='{root}'."
-            f"Maybe use AudioCaps(root, download=True, with_tags=True) before or use a different root directory."
-        )
-
-    with open(class_labels_indices_fpath, "r") as file:
-        reader = csv.DictReader(file)
-        audioset_classes_data = list(reader)
-    return audioset_classes_data

@@ -35,6 +35,7 @@ from aac_datasets.datasets.functional.audiocaps import (
     load_audiocaps_dataset,
     load_class_labels_indices,
     prepare_audiocaps_dataset,
+    prepare_class_labels_indices,
     _get_audio_subset_dpath,
 )
 from aac_datasets.utils.globals import _get_root, _get_ffmpeg_path, _get_ytdl_path
@@ -256,10 +257,18 @@ class AudioCaps(AACDataset[AudioCapsItem]):
     @classmethod
     def load_class_labels_indices(
         cls,
-        root: str,
+        root: Union[str, Path, None] = None,
         sr: int = 32_000,
     ) -> List[Dict[str, str]]:
         return load_class_labels_indices(root, sr)
+
+    @classmethod
+    def prepare_class_labels_indices(
+        cls,
+        root: Union[str, Path, None] = None,
+        sr: int = 32_000,
+    ) -> None:
+        return prepare_class_labels_indices(root, sr)
 
     # Magic methods
     def __repr__(self) -> str:
