@@ -60,7 +60,7 @@ class AudioCapsCard(DatasetCard):
     NAME: str = "audiocaps"
     PRETTY_NAME: str = "AudioCaps"
     SIZE_CATEGORIES: Tuple[str, ...] = ("10K<n<100K",)
-    SUBSETS: Tuple[str, ...] = ("train", "val", "test", "train_v2")
+    SUBSETS: Tuple[str, ...] = tuple(CAPTIONS_PER_AUDIO.keys())
     TASK_CATEGORIES: Tuple[str, ...] = ("audio-to-text", "text-to-audio")
 
 
@@ -390,8 +390,7 @@ def load_class_labels_indices(
     root = _get_root(root)
     class_labels_indices_fname = _AUDIOSET_LINKS["class_labels_indices"]["fname"]
     class_labels_indices_fpath = osp.join(
-        _get_audiocaps_dpath(root, sr),
-        class_labels_indices_fname
+        _get_audiocaps_dpath(root, sr), class_labels_indices_fname
     )
     if not osp.isfile(class_labels_indices_fpath):
         raise ValueError(

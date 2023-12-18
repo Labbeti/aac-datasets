@@ -10,8 +10,6 @@ import os.path as osp
 from pathlib import Path
 from typing import (
     Any,
-    Callable,
-    ClassVar,
     Dict,
     List,
     Optional,
@@ -21,9 +19,7 @@ from typing import (
 from zipfile import ZipFile
 
 from py7zr import SevenZipFile
-from torch import Tensor
 from torch.hub import download_url_to_file
-from typing_extensions import TypedDict, NotRequired
 
 from aac_datasets.datasets.functional.common import DatasetCard
 from aac_datasets.utils.download import hash_file
@@ -35,7 +31,7 @@ pylog = logging.getLogger(__name__)
 
 class ClothoCard(DatasetCard):
     ANNOTATIONS_CREATORS: Tuple[str, ...] = ("crowdsourced",)
-    CAPTIONS_PER_AUDIO = {
+    CAPTIONS_PER_AUDIO: Dict[str, int] = {
         "dev": 5,
         "val": 5,
         "eval": 5,
@@ -64,15 +60,7 @@ class ClothoCard(DatasetCard):
     PRETTY_NAME: str = "Clotho"
     SAMPLE_RATE: int = 44_100  # Hz
     SIZE_CATEGORIES: Tuple[str, ...] = ("1K<n<10K",)
-    SUBSETS: Tuple[str, ...] = (
-        "dev",
-        "val",
-        "eval",
-        "dcase_aac_test",
-        "dcase_aac_analysis",
-        "dcase_t2a_audio",
-        "dcase_t2a_captions",
-    )
+    SUBSETS: Tuple[str, ...] = tuple(CAPTIONS_PER_AUDIO.keys())
     TASK_CATEGORIES: Tuple[str, ...] = ("audio-to-text", "text-to-audio")
     VERSIONS: Tuple[str, ...] = ("v1", "v2", "v2.1")
 

@@ -10,7 +10,7 @@ import subprocess
 import zipfile
 
 from pathlib import Path
-from typing import Any, ClassVar, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import tqdm
 
@@ -54,7 +54,7 @@ class WavCapsCard(DatasetCard):
     DEFAULT_REVISION: str = "85a0c21e26fa7696a5a74ce54fada99a9b43c6de"
     DEFAULT_SUBSET: str = "as_noac"
     DESCRIPTION: str = "WavCaps: A ChatGPT-Assisted Weakly-Labelled Audio Captioning Dataset for Audio-Language Multimodal Research."
-    EXPECTED_SIZES: ClassVar[Dict[str, int]] = {
+    EXPECTED_SIZES: Dict[str, int] = {
         "AudioSet_SL": 108317,
         "BBC_Sound_Effects": 31201,
         "FreeSound": 262300,
@@ -65,9 +65,9 @@ class WavCapsCard(DatasetCard):
     LANGUAGE_DETAILS: Tuple[str, ...] = ("en-US",)
     NAME: str = "wavcaps"
     PRETTY_NAME: str = "WavCaps"
-    REPO_ID: ClassVar[str] = "cvssp/WavCaps"
-    SOURCES: ClassVar[Tuple[str, ...]] = tuple(EXPECTED_SIZES.keys())
-    SUBSETS: Tuple[str, ...] = ("as", "bbc", "fsd", "sb", "as_noac", "fsd_nocl")
+    REPO_ID: str = "cvssp/WavCaps"
+    SOURCES: Tuple[str, ...] = tuple(EXPECTED_SIZES.keys())
+    SUBSETS: Tuple[str, ...] = tuple(CAPTIONS_PER_AUDIO.keys())
     SAMPLE_RATE: int = 32_000  # Hz
     TASK_CATEGORIES: Tuple[str, ...] = ("audio-to-text", "text-to-audio")
 
