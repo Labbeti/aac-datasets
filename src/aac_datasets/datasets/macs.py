@@ -80,12 +80,14 @@ class MACS(AACDataset[MACSItem]):
     # Initialization
     def __init__(
         self,
+        # Common args
         root: Union[str, Path, None] = None,
         subset: str = "full",
         download: bool = False,
         transform: Optional[Callable] = None,
-        flat_captions: bool = False,
         verbose: int = 0,
+        # MACS-specific args
+        flat_captions: bool = False,
     ) -> None:
         """
         :param root: The parent of the dataset root directory.
@@ -98,10 +100,11 @@ class MACS(AACDataset[MACSItem]):
             defaults to False.
         :param transform: The transform to apply to the global dict item. This transform is applied only in getitem method when argument is an integer.
             defaults to None.
-        :param flat_captions: If True, map captions to audio instead of audio to caption.
-            defaults to True.
         :param verbose: Verbose level to use. Can be 0 or 1.
             defaults to 0.
+
+        :param flat_captions: If True, map captions to audio instead of audio to caption.
+            defaults to True.
         """
         if subset not in MACSCard.SUBSETS:
             raise ValueError(
@@ -115,9 +118,9 @@ class MACS(AACDataset[MACSItem]):
                 root=root,
                 subset=subset,
                 verbose=verbose,
+                clean_archives=MACS.CLEAN_ARCHIVES,
                 force=MACS.FORCE_PREPARE_DATA,
                 verify_files=MACS.VERIFY_FILES,
-                clean_archives=MACS.CLEAN_ARCHIVES,
             )
 
         raw_data, annotator_id_to_competence = load_macs_dataset(

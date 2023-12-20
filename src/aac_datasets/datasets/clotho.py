@@ -107,12 +107,14 @@ class Clotho(AACDataset[ClothoItem]):
     # Initialization
     def __init__(
         self,
+        # Common args
         root: Union[str, Path, None] = None,
         subset: str = "dev",
         download: bool = False,
         transform: Optional[Callable] = None,
-        flat_captions: bool = False,
         verbose: int = 0,
+        # Clotho-specific args
+        flat_captions: bool = False,
         version: str = ClothoCard.DEFAULT_VERSION,
     ) -> None:
         """
@@ -125,10 +127,11 @@ class Clotho(AACDataset[ClothoItem]):
             defaults to False.
         :param transform: The transform to apply to the global dict item. This transform is applied only in getitem method when argument is an integer.
             defaults to None.
-        :param flat_captions: If True, map captions to audio instead of audio to caption.
-            defaults to True.
         :param verbose: Verbose level to use. Can be 0 or 1.
             defaults to 0.
+
+        :param flat_captions: If True, map captions to audio instead of audio to caption.
+            defaults to True.
         :param version: The version of the dataset. Can be one of :attr:`~ClothoCard.versions`.
             defaults to 'v2.1'.
         """
@@ -155,10 +158,10 @@ class Clotho(AACDataset[ClothoItem]):
                 root=root,
                 subset=subset,
                 verbose=verbose,
-                version=version,
+                clean_archives=Clotho.CLEAN_ARCHIVES,
                 force=Clotho.FORCE_PREPARE_DATA,
                 verify_files=Clotho.VERIFY_FILES,
-                clean_archives=Clotho.CLEAN_ARCHIVES,
+                version=version,
             )
 
         # Exclude some columns containing empty values for several subsets

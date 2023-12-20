@@ -112,14 +112,16 @@ class WavCaps(AACDataset[WavCapsItem]):
 
     def __init__(
         self,
+        # Common args
         root: Union[str, Path, None] = None,
         subset: str = "as_noac",
         download: bool = False,
         transform: Optional[Callable] = None,
+        verbose: int = 0,
+        # WavCaps-specific args
         hf_cache_dir: Optional[str] = None,
         repo_id: Optional[str] = None,
         revision: Optional[str] = WavCapsCard.DEFAULT_REVISION,
-        verbose: int = 1,
         zip_path: Union[str, Path, None] = None,
     ) -> None:
         """
@@ -132,12 +134,15 @@ class WavCaps(AACDataset[WavCapsItem]):
             defaults to False.
         :param transform: The transform to apply to the global dict item. This transform is applied only in getitem method when argument is an integer.
             defaults to None.
-        :param hf_cache_dir: HuggingFace cache directory. If None, use the global value :variable:`~huggingface_hub.constants.HUGGINGFACE_HUB_CACHE`.
-            defaults to None.
-        :param revision: The HuggingFace revision tag.
-            defaults to :attr:`~WavCapsCard.DEFAULT_REVISION`.
         :param verbose: Verbose level. Can be 0 or 1.
             defaults to 0.
+
+        :param hf_cache_dir: HuggingFace cache directory. If None, use the global value :variable:`~huggingface_hub.constants.HUGGINGFACE_HUB_CACHE`.
+            defaults to None.
+        :param repo_id: Repository ID on HuggingFace.
+            defaults to "cvssp/WavCaps".
+        :param revision: The HuggingFace revision tag.
+            defaults to :attr:`~WavCapsCard.DEFAULT_REVISION`.
         :param zip_path: Path to zip executable path in shell.
             defaults to "zip".
         """
@@ -166,11 +171,11 @@ class WavCaps(AACDataset[WavCapsItem]):
 
         raw_data = load_wavcaps_dataset(
             root=root,
+            subset=subset,
+            verbose=verbose,
             hf_cache_dir=hf_cache_dir,
             repo_id=repo_id,
             revision=revision,
-            subset=subset,
-            verbose=verbose,
         )
 
         size = len(next(iter(raw_data.values())))

@@ -66,12 +66,26 @@ class ClothoCard(DatasetCard):
 
 
 def load_clotho_dataset(
+    # Common args
     root: Union[str, Path, None] = None,
     subset: str = ClothoCard.DEFAULT_SUBSET,
     verbose: int = 0,
+    # Clotho-specific args
     version: str = ClothoCard.DEFAULT_VERSION,
 ) -> Dict[str, List[Any]]:
-    """Load Clotho metadata."""
+    """Load Clotho metadata.
+
+    :param root: Dataset root directory.
+        defaults to ".".
+    :param subset: The subset of Clotho to use. Can be one of :attr:`~ClothoCard.SUBSETS`.
+        defaults to "dev".
+    :param verbose: Verbose level.
+        defaults to 0.
+
+    :param version: The version of the dataset. Can be one of :attr:`~ClothoCard.versions`.
+        defaults to 'v2.1'.
+    :returns: A dictionnary of lists containing each metadata.
+    """
     root = _get_root(root)
     if not _is_prepared(root, version, subset):
         raise RuntimeError(
@@ -198,15 +212,34 @@ def load_clotho_dataset(
 
 
 def prepare_clotho_dataset(
+    # Common args
     root: Union[str, Path, None] = None,
     subset: str = ClothoCard.DEFAULT_SUBSET,
     verbose: int = 0,
-    version: str = ClothoCard.DEFAULT_VERSION,
+    # Clotho-specific args
+    clean_archives: bool = True,
     force: bool = False,
     verify_files: bool = True,
-    clean_archives: bool = True,
+    version: str = ClothoCard.DEFAULT_VERSION,
 ) -> None:
-    """Prepare Clotho metadata."""
+    """Prepare Clotho metadata.
+
+    :param root: Dataset root directory.
+        defaults to ".".
+    :param subset: The subset of AudioCaps to use. Can be one of :attr:`~ClothoCard.SUBSETS`.
+        defaults to "dev".
+    :param verbose: Verbose level.
+        defaults to 0.
+
+    :param clean_archives: If True, remove the compressed archives from disk to save space.
+        defaults to True.
+    :param force: If True, force to download again all files.
+        defaults to False.
+    :param verify_files: If True, check all file already downloaded are valid.
+        defaults to False.
+    :param version: The version of the dataset. Can be one of :attr:`~ClothoCard.versions`.
+        defaults to 'v2.1'.
+    """
     root = _get_root(root)
     if not osp.isdir(root):
         raise RuntimeError(f"Cannot find root directory '{root}'.")

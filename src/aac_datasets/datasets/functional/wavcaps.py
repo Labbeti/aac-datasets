@@ -73,13 +73,29 @@ class WavCapsCard(DatasetCard):
 
 
 def load_wavcaps_dataset(
+    # Common args
     root: Union[str, Path, None] = None,
-    hf_cache_dir: Optional[str] = None,
-    revision: Optional[str] = None,
     subset: str = WavCapsCard.DEFAULT_SUBSET,
     verbose: int = 0,
+    # WavCaps-specific args
+    hf_cache_dir: Optional[str] = None,
+    revision: Optional[str] = None,
 ) -> Dict[str, List[Any]]:
-    """Load WavCaps metadata."""
+    """Load WavCaps metadata.
+
+    :param root: Dataset root directory.
+        defaults to ".".
+    :param subset: The subset of MACS to use. Can be one of :attr:`~MACSCard.SUBSETS`.
+        defaults to "as_noac".
+    :param verbose: Verbose level.
+        defaults to 0.
+
+    :param hf_cache_dir: Optional override for HuggingFace cache directory path.
+        defaults to None.
+    :param revision: Optional override for revision commit/name for HuggingFace rapository.
+        defaults to None.
+    :returns: A dictionnary of lists containing each metadata.
+    """
     root = _get_root(root)
     if subset not in WavCapsCard.SUBSETS:
         raise ValueError(
@@ -122,7 +138,11 @@ def load_wavcaps_dataset(
             raise ValueError(f"INTERNAL ERROR: Invalid argument subset={subset}.")
 
         raw_data = load_wavcaps_dataset(
-            root, hf_cache_dir, revision, target_subset, verbose
+            root=root,
+            subset=target_subset,
+            verbose=verbose,
+            hf_cache_dir=hf_cache_dir,
+            revision=revision,
         )
         wavcaps_ids = raw_data["id"]
 
@@ -231,19 +251,46 @@ def load_wavcaps_dataset(
 
 
 def prepare_wavcaps_dataset(
+    # Common args
     root: Union[str, Path, None] = None,
     subset: str = WavCapsCard.DEFAULT_SUBSET,
-    revision: Optional[str] = None,
+    verbose: int = 0,
+    # WavCaps-specific args
+    clean_archives: bool = False,
+    force: bool = False,
     hf_cache_dir: Optional[str] = None,
     repo_id: Optional[str] = None,
     resume_dl: bool = True,
-    force: bool = False,
+    revision: Optional[str] = None,
     verify_files: bool = False,
-    clean_archives: bool = False,
     zip_path: Union[str, Path, None] = None,
-    verbose: int = 0,
 ) -> None:
-    """Prepare WavCaps metadata."""
+    """Prepare WavCaps metadata.
+
+    :param root: Dataset root directory.
+        defaults to ".".
+    :param subset: The subset of MACS to use. Can be one of :attr:`~WavCapsCard.SUBSETS`.
+        defaults to "as_noac".
+    :param verbose: Verbose level.
+        defaults to 0.
+
+    :param clean_archives: If True, remove the compressed archives from disk to save space.
+        defaults to True.
+    :param force: If True, force to download again all files.
+        defaults to False.
+    :param hf_cache_dir: Optional override for HuggingFace cache directory path.
+        defaults to None.
+    :param repo_id: Repository ID on HuggingFace.
+        defaults to "cvssp/WavCaps".
+    :param resume_dl: If True, resume interrupted download.
+        defaults to True.
+    :param revision: Optional override for revision commit/name for HuggingFace rapository.
+        defaults to None.
+    :param verify_files: If True, check all file already downloaded are valid.
+        defaults to False.
+    :param zip_path: Path to zip executable path in shell.
+        defaults to "zip".
+    """
     if subset == "as_noac":
         return prepare_wavcaps_dataset(
             root=root,

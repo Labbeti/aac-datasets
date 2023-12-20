@@ -35,9 +35,14 @@ def download_audiocaps(
     ffmpeg_path: Union[str, Path, None] = None,
     ytdl_path: Union[str, Path, None] = None,
     with_tags: bool = False,
-    subsets: Iterable[str] = AudioCapsCard.SUBSETS,
+    subsets: Union[Iterable[str], str] = AudioCapsCard.SUBSETS,
 ) -> Dict[str, AudioCaps]:
     """Download :class:`~aac_datasets.datasets.audiocaps.AudioCaps` dataset subsets."""
+    if isinstance(subsets, str):
+        subsets = [subsets]
+    else:
+        subsets = list(subsets)
+
     AudioCaps.FORCE_PREPARE_DATA = force
     datasets = {}
     for subset in subsets:
@@ -63,7 +68,11 @@ def download_clotho(
     subsets: Iterable[str] = ClothoCard.SUBSETS,
 ) -> Dict[str, Clotho]:
     """Download :class:`~aac_datasets.datasets.clotho.Clotho` dataset subsets."""
-    subsets = list(subsets)
+    if isinstance(subsets, str):
+        subsets = [subsets]
+    else:
+        subsets = list(subsets)
+
     if version == "v1":
         if "val" in subsets:
             if verbose >= 0:
@@ -114,6 +123,10 @@ def download_wavcaps(
     zip_path: Union[str, Path, None] = None,
 ) -> Dict[str, WavCaps]:
     """Download :class:`~aac_datasets.datasets.wavcaps.WavCaps` dataset."""
+    if isinstance(subsets, str):
+        subsets = [subsets]
+    else:
+        subsets = list(subsets)
 
     WavCaps.FORCE_PREPARE_DATA = force
     WavCaps.CLEAN_ARCHIVES = clean_archives

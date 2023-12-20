@@ -63,11 +63,21 @@ class MACSCard(DatasetCard):
 
 
 def load_macs_dataset(
+    # Common args
     root: Union[str, Path, None] = None,
     subset: str = MACSCard.DEFAULT_SUBSET,
     verbose: int = 0,
 ) -> Tuple[Dict[str, List[Any]], Dict[int, float]]:
-    """Load MACS metadata."""
+    """Load MACS metadata.
+
+    :param root: Dataset root directory.
+        defaults to ".".
+    :param subset: The subset of MACS to use. Can be one of :attr:`~MACSCard.SUBSETS`.
+        defaults to "full".
+    :param verbose: Verbose level.
+        defaults to 0.
+    :returns: A dictionnary of lists containing each metadata.
+    """
 
     root = _get_root(root)
     if not _is_prepared(root):
@@ -96,7 +106,7 @@ def load_macs_dataset(
         reader = csv.DictReader(file, delimiter="\t")
         tau_tags_data = list(reader)
 
-    competence_fname = "MACS_competence.csv"
+    competence_fname = MACS_FILES["annotators_competences"]["fname"]
     competence_fpath = osp.join(macs_dpath, competence_fname)
     if verbose >= 2:
         pylog.debug(f"Reading file {competence_fname}...")
@@ -159,14 +169,31 @@ def load_macs_dataset(
 
 
 def prepare_macs_dataset(
+    # Common args
     root: Union[str, Path, None] = None,
     subset: str = MACSCard.DEFAULT_SUBSET,
     verbose: int = 0,
+    # MACS-specific args
+    clean_archives: bool = True,
     force: bool = False,
     verify_files: bool = True,
-    clean_archives: bool = True,
 ) -> None:
-    """Prepare MACS metadata."""
+    """Prepare MACS metadata.
+
+    :param root: Dataset root directory.
+        defaults to ".".
+    :param subset: The subset of MACS to use. Can be one of :attr:`~MACSCard.SUBSETS`.
+        defaults to "full".
+    :param verbose: Verbose level.
+        defaults to 0.
+
+    :param clean_archives: If True, remove the compressed archives from disk to save space.
+        defaults to True.
+    :param force: If True, force to download again all files.
+        defaults to False.
+    :param verify_files: If True, check all file already downloaded are valid.
+        defaults to False.
+    """
 
     root = _get_root(root)
     if not osp.isdir(root):

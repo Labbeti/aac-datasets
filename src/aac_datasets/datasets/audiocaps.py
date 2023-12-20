@@ -106,16 +106,18 @@ class AudioCaps(AACDataset[AudioCapsItem]):
     # Initialization
     def __init__(
         self,
+        # Common args
         root: Union[str, Path, None] = None,
         subset: str = "train",
         download: bool = False,
         transform: Optional[Callable[[Dict[str, Any]], Any]] = None,
-        flat_captions: bool = False,
         verbose: int = 0,
+        # AudioCaps-specific args
         exclude_removed_audio: bool = True,
-        with_tags: bool = False,
-        sr: int = 32_000,
         ffmpeg_path: Union[str, Path, None] = None,
+        flat_captions: bool = False,
+        sr: int = 32_000,
+        with_tags: bool = False,
         ytdl_path: Union[str, Path, None] = None,
     ) -> None:
         """
@@ -128,21 +130,22 @@ class AudioCaps(AACDataset[AudioCapsItem]):
             defaults to False.
         :param transform: The transform to apply to the global dict item. This transform is applied only in getitem method when argument is an integer.
             defaults to None.
-        :param flat_captions: If True, map captions to audio instead of audio to caption.
-            defaults to True.
         :param verbose: Verbose level.
             defaults to 0.
+
         :param exclude_removed_audio: If True, the dataset will exclude from the dataset the audio not downloaded from youtube (i.e. not present on disk).
             If False, invalid audios will return an empty tensor of shape (0,).
             defaults to True.
-        :param with_tags: If True, load the tags from AudioSet dataset.
-            Note: tags needs to be downloaded with download=True & with_tags=True before being used.
-            defaults to False.
+        :param ffmpeg_path: Path to ffmpeg executable file.
+            defaults to "ffmpeg".
+        :param flat_captions: If True, map captions to audio instead of audio to caption.
+            defaults to True.
         :param sr: The sample rate used for audio files in the dataset (in Hz).
             Since original YouTube videos are recorded in various settings, this parameter allow to download allow audio files with a specific sample rate.
             defaults to 32000.
-        :param ffmpeg_path: Path to ffmpeg executable file.
-            defaults to "ffmpeg".
+        :param with_tags: If True, load the tags from AudioSet dataset.
+            Note: tags needs to be downloaded with download=True & with_tags=True before being used.
+            defaults to False.
         :param ytdl_path: Path to yt-dlp or ytdlp executable.
             defaults to "yt-dlp".
         """

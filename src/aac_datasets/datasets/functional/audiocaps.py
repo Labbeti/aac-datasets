@@ -65,15 +65,40 @@ class AudioCapsCard(DatasetCard):
 
 
 def load_audiocaps_dataset(
+    # Common args
     root: Union[str, Path, None] = None,
     subset: str = AudioCapsCard.DEFAULT_SUBSET,
+    verbose: int = 0,
+    # AudioCaps-specific args
+    audio_format: str = "flac",
+    exclude_removed_audio: bool = True,
     sr: int = 32_000,
     with_tags: bool = False,
-    exclude_removed_audio: bool = True,
-    verbose: int = 0,
-    audio_format: str = "flac",
 ) -> Tuple[Dict[str, List[Any]], List[str]]:
-    """Load AudioCaps metadata."""
+    """Load AudioCaps metadata.
+
+    :param root: Dataset root directory.
+        The data will be stored in the 'AUDIOCAPS' subdirectory.
+        defaults to ".".
+    :param subset: The subset of AudioCaps to use. Can be one of :attr:`~AudioCapsCard.SUBSETS`.
+        defaults to "train".
+    :param verbose: Verbose level.
+        defaults to 0.
+
+    :param audio_format: Audio format and extension name.
+        defaults to "flac".
+    :param exclude_removed_audio: If True, the dataset will exclude from the dataset the audio not downloaded from youtube (i.e. not present on disk).
+        If False, invalid audios will return an empty tensor of shape (0,).
+        defaults to True.
+    :param sr: The sample rate used for audio files in the dataset (in Hz).
+        Since original YouTube videos are recorded in various settings, this parameter allow to download allow audio files with a specific sample rate.
+        defaults to 32000.
+    :param with_tags: If True, load the tags from AudioSet dataset.
+        Note: tags needs to be downloaded with download=True & with_tags=True before being used.
+        defaults to False.
+    :returns: A dictionnary of lists containing each metadata.
+        Expected keys: "audiocaps_ids", "youtube_id", "start_time", "captions", "fname", "tags", "is_on_disk".
+    """
 
     root = _get_root(root)
     audiocaps_root = _get_audiocaps_dpath(root, sr)
@@ -226,21 +251,54 @@ def load_audiocaps_dataset(
 
 
 def prepare_audiocaps_dataset(
+    # Common args
     root: Union[str, Path, None] = None,
     subset: str = AudioCapsCard.DEFAULT_SUBSET,
-    sr: int = 32_000,
-    with_tags: bool = False,
     verbose: int = 0,
-    force: bool = False,
-    ytdl_path: Union[str, Path, None] = None,
-    ffmpeg_path: Union[str, Path, None] = None,
-    audio_format: str = "flac",
+    # AudioCaps-specific args
     audio_duration: float = 10.0,
-    n_channels: int = 1,
-    verify_files: bool = False,
+    audio_format: str = "flac",
     download_audio: bool = True,
+    ffmpeg_path: Union[str, Path, None] = None,
+    force: bool = False,
+    n_channels: int = 1,
+    sr: int = 32_000,
+    verify_files: bool = False,
+    ytdl_path: Union[str, Path, None] = None,
+    with_tags: bool = False,
 ) -> None:
-    """Prepare AudioCaps metadata."""
+    """Prepare AudioCaps data (audio, labels, metadata).
+
+    :param root: Dataset root directory.
+        The data will be stored in the 'AUDIOCAPS' subdirectory.
+        defaults to ".".
+    :param subset: The subset of AudioCaps to use. Can be one of :attr:`~AudioCapsCard.SUBSETS`.
+        defaults to "train".
+    :param verbose: Verbose level.
+        defaults to 0.
+
+    :param audio_duration: Extracted duration for each audio file in seconds.
+        defaults to 10.0.
+    :param audio_format: Audio format and extension name.
+        defaults to "flac".
+    :param download_audio: If True, download audio, metadata and labels files. Otherwise it will only donwload metadata and labels files.
+        defaults to True.
+    :param ffmpeg_path: Path to ffmpeg executable file.
+        defaults to "ffmpeg".
+    :param force: If True, force to download again all files.
+        defaults to False.
+    :param n_channels: Number of channels extracted for each audio file.
+        defaults to 1.
+    :param sr: The sample rate used for audio files in the dataset (in Hz).
+        Since original YouTube videos are recorded in various settings, this parameter allow to download allow audio files with a specific sample rate.
+        defaults to 32000.
+    :param verify_files: If True, check all file already downloaded are valid.
+        defaults to False.
+    :param with_tags: If True, download the tags from AudioSet dataset.
+        defaults to False.
+    :param ytdl_path: Path to yt-dlp or ytdlp executable.
+        defaults to "yt-dlp".
+    """
 
     root = _get_root(root)
     ytdl_path = _get_ytdl_path(ytdl_path)
