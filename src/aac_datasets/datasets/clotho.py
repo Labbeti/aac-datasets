@@ -20,7 +20,7 @@ from aac_datasets.datasets.base import AACDataset
 from aac_datasets.datasets.functional.clotho import (
     ClothoCard,
     load_clotho_dataset,
-    prepare_clotho_dataset,
+    download_clotho_dataset,
     _get_audio_subset_dpath,
 )
 from aac_datasets.utils.globals import _get_root
@@ -154,12 +154,12 @@ class Clotho(AACDataset[ClothoItem]):
         root = _get_root(root)
 
         if download:
-            prepare_clotho_dataset(
+            download_clotho_dataset(
                 root=root,
                 subset=subset,
+                force=Clotho.FORCE_PREPARE_DATA,
                 verbose=verbose,
                 clean_archives=Clotho.CLEAN_ARCHIVES,
-                force=Clotho.FORCE_PREPARE_DATA,
                 verify_files=Clotho.VERIFY_FILES,
                 version=version,
             )
@@ -200,7 +200,10 @@ class Clotho(AACDataset[ClothoItem]):
             column_names.remove(name)
 
         raw_data = load_clotho_dataset(
-            root=root, version=version, subset=subset, verbose=verbose
+            root=root,
+            subset=subset,
+            verbose=verbose,
+            version=version,
         )
 
         size = len(next(iter(raw_data.values())))

@@ -10,16 +10,16 @@ import subprocess
 import zipfile
 
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
 
 import tqdm
 
 from huggingface_hub import snapshot_download
 from huggingface_hub.constants import HUGGINGFACE_HUB_CACHE
 from huggingface_hub.utils.tqdm import (
+    are_progress_bars_disabled,
     disable_progress_bars,
     enable_progress_bars,
-    are_progress_bars_disabled,
 )
 from typing_extensions import TypedDict
 
@@ -250,14 +250,14 @@ def load_wavcaps_dataset(
     return raw_data
 
 
-def prepare_wavcaps_dataset(
+def download_wavcaps_dataset(
     # Common args
     root: Union[str, Path, None] = None,
     subset: str = WavCapsCard.DEFAULT_SUBSET,
+    force: bool = False,
     verbose: int = 0,
     # WavCaps-specific args
     clean_archives: bool = False,
-    force: bool = False,
     hf_cache_dir: Optional[str] = None,
     repo_id: Optional[str] = None,
     resume_dl: bool = True,
@@ -271,13 +271,13 @@ def prepare_wavcaps_dataset(
         defaults to ".".
     :param subset: The subset of MACS to use. Can be one of :attr:`~WavCapsCard.SUBSETS`.
         defaults to "as_noac".
+    :param force: If True, force to download again all files.
+        defaults to False.
     :param verbose: Verbose level.
         defaults to 0.
 
     :param clean_archives: If True, remove the compressed archives from disk to save space.
         defaults to True.
-    :param force: If True, force to download again all files.
-        defaults to False.
     :param hf_cache_dir: Optional override for HuggingFace cache directory path.
         defaults to None.
     :param repo_id: Repository ID on HuggingFace.
@@ -292,7 +292,7 @@ def prepare_wavcaps_dataset(
         defaults to "zip".
     """
     if subset == "as_noac":
-        return prepare_wavcaps_dataset(
+        return download_wavcaps_dataset(
             root=root,
             subset="as",
             revision=revision,
@@ -305,7 +305,7 @@ def prepare_wavcaps_dataset(
             verbose=verbose,
         )
     elif subset == "fsd_nocl":
-        return prepare_wavcaps_dataset(
+        return download_wavcaps_dataset(
             root=root,
             subset="fsd",
             revision=revision,
@@ -520,6 +520,46 @@ def prepare_wavcaps_dataset(
                 if verbose >= 1:
                     pylog.info(f"Removing archive file {name} for source={source}...")
                 os.remove(fpath)
+
+
+def download_wavcaps_datasets(
+    # Common args
+    root: Union[str, Path, None] = None,
+    subsets: Union[str, Iterable[str]] = WavCapsCard.DEFAULT_SUBSET,
+    force: bool = False,
+    verbose: int = 0,
+    # WavCaps-specific args
+    clean_archives: bool = False,
+    hf_cache_dir: Optional[str] = None,
+    repo_id: Optional[str] = None,
+    resume_dl: bool = True,
+    revision: Optional[str] = None,
+    verify_files: bool = False,
+    zip_path: Union[str, Path, None] = None,
+) -> None:
+    """Function helper to download a list of subsets. See :func:`~aac_datasets.datasets.functional.wavcaps.download_wavcaps_dataset` for details."""
+    if isinstance(subsets, str):
+        subsets = [subsets]
+    else:
+        subsets = list(subsets)
+
+    kwargs: Dict[str, Any] = dict(
+        root=root,
+        force=force,
+        verbose=verbose,
+        clean_archives=clean_archives,
+        hf_cache_dir=hf_cache_dir,
+        repo_id=repo_id,
+        resume_dl=resume_dl,
+        revision=revision,
+        verify_files=verify_files,
+        zip_path=zip_path,
+    )
+    for subset in subsets:
+        download_wavcaps_dataset(
+            subset=subset,
+            **kwargs,
+        )
 
 
 def _get_wavcaps_dpath(

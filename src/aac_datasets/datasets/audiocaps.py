@@ -13,7 +13,6 @@ from typing import (
     Dict,
     List,
     Optional,
-    Tuple,
     Union,
 )
 
@@ -32,13 +31,13 @@ except ImportError:
 from aac_datasets.datasets.base import AACDataset
 from aac_datasets.datasets.functional.audiocaps import (
     AudioCapsCard,
+    download_audiocaps_dataset,
+    download_class_labels_indices,
     load_audiocaps_dataset,
     load_class_labels_indices,
-    prepare_audiocaps_dataset,
-    prepare_class_labels_indices,
     _get_audio_subset_dpath,
 )
-from aac_datasets.utils.globals import _get_root, _get_ffmpeg_path, _get_ytdl_path
+from aac_datasets.utils.globals import _get_root, _get_ffmpeg_path, _get_ytdlp_path
 
 
 pylog = logging.getLogger(__name__)
@@ -118,7 +117,7 @@ class AudioCaps(AACDataset[AudioCapsItem]):
         flat_captions: bool = False,
         sr: int = 32_000,
         with_tags: bool = False,
-        ytdl_path: Union[str, Path, None] = None,
+        ytdlp_path: Union[str, Path, None] = None,
     ) -> None:
         """
         :param root: Dataset root directory.
@@ -146,7 +145,7 @@ class AudioCaps(AACDataset[AudioCapsItem]):
         :param with_tags: If True, load the tags from AudioSet dataset.
             Note: tags needs to be downloaded with download=True & with_tags=True before being used.
             defaults to False.
-        :param ytdl_path: Path to yt-dlp or ytdlp executable.
+        :param ytdlp_path: Path to yt-dlp or ytdlp executable.
             defaults to "yt-dlp".
         """
         if subset not in AudioCapsCard.SUBSETS:
@@ -155,34 +154,34 @@ class AudioCaps(AACDataset[AudioCapsItem]):
             )
 
         root = _get_root(root)
-        ytdl_path = _get_ytdl_path(ytdl_path)
+        ytdlp_path = _get_ytdlp_path(ytdlp_path)
         ffmpeg_path = _get_ffmpeg_path(ffmpeg_path)
 
         if download:
-            prepare_audiocaps_dataset(
+            download_audiocaps_dataset(
                 root=root,
                 subset=subset,
-                sr=sr,
-                with_tags=with_tags,
-                verbose=verbose,
                 force=AudioCaps.FORCE_PREPARE_DATA,
-                ytdl_path=ytdl_path,
-                ffmpeg_path=ffmpeg_path,
-                audio_format=AudioCaps.AUDIO_FORMAT,
+                verbose=verbose,
                 audio_duration=AudioCaps.AUDIO_DURATION,
-                n_channels=AudioCaps.AUDIO_N_CHANNELS,
-                verify_files=AudioCaps.VERIFY_FILES,
+                audio_format=AudioCaps.AUDIO_FORMAT,
                 download_audio=AudioCaps.DOWNLOAD_AUDIO,
+                ffmpeg_path=ffmpeg_path,
+                n_channels=AudioCaps.AUDIO_N_CHANNELS,
+                sr=sr,
+                verify_files=AudioCaps.VERIFY_FILES,
+                with_tags=with_tags,
+                ytdlp_path=ytdlp_path,
             )
 
         raw_data, index_to_tagname = load_audiocaps_dataset(
             root=root,
             subset=subset,
-            sr=sr,
-            with_tags=with_tags,
-            exclude_removed_audio=exclude_removed_audio,
             verbose=verbose,
             audio_format=AudioCaps.AUDIO_FORMAT,
+            exclude_removed_audio=exclude_removed_audio,
+            sr=sr,
+            with_tags=with_tags,
         )
         audio_subset_dpath = _get_audio_subset_dpath(root, subset, sr)
         size = len(next(iter(raw_data.values())))
@@ -266,12 +265,12 @@ class AudioCaps(AACDataset[AudioCapsItem]):
         return load_class_labels_indices(root, sr)
 
     @classmethod
-    def prepare_class_labels_indices(
+    def download_class_labels_indices(
         cls,
         root: Union[str, Path, None] = None,
         sr: int = 32_000,
     ) -> None:
-        return prepare_class_labels_indices(root, sr)
+        return download_class_labels_indices(root, sr)
 
     # Magic methods
     def __repr__(self) -> str:

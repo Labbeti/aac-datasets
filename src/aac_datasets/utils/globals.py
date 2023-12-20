@@ -33,14 +33,14 @@ def get_default_ffmpeg_path() -> str:
     return __get_default_value("ffmpeg")
 
 
-def get_default_ytdl_path() -> str:
+def get_default_ytdlp_path() -> str:
     """Returns the default yt-dlp executable path.
 
-    If :func:`~aac_datasets.utils.globals.set_default_ytdl_path` has been used before with a string argument, it will return the value given to this function.
-    Else if the environment variable AAC_DATASETS_YTDL_PATH has been set to a string, it will return its value.
+    If :func:`~aac_datasets.utils.globals.set_default_ytdlp_path` has been used before with a string argument, it will return the value given to this function.
+    Else if the environment variable AAC_DATASETS_YTDLP_PATH has been set to a string, it will return its value.
     Else it will be equal to "yt-dlp" by default.
     """
-    return __get_default_value("ytdl")
+    return __get_default_value("ytdlp")
 
 
 def get_default_zip_path() -> str:
@@ -63,9 +63,9 @@ def set_default_ffmpeg_path(tmp_path: Union[str, Path, None]) -> None:
     __set_default_value("ffmpeg", tmp_path)
 
 
-def set_default_ytdl_path(java_path: Union[str, Path, None]) -> None:
+def set_default_ytdlp_path(java_path: Union[str, Path, None]) -> None:
     """Override default yt-dl executable path."""
-    __set_default_value("ytdl", java_path)
+    __set_default_value("ytdlp", java_path)
 
 
 def set_default_zip_path(tmp_path: Union[str, Path, None]) -> None:
@@ -82,8 +82,8 @@ def _get_ffmpeg_path(ffmpeg_path: Union[str, Path, None] = None) -> str:
     return __get_value("ffmpeg", ffmpeg_path)
 
 
-def _get_ytdl_path(ytdl_path: Union[str, Path, None] = None) -> str:
-    return __get_value("ytdl", ytdl_path)
+def _get_ytdlp_path(ytdlp_path: Union[str, Path, None] = None) -> str:
+    return __get_value("ytdlp", ytdlp_path)
 
 
 def _get_zip_path(zip_path: Union[str, Path, None] = None) -> str:
@@ -145,11 +145,11 @@ __DEFAULT_GLOBALS = {
         },
         "process": __process_path,
     },
-    "ytdl": {
+    "ytdlp": {
         "values": {
             "user": None,
-            "env": "AAC_DATASETS_YTDL_PATH",
-            "package": "ytdlp",
+            "env": "AAC_DATASETS_YTDLP_PATH",
+            "package": "yt-dlp",
         },
         "process": __process_path,
     },

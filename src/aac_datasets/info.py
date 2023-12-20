@@ -16,7 +16,7 @@ import aac_datasets
 from aac_datasets.utils.globals import (
     get_default_root,
     get_default_ffmpeg_path,
-    get_default_ytdl_path,
+    get_default_ytdlp_path,
 )
 
 
@@ -37,7 +37,7 @@ def get_install_info() -> Dict[str, str]:
         "package_path": get_package_repository_path(),
         "root": get_default_root(),
         "ffmpeg_path": get_default_ffmpeg_path(),
-        "ytdl_path": get_default_ytdl_path(),
+        "ytdlp_path": get_default_ytdlp_path(),
     }
 
 

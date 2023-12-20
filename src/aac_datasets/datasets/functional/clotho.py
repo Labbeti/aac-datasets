@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import (
     Any,
     Dict,
+    Iterable,
     List,
     Optional,
     Tuple,
@@ -211,14 +212,14 @@ def load_clotho_dataset(
     return raw_data
 
 
-def prepare_clotho_dataset(
+def download_clotho_dataset(
     # Common args
     root: Union[str, Path, None] = None,
     subset: str = ClothoCard.DEFAULT_SUBSET,
+    force: bool = False,
     verbose: int = 0,
     # Clotho-specific args
     clean_archives: bool = True,
-    force: bool = False,
     verify_files: bool = True,
     version: str = ClothoCard.DEFAULT_VERSION,
 ) -> None:
@@ -226,20 +227,26 @@ def prepare_clotho_dataset(
 
     :param root: Dataset root directory.
         defaults to ".".
-    :param subset: The subset of AudioCaps to use. Can be one of :attr:`~ClothoCard.SUBSETS`.
+    :param subset: The subset of Clotho to use. Can be one of :attr:`~ClothoCard.SUBSETS`.
         defaults to "dev".
+    :param force: If True, force to download again all files.
+        defaults to False.
     :param verbose: Verbose level.
         defaults to 0.
 
     :param clean_archives: If True, remove the compressed archives from disk to save space.
         defaults to True.
-    :param force: If True, force to download again all files.
-        defaults to False.
     :param verify_files: If True, check all file already downloaded are valid.
         defaults to False.
     :param version: The version of the dataset. Can be one of :attr:`~ClothoCard.versions`.
         defaults to 'v2.1'.
     """
+    if subset == "val" and version == "v1":
+        pylog.error(
+            f"Clotho version '{version}' does not have '{subset}' subset. It will be ignored."
+        )
+        return None
+
     root = _get_root(root)
     if not osp.isdir(root):
         raise RuntimeError(f"Cannot find root directory '{root}'.")
@@ -392,6 +399,38 @@ def prepare_clotho_dataset(
 
     if verbose >= 2:
         pylog.debug(f"Dataset {ClothoCard.PRETTY_NAME} ({subset}) has been prepared.")
+
+
+def download_clotho_datasets(
+    # Common args
+    root: Union[str, Path, None] = None,
+    subsets: Union[str, Iterable[str]] = ClothoCard.DEFAULT_SUBSET,
+    force: bool = False,
+    verbose: int = 0,
+    # Clotho-specific args
+    clean_archives: bool = True,
+    verify_files: bool = True,
+    version: str = ClothoCard.DEFAULT_VERSION,
+) -> None:
+    """Function helper to download a list of subsets. See :func:`~aac_datasets.datasets.functional.clotho.download_clotho_dataset` for details."""
+    if isinstance(subsets, str):
+        subsets = [subsets]
+    else:
+        subsets = list(subsets)
+
+    kwargs: Dict[str, Any] = dict(
+        root=root,
+        force=force,
+        verbose=verbose,
+        clean_archives=clean_archives,
+        verify_files=verify_files,
+        version=version,
+    )
+    for subset in subsets:
+        download_clotho_dataset(
+            subset=subset,
+            **kwargs,
+        )
 
 
 def _get_clotho_dpath(root: str, version: str) -> str:

@@ -20,10 +20,10 @@ from .datasets.wavcaps import WavCaps
 from .utils.globals import (
     get_default_ffmpeg_path,
     get_default_root,
-    get_default_ytdl_path,
+    get_default_ytdlp_path,
     set_default_ffmpeg_path,
     set_default_root,
-    set_default_ytdl_path,
+    set_default_ytdlp_path,
 )
 
 
@@ -34,8 +34,8 @@ __all__ = [
     "WavCaps",
     "get_default_ffmpeg_path",
     "get_default_root",
-    "get_default_ytdl_path",
+    "get_default_ytdlp_path",
     "set_default_ffmpeg_path",
     "set_default_root",
-    "set_default_ytdl_path",
+    "set_default_ytdlp_path",
 ]

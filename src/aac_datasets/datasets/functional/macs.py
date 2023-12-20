@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import (
     Any,
     Dict,
+    Iterable,
     List,
     Tuple,
     Union,
@@ -168,14 +169,14 @@ def load_macs_dataset(
     return raw_data, annotator_id_to_competence
 
 
-def prepare_macs_dataset(
+def download_macs_dataset(
     # Common args
     root: Union[str, Path, None] = None,
     subset: str = MACSCard.DEFAULT_SUBSET,
+    force: bool = False,
     verbose: int = 0,
     # MACS-specific args
     clean_archives: bool = True,
-    force: bool = False,
     verify_files: bool = True,
 ) -> None:
     """Prepare MACS metadata.
@@ -184,13 +185,13 @@ def prepare_macs_dataset(
         defaults to ".".
     :param subset: The subset of MACS to use. Can be one of :attr:`~MACSCard.SUBSETS`.
         defaults to "full".
+    :param force: If True, force to download again all files.
+        defaults to False.
     :param verbose: Verbose level.
         defaults to 0.
 
     :param clean_archives: If True, remove the compressed archives from disk to save space.
         defaults to True.
-    :param force: If True, force to download again all files.
-        defaults to False.
     :param verify_files: If True, check all file already downloaded are valid.
         defaults to False.
     """
@@ -318,6 +319,36 @@ def prepare_macs_dataset(
 
     if verbose >= 2:
         pylog.debug(f"Dataset {MACSCard.PRETTY_NAME} ({subset}) has been prepared.")
+
+
+def download_macs_datasets(
+    # Common args
+    root: Union[str, Path, None] = None,
+    subsets: Union[str, Iterable[str]] = MACSCard.DEFAULT_SUBSET,
+    force: bool = False,
+    verbose: int = 0,
+    # MACS-specific args
+    clean_archives: bool = True,
+    verify_files: bool = True,
+) -> None:
+    """Function helper to download a list of subsets. See :func:`~aac_datasets.datasets.functional.macs.download_macs_dataset` for details."""
+    if isinstance(subsets, str):
+        subsets = [subsets]
+    else:
+        subsets = list(subsets)
+
+    kwargs: Dict[str, Any] = dict(
+        root=root,
+        force=force,
+        verbose=verbose,
+        clean_archives=clean_archives,
+        verify_files=verify_files,
+    )
+    for subset in subsets:
+        download_macs_dataset(
+            subset=subset,
+            **kwargs,
+        )
 
 
 def _get_macs_dpath(root: str) -> str:

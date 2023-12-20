@@ -13,6 +13,7 @@ from subprocess import CalledProcessError
 from typing import (
     Any,
     Dict,
+    Iterable,
     List,
     Optional,
     Tuple,
@@ -25,7 +26,7 @@ import tqdm
 from torch.hub import download_url_to_file
 
 from aac_datasets.datasets.functional.common import DatasetCard
-from aac_datasets.utils.globals import _get_root, _get_ffmpeg_path, _get_ytdl_path
+from aac_datasets.utils.globals import _get_root, _get_ffmpeg_path, _get_ytdlp_path
 
 
 pylog = logging.getLogger(__name__)
@@ -250,21 +251,21 @@ def load_audiocaps_dataset(
     return raw_data, index_to_tagname
 
 
-def prepare_audiocaps_dataset(
+def download_audiocaps_dataset(
     # Common args
     root: Union[str, Path, None] = None,
     subset: str = AudioCapsCard.DEFAULT_SUBSET,
+    force: bool = False,
     verbose: int = 0,
     # AudioCaps-specific args
     audio_duration: float = 10.0,
     audio_format: str = "flac",
     download_audio: bool = True,
     ffmpeg_path: Union[str, Path, None] = None,
-    force: bool = False,
     n_channels: int = 1,
     sr: int = 32_000,
     verify_files: bool = False,
-    ytdl_path: Union[str, Path, None] = None,
+    ytdlp_path: Union[str, Path, None] = None,
     with_tags: bool = False,
 ) -> None:
     """Prepare AudioCaps data (audio, labels, metadata).
@@ -274,6 +275,8 @@ def prepare_audiocaps_dataset(
         defaults to ".".
     :param subset: The subset of AudioCaps to use. Can be one of :attr:`~AudioCapsCard.SUBSETS`.
         defaults to "train".
+    :param force: If True, force to download again all files.
+        defaults to False.
     :param verbose: Verbose level.
         defaults to 0.
 
@@ -285,8 +288,6 @@ def prepare_audiocaps_dataset(
         defaults to True.
     :param ffmpeg_path: Path to ffmpeg executable file.
         defaults to "ffmpeg".
-    :param force: If True, force to download again all files.
-        defaults to False.
     :param n_channels: Number of channels extracted for each audio file.
         defaults to 1.
     :param sr: The sample rate used for audio files in the dataset (in Hz).
@@ -296,18 +297,18 @@ def prepare_audiocaps_dataset(
         defaults to False.
     :param with_tags: If True, download the tags from AudioSet dataset.
         defaults to False.
-    :param ytdl_path: Path to yt-dlp or ytdlp executable.
+    :param ytdlp_path: Path to yt-dlp or ytdlp executable.
         defaults to "yt-dlp".
     """
 
     root = _get_root(root)
-    ytdl_path = _get_ytdl_path(ytdl_path)
+    ytdlp_path = _get_ytdlp_path(ytdlp_path)
     ffmpeg_path = _get_ffmpeg_path(ffmpeg_path)
 
     if not osp.isdir(root):
         raise RuntimeError(f"Cannot find root directory '{root}'.")
 
-    _check_ytdl(ytdl_path)
+    _check_ytdl(ytdlp_path)
     _check_ffmpeg(ffmpeg_path)
 
     if _is_prepared(root, subset, sr, -1) and not force:
@@ -373,7 +374,7 @@ def prepare_audiocaps_dataset(
                     start_time=start_time,
                     duration=audio_duration,
                     sr=sr,
-                    ytdl_path=ytdl_path,
+                    ytdlp_path=ytdlp_path,
                     ffmpeg_path=ffmpeg_path,
                     n_channels=n_channels,
                 )
@@ -433,11 +434,55 @@ def prepare_audiocaps_dataset(
             pylog.info(f"- {n_samples} total samples.")
 
     if with_tags:
-        prepare_class_labels_indices(root)
+        download_class_labels_indices(root)
 
     if verbose >= 2:
         pylog.debug(
             f"Dataset {AudioCapsCard.PRETTY_NAME} (subset={subset}) has been prepared."
+        )
+
+
+def download_audiocaps_datasets(
+    # Common args
+    root: Union[str, Path, None] = None,
+    subsets: Union[str, Iterable[str]] = AudioCapsCard.DEFAULT_SUBSET,
+    force: bool = False,
+    verbose: int = 0,
+    # AudioCaps-specific args
+    audio_duration: float = 10.0,
+    audio_format: str = "flac",
+    download_audio: bool = True,
+    ffmpeg_path: Union[str, Path, None] = None,
+    n_channels: int = 1,
+    sr: int = 32_000,
+    verify_files: bool = False,
+    ytdlp_path: Union[str, Path, None] = None,
+    with_tags: bool = False,
+) -> None:
+    """Function helper to download a list of subsets. See :func:`~aac_datasets.datasets.functional.audiocaps.download_audiocaps_dataset` for details."""
+    if isinstance(subsets, str):
+        subsets = [subsets]
+    else:
+        subsets = list(subsets)
+
+    kwargs: Dict[str, Any] = dict(
+        root=root,
+        force=force,
+        verbose=verbose,
+        audio_duration=audio_duration,
+        audio_format=audio_format,
+        download_audio=download_audio,
+        ffmpeg_path=ffmpeg_path,
+        n_channels=n_channels,
+        sr=sr,
+        verify_files=verify_files,
+        ytdlp_path=ytdlp_path,
+        with_tags=with_tags,
+    )
+    for subset in subsets:
+        download_audiocaps_dataset(
+            subset=subset,
+            **kwargs,
         )
 
 
@@ -462,7 +507,7 @@ def load_class_labels_indices(
     return audioset_classes_data
 
 
-def prepare_class_labels_indices(
+def download_class_labels_indices(
     root: Union[str, Path, None] = None,
     sr: int = 32_000,
     verbose: int = 0,
@@ -522,17 +567,17 @@ def _download_and_extract_from_youtube(
     n_channels: int = 1,
     target_format: str = "flac",
     acodec: str = "flac",
-    ytdl_path: Union[str, Path, None] = None,
+    ytdlp_path: Union[str, Path, None] = None,
     ffmpeg_path: Union[str, Path, None] = None,
 ) -> bool:
     """Download audio from youtube with yt-dlp and ffmpeg."""
-    ytdl_path = _get_ytdl_path(ytdl_path)
+    ytdlp_path = _get_ytdlp_path(ytdlp_path)
     ffmpeg_path = _get_ffmpeg_path(ffmpeg_path)
 
     # Get audio download link with yt-dlp, without start time
     link = _get_youtube_link(youtube_id, None)
     get_url_command = [
-        ytdl_path,
+        ytdlp_path,
         "--youtube-skip-dash-manifest",
         "-g",
         link,
@@ -582,15 +627,15 @@ def _download_and_extract_from_youtube(
         return False
 
 
-def _check_ytdl(ytdl_path: str) -> None:
+def _check_ytdl(ytdlp_path: str) -> None:
     try:
         subprocess.check_call(
-            [ytdl_path, "--help"],
+            [ytdlp_path, "--help"],
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
         )
     except (CalledProcessError, PermissionError, FileNotFoundError) as err:
-        pylog.error(f"Invalid ytdlp path '{ytdl_path}'. ({err})")
+        pylog.error(f"Invalid ytdlp path '{ytdlp_path}'. ({err})")
         raise err
 
 

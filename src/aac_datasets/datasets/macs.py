@@ -22,7 +22,7 @@ from aac_datasets.datasets.base import AACDataset
 from aac_datasets.datasets.functional.macs import (
     MACSCard,
     load_macs_dataset,
-    prepare_macs_dataset,
+    download_macs_dataset,
 )
 from aac_datasets.utils.globals import _get_root
 
@@ -114,12 +114,12 @@ class MACS(AACDataset[MACSItem]):
         root = _get_root(root)
 
         if download:
-            prepare_macs_dataset(
+            download_macs_dataset(
                 root=root,
                 subset=subset,
+                force=MACS.FORCE_PREPARE_DATA,
                 verbose=verbose,
                 clean_archives=MACS.CLEAN_ARCHIVES,
-                force=MACS.FORCE_PREPARE_DATA,
                 verify_files=MACS.VERIFY_FILES,
             )
 

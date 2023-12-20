@@ -14,7 +14,7 @@ from aac_datasets.datasets.base import AACDataset
 from aac_datasets.datasets.functional.wavcaps import (
     WavCapsCard,
     load_wavcaps_dataset,
-    prepare_wavcaps_dataset,
+    download_wavcaps_dataset,
 )
 from aac_datasets.utils.globals import _get_root, _get_zip_path
 
@@ -155,18 +155,18 @@ class WavCaps(AACDataset[WavCapsItem]):
         zip_path = _get_zip_path(zip_path)
 
         if download:
-            prepare_wavcaps_dataset(
+            download_wavcaps_dataset(
                 root=root,
                 subset=subset,
-                revision=revision,
+                force=WavCaps.FORCE_PREPARE_DATA,
+                verbose=verbose,
+                clean_archives=WavCaps.CLEAN_ARCHIVES,
                 hf_cache_dir=hf_cache_dir,
                 repo_id=repo_id,
                 resume_dl=WavCaps.RESUME_DL,
-                force=WavCaps.FORCE_PREPARE_DATA,
+                revision=revision,
                 verify_files=WavCaps.VERIFY_FILES,
-                clean_archives=WavCaps.CLEAN_ARCHIVES,
                 zip_path=zip_path,
-                verbose=verbose,
             )
 
         raw_data = load_wavcaps_dataset(
