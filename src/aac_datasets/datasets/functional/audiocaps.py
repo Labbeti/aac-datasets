@@ -102,7 +102,7 @@ def load_audiocaps_dataset(
     """
 
     root = _get_root(root)
-    audiocaps_root = _get_audiocaps_dpath(root, sr)
+    audiocaps_root = _get_audiocaps_root(root, sr)
     audio_subset_dpath = _get_audio_subset_dpath(root, subset, sr)
 
     if not _is_prepared_audiocaps(root, subset, sr, verbose):
@@ -315,7 +315,10 @@ def download_audiocaps_dataset(
     if _is_prepared_audiocaps(root, subset, sr, -1) and not force:
         return None
 
-    audiocaps_root = _get_audiocaps_dpath(root, sr)
+    audiocaps_root = _get_audiocaps_root(root, sr)
+    
+    if with_tags:
+        download_class_labels_indices(root)
 
     links = _AUDIOCAPS_LINKS[subset]
     audio_subset_dpath = _get_audio_subset_dpath(root, subset, sr)
@@ -424,9 +427,6 @@ def download_audiocaps_dataset(
             )
             pylog.info(f"- {n_samples} total samples.")
 
-    if with_tags:
-        download_class_labels_indices(root)
-
     if verbose >= 2:
         pylog.debug(
             f"Dataset {AudioCapsCard.PRETTY_NAME} (subset={subset}) has been prepared."
@@ -484,7 +484,7 @@ def load_class_labels_indices(
     root = _get_root(root)
     class_labels_indices_fname = _AUDIOSET_LINKS["class_labels_indices"]["fname"]
     class_labels_indices_fpath = osp.join(
-        _get_audiocaps_dpath(root, sr), class_labels_indices_fname
+        _get_audiocaps_root(root, sr), class_labels_indices_fname
     )
     if not osp.isfile(class_labels_indices_fpath):
         raise ValueError(
@@ -504,7 +504,7 @@ def download_class_labels_indices(
     verbose: int = 0,
 ) -> None:
     root = _get_root(root)
-    audiocaps_root = _get_audiocaps_dpath(root, sr)
+    audiocaps_root = _get_audiocaps_root(root, sr)
 
     for key in ("class_labels_indices", "unbalanced"):
         infos = _AUDIOSET_LINKS[key]
@@ -517,13 +517,13 @@ def download_class_labels_indices(
             download_file(url, fpath, verbose=verbose)
 
 
-def _get_audiocaps_dpath(root: str, sr: int) -> str:
+def _get_audiocaps_root(root: str, sr: int) -> str:
     return osp.join(root, "AUDIOCAPS")
 
 
 def _get_audio_subset_dpath(root: str, subset: str, sr: int) -> str:
     return osp.join(
-        _get_audiocaps_dpath(root, sr),
+        _get_audiocaps_root(root, sr),
         f"audio_{sr}Hz",
         _AUDIOCAPS_AUDIO_DNAMES[subset],
     )
@@ -538,7 +538,7 @@ def _is_prepared_audiocaps(
 ) -> bool:
     links = _AUDIOCAPS_LINKS[subset]
     captions_fname = links["captions"]["fname"]
-    captions_fpath = osp.join(_get_audiocaps_dpath(root, sr), captions_fname)
+    captions_fpath = osp.join(_get_audiocaps_root(root, sr), captions_fname)
     audio_subset_dpath = _get_audio_subset_dpath(root, subset, sr)
     audio_fnames = os.listdir(audio_subset_dpath)
     audio_fnames = [

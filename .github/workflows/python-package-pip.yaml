@@ -45,8 +45,11 @@ jobs:
 
     - name: Install soundfile for torchaudio
       run: |
-        # For soundfile dep
         sudo apt-get install libsndfile1
+
+    - name: Install ffmpeg and yt-dlp for AudioCaps download
+      run: |
+        sudo apt-get install ffmpeg yt-dlp
 
     # --- TESTS ---
     - name: Compile python files

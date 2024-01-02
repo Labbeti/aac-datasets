@@ -84,7 +84,7 @@ def load_macs_dataset(
             f"Cannot load data: macs is not prepared in data root={root}. Please use download=True in dataset constructor."
         )
 
-    macs_dpath = _get_macs_dpath(root)
+    macs_dpath = _get_macs_root(root)
     tau_meta_dpath = _get_tau_meta_dpath(root)
 
     # Read data files
@@ -198,7 +198,7 @@ def download_macs_dataset(
     if not osp.isdir(root):
         raise RuntimeError(f"Cannot find root directory '{root}'.")
 
-    macs_dpath = _get_macs_dpath(root)
+    macs_dpath = _get_macs_root(root)
     archives_dpath = _get_archives_dpath(root)
     audio_dpath = _get_audio_dpath(root)
     tau_meta_dpath = _get_tau_meta_dpath(root)
@@ -341,27 +341,27 @@ def download_macs_datasets(
         )
 
 
-def _get_macs_dpath(root: str) -> str:
+def _get_macs_root(root: str) -> str:
     return osp.join(root, "MACS")
 
 
 def _get_archives_dpath(root: str) -> str:
-    return osp.join(_get_macs_dpath(root), "archives")
+    return osp.join(_get_macs_root(root), "archives")
 
 
 def _get_audio_dpath(root: str) -> str:
-    return osp.join(_get_macs_dpath(root), "audio")
+    return osp.join(_get_macs_root(root), "audio")
 
 
 def _get_tau_meta_dpath(root: str) -> str:
-    return osp.join(_get_macs_dpath(root), "tau_meta")
+    return osp.join(_get_macs_root(root), "tau_meta")
 
 
 def _is_prepared_macs(root: str) -> bool:
     audio_dpath = _get_audio_dpath(root)
     if not osp.isdir(audio_dpath):
         return False
-    captions_fpath = osp.join(_get_macs_dpath(root), MACS_FILES["captions"]["fname"])
+    captions_fpath = osp.join(_get_macs_root(root), MACS_FILES["captions"]["fname"])
     if not osp.isfile(captions_fpath):
         return False
 

@@ -365,26 +365,26 @@ def download_wavcaps_dataset(
         enable_progress_bars()
 
     snapshot_abs_dpath = osp.abspath(snapshot_dpath)
-    wavcaps_dpath = _get_wavcaps_dpath(root, hf_cache_dir, revision)
+    wavcaps_root = _get_wavcaps_root(root, hf_cache_dir, revision)
     if verbose >= 2:
         pylog.debug(f"snapshot_dpath={snapshot_dpath}")
         pylog.debug(f"snapshot_absdpath={snapshot_abs_dpath}")
-        pylog.debug(f"wavcaps_dpath={wavcaps_dpath}")
+        pylog.debug(f"wavcaps_dpath={wavcaps_root}")
     del snapshot_dpath
 
     # Build symlink to hf cache
-    if osp.exists(wavcaps_dpath):
-        if not osp.islink(wavcaps_dpath):
+    if osp.exists(wavcaps_root):
+        if not osp.islink(wavcaps_root):
             raise RuntimeError("WavCaps root exists but it is not a symlink.")
-        link_target_abspath = osp.abspath(osp.realpath(wavcaps_dpath))
+        link_target_abspath = osp.abspath(osp.realpath(wavcaps_root))
         if link_target_abspath != snapshot_abs_dpath:
             pylog.error(
                 "Target link is not pointing to current snapshot path. It will be automatically replaced."
             )
-            os.remove(wavcaps_dpath)
-            os.symlink(snapshot_abs_dpath, wavcaps_dpath, True)
+            os.remove(wavcaps_root)
+            os.symlink(snapshot_abs_dpath, wavcaps_root, True)
     else:
-        os.symlink(snapshot_abs_dpath, wavcaps_dpath, True)
+        os.symlink(snapshot_abs_dpath, wavcaps_root, True)
 
     source_and_splitted = [
         ("AudioSet_SL", True),
@@ -558,7 +558,7 @@ def download_wavcaps_datasets(
         )
 
 
-def _get_wavcaps_dpath(
+def _get_wavcaps_root(
     root: str,
     hf_cache_dir: Optional[str],
     revision: Optional[str],
@@ -571,7 +571,7 @@ def _get_json_dpath(
     hf_cache_dir: Optional[str],
     revision: Optional[str],
 ) -> str:
-    return osp.join(_get_wavcaps_dpath(root, hf_cache_dir, revision), "json_files")
+    return osp.join(_get_wavcaps_root(root, hf_cache_dir, revision), "json_files")
 
 
 def _get_archives_dpath(
@@ -579,7 +579,7 @@ def _get_archives_dpath(
     hf_cache_dir: Optional[str],
     revision: Optional[str],
 ) -> str:
-    return osp.join(_get_wavcaps_dpath(root, hf_cache_dir, revision), "Zip_files")
+    return osp.join(_get_wavcaps_root(root, hf_cache_dir, revision), "Zip_files")
 
 
 def _get_audio_dpath(
@@ -587,7 +587,7 @@ def _get_audio_dpath(
     hf_cache_dir: Optional[str],
     revision: Optional[str],
 ) -> str:
-    return osp.join(_get_wavcaps_dpath(root, hf_cache_dir, revision), "Audio")
+    return osp.join(_get_wavcaps_root(root, hf_cache_dir, revision), "Audio")
 
 
 def _get_audio_subset_dpath(

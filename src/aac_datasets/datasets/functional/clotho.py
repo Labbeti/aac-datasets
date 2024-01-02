@@ -428,20 +428,20 @@ def download_clotho_datasets(
         )
 
 
-def _get_clotho_dpath(root: str, version: str) -> str:
+def _get_clotho_root(root: str, version: str) -> str:
     return osp.join(root, f"CLOTHO_{version}")
 
 
 def _get_archives_dpath(root: str, version: str) -> str:
-    return osp.join(_get_clotho_dpath(root, version), "archives")
+    return osp.join(_get_clotho_root(root, version), "archives")
 
 
 def _get_audio_dpath(root: str, version: str) -> str:
-    return osp.join(_get_clotho_dpath(root, version), "clotho_audio_files")
+    return osp.join(_get_clotho_root(root, version), "clotho_audio_files")
 
 
 def _get_csv_dpath(root: str, version: str) -> str:
-    return osp.join(_get_clotho_dpath(root, version), "clotho_csv_files")
+    return osp.join(_get_clotho_root(root, version), "clotho_csv_files")
 
 
 def _get_audio_subset_dpath(root: str, version: str, subset: str) -> Optional[str]:
@@ -450,7 +450,7 @@ def _get_audio_subset_dpath(root: str, version: str, subset: str) -> Optional[st
         return None
 
     return osp.join(
-        _get_clotho_dpath(root, version),
+        _get_clotho_root(root, version),
         "clotho_audio_files",
         dname,
     )

@@ -29,7 +29,7 @@ from aac_datasets.utils.globals import _get_root
 pylog = logging.getLogger(__name__)
 
 
-class ClothoItem(TypedDict, total=True):
+class ClothoItem(TypedDict):
     r"""Class representing a single Clotho item."""
 
     # Common attributes
