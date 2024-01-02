@@ -316,17 +316,16 @@ def download_audiocaps_dataset(
         return None
 
     audiocaps_root = _get_audiocaps_root(root, sr)
-
+    os.makedirs(audiocaps_root, exist_ok=True)
     if with_tags:
         download_class_labels_indices(root)
 
     links = _AUDIOCAPS_LINKS[subset]
     audio_subset_dpath = _get_audio_subset_dpath(root, subset, sr)
+    os.makedirs(audio_subset_dpath, exist_ok=True)
 
     captions_fname = links["captions"]["fname"]
     captions_fpath = osp.join(audiocaps_root, captions_fname)
-
-    os.makedirs(audio_subset_dpath, exist_ok=True)
 
     if not osp.isfile(captions_fpath):
         url = links["captions"]["url"]
