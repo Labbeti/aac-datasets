@@ -232,7 +232,7 @@ class AudioCaps(AACDataset[AudioCapsItem]):
         self._with_tags = with_tags
         self._index_to_tagname = index_to_tagname
 
-        self.add_post_columns(
+        self.add_online_columns(
             {
                 "audio": AudioCaps._load_audio,
                 "audio_metadata": AudioCaps._load_audio_metadata,

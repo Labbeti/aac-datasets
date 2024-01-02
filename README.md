@@ -146,9 +146,13 @@ downloader.download(format="wav")
 Then disable audio download and set the correct audio format before init AudioCaps :
 ```python
 from aac_datasets import AudioCaps
-AudioCaps.AUDIO_FORMAT = "wav"
-AudioCaps.DOWNLOAD_AUDIO = False  # this will only download labels and metadata files
-dataset = AudioCaps(root=root, subset="train", download=True)
+dataset = AudioCaps(
+    root=root,
+    subset="train",
+    download=True,
+    audio_format="wav",
+    download_audio=False,  # this will only download labels and metadata files
+)
 ```
 
 ## References
@@ -169,14 +173,14 @@ If you use this software, please consider cite it as "Labbe, E. (2013). aac-data
 
 ```
 @software{
-    Labbe_aac_datasets_2023,
+    Labbe_aac_datasets_2024,
     author = {Labbé, Etienne},
     license = {MIT},
-    month = {10},
+    month = {01},
     title = {{aac-datasets}},
     url = {https://github.com/Labbeti/aac-datasets/},
-    version = {0.4.1},
-    year = {2023}
+    version = {0.5.0},
+    year = {2024}
 }
 ```
 

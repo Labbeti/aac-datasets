@@ -209,7 +209,7 @@ class WavCaps(AACDataset[WavCapsItem]):
         self._hf_cache_dir = hf_cache_dir
         self._revision = revision
 
-        self.add_post_columns(
+        self.add_online_columns(
             {
                 "audio": WavCaps._load_audio,
                 "audio_metadata": WavCaps._load_audio_metadata,

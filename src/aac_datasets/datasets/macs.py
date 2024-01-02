@@ -160,7 +160,7 @@ class MACS(AACDataset[MACSItem]):
         self._verbose = verbose
         self._annotator_id_to_competence = annotator_id_to_competence
 
-        self.add_post_columns(
+        self.add_online_columns(
             {
                 "audio": MACS._load_audio,
                 "audio_metadata": MACS._load_audio_metadata,

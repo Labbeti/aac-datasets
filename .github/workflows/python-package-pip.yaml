@@ -68,6 +68,10 @@ jobs:
     - name: Test with pytest
       run: |
         python -m pytest -v
+        
+    - name: Build data root
+      run: |
+        mkdir -p ~/.cache/aac-datasets
   
     - name: Try to download Clotho val
       run: |

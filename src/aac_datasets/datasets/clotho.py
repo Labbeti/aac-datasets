@@ -241,7 +241,7 @@ class Clotho(AACDataset[ClothoItem]):
         self._version = version
 
         if "audio" not in removed_columns:
-            self.add_post_columns(
+            self.add_online_columns(
                 {
                     "audio": Clotho._load_audio,
                     "audio_metadata": Clotho._load_audio_metadata,

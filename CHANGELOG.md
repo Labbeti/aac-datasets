@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.4.2] UNRELEASED
+## [0.5.0] UNRELEASED
 ### Changed
 - Update typing for paths with python class `Path`.
 - Refactor functional interface to load raw metadata for each dataset.
