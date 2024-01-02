@@ -316,7 +316,7 @@ def download_audiocaps_dataset(
         return None
 
     audiocaps_root = _get_audiocaps_root(root, sr)
-    
+
     if with_tags:
         download_class_labels_indices(root)
 
