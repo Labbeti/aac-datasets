@@ -4,6 +4,8 @@
 import logging
 import sys
 
+from typing import Optional
+
 
 _TRUE_VALUES = ("true", "1", "t", "yes", "y")
 _FALSE_VALUES = ("false", "0", "f", "no", "n")

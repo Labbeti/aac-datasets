@@ -69,6 +69,7 @@ class WavCapsCard(DatasetCard):
     SOURCES: Tuple[str, ...] = tuple(EXPECTED_SIZES.keys())
     SUBSETS: Tuple[str, ...] = tuple(CAPTIONS_PER_AUDIO.keys())
     SAMPLE_RATE: int = 32_000  # Hz
+    SIZE_CATEGORIES: Tuple[str, ...] = ("100K<n<1M",)
     TASK_CATEGORIES: Tuple[str, ...] = ("audio-to-text", "text-to-audio")
 
 
@@ -170,7 +171,7 @@ def load_wavcaps_dataset(
         }
         return raw_data
 
-    if not _is_prepared(root, hf_cache_dir, revision, subset, verbose):
+    if not _is_prepared_wavcaps(root, hf_cache_dir, revision, subset, verbose):
         raise RuntimeError(
             f"{WavCapsCard.PRETTY_NAME} is not prepared in root={root}. Please use download=True to install it in root."
         )
@@ -256,16 +257,15 @@ def download_wavcaps_dataset(
     subset: str = WavCapsCard.DEFAULT_SUBSET,
     force: bool = False,
     verbose: int = 0,
+    verify_files: bool = False,
     # WavCaps-specific args
     clean_archives: bool = False,
     hf_cache_dir: Optional[str] = None,
     repo_id: Optional[str] = None,
-    resume_dl: bool = True,
     revision: Optional[str] = None,
-    verify_files: bool = False,
     zip_path: Union[str, Path, None] = None,
 ) -> None:
-    """Prepare WavCaps metadata.
+    """Prepare WavCaps data.
 
     :param root: Dataset root directory.
         defaults to ".".
@@ -275,6 +275,8 @@ def download_wavcaps_dataset(
         defaults to False.
     :param verbose: Verbose level.
         defaults to 0.
+    :param verify_files: If True, check all file already downloaded are valid.
+        defaults to False.
 
     :param clean_archives: If True, remove the compressed archives from disk to save space.
         defaults to True.
@@ -282,12 +284,8 @@ def download_wavcaps_dataset(
         defaults to None.
     :param repo_id: Repository ID on HuggingFace.
         defaults to "cvssp/WavCaps".
-    :param resume_dl: If True, resume interrupted download.
-        defaults to True.
     :param revision: Optional override for revision commit/name for HuggingFace rapository.
         defaults to None.
-    :param verify_files: If True, check all file already downloaded are valid.
-        defaults to False.
     :param zip_path: Path to zip executable path in shell.
         defaults to "zip".
     """
@@ -297,7 +295,6 @@ def download_wavcaps_dataset(
             subset="as",
             revision=revision,
             hf_cache_dir=hf_cache_dir,
-            resume_dl=resume_dl,
             force=force,
             verify_files=verify_files,
             clean_archives=clean_archives,
@@ -310,7 +307,6 @@ def download_wavcaps_dataset(
             subset="fsd",
             revision=revision,
             hf_cache_dir=hf_cache_dir,
-            resume_dl=resume_dl,
             force=force,
             verify_files=verify_files,
             clean_archives=clean_archives,
@@ -327,7 +323,9 @@ def download_wavcaps_dataset(
         )
 
     # note: verbose=-1 to disable warning triggered when dset is not prepared
-    if not force and _is_prepared(root, hf_cache_dir, revision, subset, verbose=-1):
+    if not force and _is_prepared_wavcaps(
+        root, hf_cache_dir, revision, subset, verbose=-1
+    ):
         return None
 
     if hf_cache_dir is None:
@@ -356,8 +354,8 @@ def download_wavcaps_dataset(
         repo_id=repo_id,
         repo_type="dataset",
         revision=revision,
-        resume_download=resume_dl,
-        local_files_only=not force,
+        resume_download=not force,
+        local_files_only=False,
         cache_dir=hf_cache_dir,
         allow_patterns=None,
         ignore_patterns=ign_patterns,
@@ -532,7 +530,6 @@ def download_wavcaps_datasets(
     clean_archives: bool = False,
     hf_cache_dir: Optional[str] = None,
     repo_id: Optional[str] = None,
-    resume_dl: bool = True,
     revision: Optional[str] = None,
     verify_files: bool = False,
     zip_path: Union[str, Path, None] = None,
@@ -550,7 +547,6 @@ def download_wavcaps_datasets(
         clean_archives=clean_archives,
         hf_cache_dir=hf_cache_dir,
         repo_id=repo_id,
-        resume_dl=resume_dl,
         revision=revision,
         verify_files=verify_files,
         zip_path=zip_path,
@@ -605,7 +601,7 @@ def _get_audio_subset_dpath(
     )
 
 
-def _is_prepared(
+def _is_prepared_wavcaps(
     root: str,
     hf_cache_dir: Optional[str],
     revision: Optional[str],

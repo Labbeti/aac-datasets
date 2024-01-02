@@ -95,11 +95,8 @@ class Clotho(AACDataset[ClothoItem]):
 
     # Common globals
     CARD: ClassVar[ClothoCard] = ClothoCard()
-    FORCE_PREPARE_DATA: ClassVar[bool] = False
-    VERIFY_FILES: ClassVar[bool] = True
 
     # Clotho-specific globals
-    CLEAN_ARCHIVES: ClassVar[bool] = True
     INVALID_SOUND_ID: ClassVar[str] = "Not found"
     INVALID_SOUND_LINK: ClassVar[str] = "NA"
     INVALID_START_END_SAMPLES: ClassVar[str] = ""
@@ -109,11 +106,15 @@ class Clotho(AACDataset[ClothoItem]):
         self,
         # Common args
         root: Union[str, Path, None] = None,
-        subset: str = "dev",
+        subset: str = ClothoCard.DEFAULT_SUBSET,
         download: bool = False,
         transform: Optional[Callable] = None,
         verbose: int = 0,
+        force_download: bool = False,
+        verify_files: bool = False,
+        *,
         # Clotho-specific args
+        clean_archives: bool = True,
         flat_captions: bool = False,
         version: str = ClothoCard.DEFAULT_VERSION,
     ) -> None:
@@ -129,7 +130,13 @@ class Clotho(AACDataset[ClothoItem]):
             defaults to None.
         :param verbose: Verbose level to use. Can be 0 or 1.
             defaults to 0.
+        :param force_download: If True, force to re-download file even if they exists on disk.
+            defaults to False.
+        :param verify_files: If True, check hash value when possible.
+            defaults to False.
 
+        :param clean_archives: If True, remove the compressed archives from disk to save space.
+            defaults to True.
         :param flat_captions: If True, map captions to audio instead of audio to caption.
             defaults to True.
         :param version: The version of the dataset. Can be one of :attr:`~ClothoCard.versions`.
@@ -157,10 +164,10 @@ class Clotho(AACDataset[ClothoItem]):
             download_clotho_dataset(
                 root=root,
                 subset=subset,
-                force=Clotho.FORCE_PREPARE_DATA,
+                force=force_download,
                 verbose=verbose,
-                clean_archives=Clotho.CLEAN_ARCHIVES,
-                verify_files=Clotho.VERIFY_FILES,
+                verify_files=verify_files,
+                clean_archives=clean_archives,
                 version=version,
             )
 

@@ -23,7 +23,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        python-version: ["3.7", "3.8", "3.9", "3.10", "3.11"]
+        python-version: ["3.7", "3.11"]
 
     steps:
     # --- INSTALLATIONS ---
@@ -68,3 +68,11 @@ jobs:
     - name: Test with pytest
       run: |
         python -m pytest -v
+  
+    - name: Try to download Clotho val
+      run: |
+        aac-datasets-download --root ~/.cache/aac-datasets --verbose 2 clotho --subsets val
+  
+    - name: Try to download AudioCaps val
+      run: |
+        aac-datasets-download --root ~/.cache/aac-datasets --verbose 2 audiocaps --subsets val

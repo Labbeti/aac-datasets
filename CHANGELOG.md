@@ -6,6 +6,8 @@ All notable changes to this project will be documented in this file.
 ### Changed
 - Update typing for paths with python class `Path`.
 - Refactor functional interface to load raw metadata for each dataset.
+- Refactor class variables to init arguments.
+- Faster AudioCaps download with `ThreadPoolExecutor`.
 
 ## [0.4.1] 2023-10-25
 ### Added

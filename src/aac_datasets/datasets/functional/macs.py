@@ -20,10 +20,8 @@ from typing import (
 
 import yaml
 
-from torch.hub import download_url_to_file
-
 from aac_datasets.datasets.functional.common import DatasetCard
-from aac_datasets.utils.download import hash_file
+from aac_datasets.utils.download import download_file, hash_file
 from aac_datasets.utils.globals import _get_root
 
 
@@ -81,7 +79,7 @@ def load_macs_dataset(
     """
 
     root = _get_root(root)
-    if not _is_prepared(root):
+    if not _is_prepared_macs(root):
         raise RuntimeError(
             f"Cannot load data: macs is not prepared in data root={root}. Please use download=True in dataset constructor."
         )
@@ -175,11 +173,11 @@ def download_macs_dataset(
     subset: str = MACSCard.DEFAULT_SUBSET,
     force: bool = False,
     verbose: int = 0,
+    verify_files: bool = True,
     # MACS-specific args
     clean_archives: bool = True,
-    verify_files: bool = True,
 ) -> None:
-    """Prepare MACS metadata.
+    """Prepare MACS data.
 
     :param root: Dataset root directory.
         defaults to ".".
@@ -189,11 +187,11 @@ def download_macs_dataset(
         defaults to False.
     :param verbose: Verbose level.
         defaults to 0.
+    :param verify_files: If True, check all file already downloaded are valid.
+        defaults to False.
 
     :param clean_archives: If True, remove the compressed archives from disk to save space.
         defaults to True.
-    :param verify_files: If True, check all file already downloaded are valid.
-        defaults to False.
     """
 
     root = _get_root(root)
@@ -218,11 +216,7 @@ def download_macs_dataset(
                 pylog.info(f"Downloading captions file '{fname}'...")
 
             url = file_info["url"]
-            download_url_to_file(
-                url,
-                fpath,
-                progress=verbose >= 1,
-            )
+            download_file(url, fpath, verbose=verbose)
 
         if verify_files:
             hash_value = file_info["hash_value"]
@@ -252,11 +246,7 @@ def download_macs_dataset(
                 )
 
             url = file_info["url"]
-            download_url_to_file(
-                url,
-                zip_fpath,
-                progress=verbose >= 1,
-            )
+            download_file(url, zip_fpath, verbose=verbose)
 
         if verify_files:
             hash_value = file_info["hash_value"]
@@ -367,7 +357,7 @@ def _get_tau_meta_dpath(root: str) -> str:
     return osp.join(_get_macs_dpath(root), "tau_meta")
 
 
-def _is_prepared(root: str) -> bool:
+def _is_prepared_macs(root: str) -> bool:
     audio_dpath = _get_audio_dpath(root)
     if not osp.isdir(audio_dpath):
         return False

@@ -15,6 +15,7 @@ from aac_datasets.datasets.functional.wavcaps import (
     WavCapsCard,
     load_wavcaps_dataset,
     download_wavcaps_dataset,
+    _get_audio_subset_dpath,
 )
 from aac_datasets.utils.globals import _get_root, _get_zip_path
 
@@ -102,23 +103,20 @@ class WavCaps(AACDataset[WavCapsItem]):
 
     # Common globals
     CARD: ClassVar[WavCapsCard] = WavCapsCard()
-    FORCE_PREPARE_DATA: ClassVar[bool] = False
-    VERIFY_FILES: ClassVar[bool] = False
-
-    # WavCaps-specific globals
-    CLEAN_ARCHIVES: ClassVar[bool] = False
-    RESUME_DL: ClassVar[bool] = True
-    SIZE_CATEGORIES: Tuple[str, ...] = ("100K<n<1M",)
 
     def __init__(
         self,
         # Common args
         root: Union[str, Path, None] = None,
-        subset: str = "as_noac",
+        subset: str = WavCapsCard.DEFAULT_SUBSET,
         download: bool = False,
         transform: Optional[Callable] = None,
         verbose: int = 0,
+        force_download: bool = False,
+        verify_files: bool = False,
+        *,
         # WavCaps-specific args
+        clean_archives: bool = False,
         hf_cache_dir: Optional[str] = None,
         repo_id: Optional[str] = None,
         revision: Optional[str] = WavCapsCard.DEFAULT_REVISION,
@@ -136,7 +134,13 @@ class WavCaps(AACDataset[WavCapsItem]):
             defaults to None.
         :param verbose: Verbose level. Can be 0 or 1.
             defaults to 0.
+        :param force_download: If True, force to re-download file even if they exists on disk.
+            defaults to False.
+        :param verify_files: If True, check hash value when possible.
+            defaults to False.
 
+        :param clean_archives: If True, remove the compressed archives from disk to save space.
+            defaults to False.
         :param hf_cache_dir: HuggingFace cache directory. If None, use the global value :variable:`~huggingface_hub.constants.HUGGINGFACE_HUB_CACHE`.
             defaults to None.
         :param repo_id: Repository ID on HuggingFace.
@@ -158,14 +162,13 @@ class WavCaps(AACDataset[WavCapsItem]):
             download_wavcaps_dataset(
                 root=root,
                 subset=subset,
-                force=WavCaps.FORCE_PREPARE_DATA,
+                force=force_download,
                 verbose=verbose,
-                clean_archives=WavCaps.CLEAN_ARCHIVES,
+                clean_archives=clean_archives,
                 hf_cache_dir=hf_cache_dir,
                 repo_id=repo_id,
-                resume_dl=WavCaps.RESUME_DL,
                 revision=revision,
-                verify_files=WavCaps.VERIFY_FILES,
+                verify_files=verify_files,
                 zip_path=zip_path,
             )
 

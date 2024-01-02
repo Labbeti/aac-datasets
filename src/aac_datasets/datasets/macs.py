@@ -23,6 +23,7 @@ from aac_datasets.datasets.functional.macs import (
     MACSCard,
     load_macs_dataset,
     download_macs_dataset,
+    _get_audio_dpath,
 )
 from aac_datasets.utils.globals import _get_root
 
@@ -71,22 +72,21 @@ class MACS(AACDataset[MACSItem]):
 
     # Common globals
     CARD: ClassVar[MACSCard] = MACSCard()
-    FORCE_PREPARE_DATA: ClassVar[bool] = False
-    VERIFY_FILES: ClassVar[bool] = True
-
-    # MACS-specific globals
-    CLEAN_ARCHIVES: ClassVar[bool] = False
 
     # Initialization
     def __init__(
         self,
         # Common args
         root: Union[str, Path, None] = None,
-        subset: str = "full",
+        subset: str = MACSCard.DEFAULT_SUBSET,
         download: bool = False,
         transform: Optional[Callable] = None,
         verbose: int = 0,
+        force_download: bool = False,
+        verify_files: bool = False,
+        *,
         # MACS-specific args
+        clean_archives: bool = True,
         flat_captions: bool = False,
     ) -> None:
         """
@@ -102,7 +102,13 @@ class MACS(AACDataset[MACSItem]):
             defaults to None.
         :param verbose: Verbose level to use. Can be 0 or 1.
             defaults to 0.
+        :param force_download: If True, force to re-download file even if they exists on disk.
+            defaults to False.
+        :param verify_files: If True, check hash value when possible.
+            defaults to False.
 
+        :param clean_archives: If True, remove the compressed archives from disk to save space.
+            defaults to True.
         :param flat_captions: If True, map captions to audio instead of audio to caption.
             defaults to True.
         """
@@ -117,10 +123,10 @@ class MACS(AACDataset[MACSItem]):
             download_macs_dataset(
                 root=root,
                 subset=subset,
-                force=MACS.FORCE_PREPARE_DATA,
+                force=force_download,
                 verbose=verbose,
-                clean_archives=MACS.CLEAN_ARCHIVES,
-                verify_files=MACS.VERIFY_FILES,
+                clean_archives=clean_archives,
+                verify_files=verify_files,
             )
 
         raw_data, annotator_id_to_competence = load_macs_dataset(

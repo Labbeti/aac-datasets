@@ -20,10 +20,9 @@ from typing import (
 from zipfile import ZipFile
 
 from py7zr import SevenZipFile
-from torch.hub import download_url_to_file
 
 from aac_datasets.datasets.functional.common import DatasetCard
-from aac_datasets.utils.download import hash_file
+from aac_datasets.utils.download import download_file, hash_file
 from aac_datasets.utils.globals import _get_root
 
 
@@ -43,12 +42,12 @@ class ClothoCard(DatasetCard):
     }
     CITATION: str = r"""
     @inproceedings{Drossos_2020_icassp,
-        author = "Drossos, Konstantinos and Lipping, Samuel and Virtanen, Tuomas",
-        title = "Clotho: an Audio Captioning Dataset",
-        booktitle = "Proc. IEEE Int. Conf. Acoustic., Speech and Signal Process. (ICASSP)",
-        year = "2020",
-        pages = "736-740",
-        abstract = "Audio captioning is the novel task of general audio content description using free text. It is an intermodal translation task (not speech-to-text), where a system accepts as an input an audio signal and outputs the textual description (i.e. the caption) of that signal. In this paper we present Clotho, a dataset for audio captioning consisting of 4981 audio samples of 15 to 30 seconds duration and 24 905 captions of eight to 20 words length, and a baseline method to provide initial results. Clotho is built with focus on audio content and caption diversity, and the splits of the data are not hampering the training or evaluation of methods. All sounds are from the Freesound platform, and captions are crowdsourced using Amazon Mechanical Turk and annotators from English speaking countries. Unique words, named entities, and speech transcription are removed with post-processing. Clotho is freely available online (https://zenodo.org/record/3490684)."
+        title        = {Clotho: an Audio Captioning Dataset},
+        author       = {Drossos, Konstantinos and Lipping, Samuel and Virtanen, Tuomas},
+        year         = 2020,
+        booktitle    = {Proc. IEEE Int. Conf. Acoustic., Speech and Signal Process. (ICASSP)},
+        pages        = {736--740},
+        abstract     = {Audio captioning is the novel task of general audio content description using free text. It is an intermodal translation task (not speech-to-text), where a system accepts as an input an audio signal and outputs the textual description (i.e. the caption) of that signal. In this paper we present Clotho, a dataset for audio captioning consisting of 4981 audio samples of 15 to 30 seconds duration and 24 905 captions of eight to 20 words length, and a baseline method to provide initial results. Clotho is built with focus on audio content and caption diversity, and the splits of the data are not hampering the training or evaluation of methods. All sounds are from the Freesound platform, and captions are crowdsourced using Amazon Mechanical Turk and annotators from English speaking countries. Unique words, named entities, and speech transcription are removed with post-processing. Clotho is freely available online (https://zenodo.org/record/3490684).}
     }
     """
     DEFAULT_SUBSET: str = "dev"
@@ -88,7 +87,7 @@ def load_clotho_dataset(
     :returns: A dictionnary of lists containing each metadata.
     """
     root = _get_root(root)
-    if not _is_prepared(root, version, subset):
+    if not _is_prepared_clotho(root, version, subset):
         raise RuntimeError(
             f"Cannot load data: clotho_{subset} is not prepared in data root={root}. Please use download=True in dataset constructor."
         )
@@ -218,12 +217,12 @@ def download_clotho_dataset(
     subset: str = ClothoCard.DEFAULT_SUBSET,
     force: bool = False,
     verbose: int = 0,
+    verify_files: bool = True,
     # Clotho-specific args
     clean_archives: bool = True,
-    verify_files: bool = True,
     version: str = ClothoCard.DEFAULT_VERSION,
 ) -> None:
-    """Prepare Clotho metadata.
+    """Prepare Clotho data.
 
     :param root: Dataset root directory.
         defaults to ".".
@@ -233,11 +232,11 @@ def download_clotho_dataset(
         defaults to False.
     :param verbose: Verbose level.
         defaults to 0.
+    :param verify_files: If True, check all file already downloaded are valid.
+        defaults to False.
 
     :param clean_archives: If True, remove the compressed archives from disk to save space.
         defaults to True.
-    :param verify_files: If True, check all file already downloaded are valid.
-        defaults to False.
     :param version: The version of the dataset. Can be one of :attr:`~ClothoCard.versions`.
         defaults to 'v2.1'.
     """
@@ -287,11 +286,7 @@ def download_clotho_dataset(
             if verbose >= 1:
                 pylog.info(f"Download and check file '{fname}' from url={url}...")
 
-            download_url_to_file(
-                url,
-                fpath,
-                progress=verbose >= 1,
-            )
+            download_file(url, fpath, verbose=verbose)
 
         elif verbose >= 1:
             pylog.info(f"File '{fname}' is already downloaded.")
@@ -461,7 +456,7 @@ def _get_audio_subset_dpath(root: str, version: str, subset: str) -> Optional[st
     )
 
 
-def _is_prepared(root: str, version: str, subset: str) -> bool:
+def _is_prepared_clotho(root: str, version: str, subset: str) -> bool:
     audio_dpath = _get_audio_dpath(root, version)
     csv_dpath = _get_csv_dpath(root, version)
     if not all(map(osp.isdir, (audio_dpath, csv_dpath))):

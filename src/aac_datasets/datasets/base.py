@@ -74,7 +74,7 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
         self._sr = sr
         self._verbose = verbose
 
-        self._post_columns_fns = {}
+        self._online_fns = {}
         self._sizes = []
 
         if self._flat_captions:
@@ -83,13 +83,20 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
     @staticmethod
     def new_empty() -> "AACDataset":
         """Create a new empty dataset."""
-        return AACDataset({}, None, (), False, None, 0)
+        return AACDataset(
+            raw_data={},
+            transform=None,
+            column_names=(),
+            flat_captions=False,
+            sr=None,
+            verbose=0,
+        )
 
     # Properties
     @property
     def all_columns(self) -> List[str]:
         """The name of all columns of the dataset."""
-        return list(self._raw_data | self._post_columns_fns)
+        return list(self._raw_data | self._online_fns)
 
     @property
     def column_names(self) -> List[str]:
@@ -194,7 +201,9 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
         if not isinstance(column, str) and isinstance(column, Iterable):
             return {column_i: self.at(idx, column_i) for column_i in column}
 
-        if isinstance(idx, (int, slice)) and column in self._raw_data.keys():
+        if isinstance(idx, (int, slice)) and (
+            column in self._raw_data.keys() and column not in self._online_fns
+        ):
             return self._raw_data[column][idx]  # type: ignore
 
         if isinstance(idx, slice):
@@ -225,7 +234,7 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
             return values
 
         if isinstance(idx, int):
-            return self._load_auto_value(column, idx)
+            return self._load_online_value(column, idx)
         else:
             IDX_TYPES = ("int", "Iterable[int]", "None", "slice", "Tensor")
             raise TypeError(
@@ -238,7 +247,7 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
 
     def has_post_column(self, column: str) -> bool:
         """Returns True if column name exists in post processed data."""
-        return column in self._post_columns_fns
+        return column in self._online_fns
 
     def has_column(self, column: str) -> bool:
         """Returns True if column name exists in data."""
@@ -249,8 +258,8 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
         if column in self._raw_data:
             column_data = self._raw_data.pop(column, [])
             return column_data
-        elif column in self._post_columns_fns:
-            fn = self._post_columns_fns.pop(column)
+        elif column in self._online_fns:
+            fn = self._online_fns.pop(column)
             return fn
         else:
             raise ValueError(f"Column '{column}' does not exists in dataset.")
@@ -267,7 +276,7 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
         if isinstance(column_data_or_fn, List):
             self.add_raw_column(new_column, column_data_or_fn, allow_replace)
         elif isinstance(column_data_or_fn, Callable):
-            self.add_post_column(new_column, column_data_or_fn, allow_replace)
+            self.add_online_column(new_column, column_data_or_fn, allow_replace)
         else:
             raise TypeError(
                 f"Invalid type {type(column_data_or_fn)}. (expected List or Callable)"
@@ -288,46 +297,46 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
             raise ValueError(f"Invalid number of rows in column '{column}'.")
         self._raw_data[column] = column_data
 
-    def add_post_column(
+    def add_online_column(
         self,
         column: str,
         load_fn: Callable[[Any, int], Any],
         allow_replace: bool = False,
     ) -> None:
         """Add a new post-processed column to this dataset."""
-        if not allow_replace and column in self._post_columns_fns:
+        if not allow_replace and column in self._online_fns:
             raise ValueError(
                 f"Column '{column}' already exists in {self} and found argument allow_replace={allow_replace}."
             )
-        self._post_columns_fns[column] = load_fn
+        self._online_fns[column] = load_fn
 
-    def add_post_columns(
+    def add_online_columns(
         self,
         post_columns_fns: Dict[str, Callable[[Any, int], Any]],
         allow_replace: bool = False,
     ) -> None:
         """Add several new post-processed columns to this dataset."""
         for name, load_fn in post_columns_fns.items():
-            self.add_post_column(name, load_fn, allow_replace)
+            self.add_online_column(name, load_fn, allow_replace)
 
-    def load_post_column(
+    def preload_online_column(
         self,
         column: str,
         allow_replace: bool = False,
     ) -> Callable[[Any, int], Any]:
         """Load all data from a post-column data into raw data."""
-        if column not in self._post_columns_fns:
+        if column not in self._online_fns:
             raise ValueError(f"Invalid argument column={column}.")
 
         column_data = [
-            self._load_auto_value(column, i)
+            self._load_online_value(column, i)
             for i in tqdm.trange(
                 len(self),
                 disable=self._verbose < 2,
                 desc=f"Preloading column '{column}'",
             )
         ]
-        fn = self._post_columns_fns.pop(column)
+        fn = self._online_fns.pop(column)
         self.add_raw_column(column, column_data, allow_replace=allow_replace)
         return fn
 
@@ -412,9 +421,9 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
         raw_data = _unflat_raw_data(self._raw_data, self._sizes)
         self._raw_data = raw_data
 
-    def _load_auto_value(self, column: str, idx: int) -> Any:
-        if column in self._post_columns_fns:
-            fn = self._post_columns_fns[column]
+    def _load_online_value(self, column: str, idx: int) -> Any:
+        if column in self._online_fns:
+            fn = self._online_fns[column]
             return fn(self, idx)
         else:
             raise ValueError(

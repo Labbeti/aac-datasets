@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import csv
 import logging
 import os.path as osp
 
@@ -93,28 +92,28 @@ class AudioCaps(AACDataset[AudioCapsItem]):
 
     # Common globals
     CARD: ClassVar[AudioCapsCard] = AudioCapsCard()
-    FORCE_PREPARE_DATA: ClassVar[bool] = False
-    VERIFY_FILES: ClassVar[bool] = False
-
-    # AudioCaps-specific globals
-    AUDIO_DURATION: ClassVar[float] = 10.0
-    AUDIO_FORMAT: ClassVar[str] = "flac"
-    AUDIO_N_CHANNELS: ClassVar[int] = 1
-    DOWNLOAD_AUDIO: ClassVar[bool] = True
 
     # Initialization
     def __init__(
         self,
         # Common args
         root: Union[str, Path, None] = None,
-        subset: str = "train",
+        subset: str = AudioCapsCard.DEFAULT_SUBSET,
         download: bool = False,
         transform: Optional[Callable[[Dict[str, Any]], Any]] = None,
         verbose: int = 0,
+        force_download: bool = False,
+        verify_files: bool = False,
+        *,
         # AudioCaps-specific args
+        audio_duration: float = 10.0,
+        audio_format: str = "flac",
+        audio_n_channels: int = 1,
+        download_audio: bool = True,
         exclude_removed_audio: bool = True,
         ffmpeg_path: Union[str, Path, None] = None,
         flat_captions: bool = False,
+        max_workers: Optional[int] = None,
         sr: int = 32_000,
         with_tags: bool = False,
         ytdlp_path: Union[str, Path, None] = None,
@@ -131,7 +130,19 @@ class AudioCaps(AACDataset[AudioCapsItem]):
             defaults to None.
         :param verbose: Verbose level.
             defaults to 0.
+        :param force_download: If True, force to re-download file even if they exists on disk.
+            defaults to False.
+        :param verify_files: If True, check hash value when possible.
+            defaults to False.
 
+        :param audio_duration: Extracted duration for each audio file in seconds.
+            defaults to 10.0.
+        :param audio_format: Audio format and extension name.
+            defaults to "flac".
+        :param audio_n_channels: Number of channels extracted for each audio file.
+            defaults to 1.
+        :param download_audio: If True, download audio, metadata and labels files. Otherwise it will only donwload metadata and labels files.
+            defaults to True.
         :param exclude_removed_audio: If True, the dataset will exclude from the dataset the audio not downloaded from youtube (i.e. not present on disk).
             If False, invalid audios will return an empty tensor of shape (0,).
             defaults to True.
@@ -139,9 +150,14 @@ class AudioCaps(AACDataset[AudioCapsItem]):
             defaults to "ffmpeg".
         :param flat_captions: If True, map captions to audio instead of audio to caption.
             defaults to True.
+        :param max_workers: Number of thread given to ThreadPoolExecutor during download.
+            The value None will use `min(32, os.cpu_count() + 4)` workers.
+            defaults to None.
         :param sr: The sample rate used for audio files in the dataset (in Hz).
             Since original YouTube videos are recorded in various settings, this parameter allow to download allow audio files with a specific sample rate.
             defaults to 32000.
+        :param verify_files: If True, check all file already downloaded are valid.
+            defaults to False.
         :param with_tags: If True, load the tags from AudioSet dataset.
             Note: tags needs to be downloaded with download=True & with_tags=True before being used.
             defaults to False.
@@ -161,15 +177,16 @@ class AudioCaps(AACDataset[AudioCapsItem]):
             download_audiocaps_dataset(
                 root=root,
                 subset=subset,
-                force=AudioCaps.FORCE_PREPARE_DATA,
+                force=force_download,
                 verbose=verbose,
-                audio_duration=AudioCaps.AUDIO_DURATION,
-                audio_format=AudioCaps.AUDIO_FORMAT,
-                download_audio=AudioCaps.DOWNLOAD_AUDIO,
+                audio_duration=audio_duration,
+                audio_format=audio_format,
+                audio_n_channels=audio_n_channels,
+                download_audio=download_audio,
                 ffmpeg_path=ffmpeg_path,
-                n_channels=AudioCaps.AUDIO_N_CHANNELS,
+                max_workers=max_workers,
                 sr=sr,
-                verify_files=AudioCaps.VERIFY_FILES,
+                verify_files=verify_files,
                 with_tags=with_tags,
                 ytdlp_path=ytdlp_path,
             )
@@ -178,7 +195,7 @@ class AudioCaps(AACDataset[AudioCapsItem]):
             root=root,
             subset=subset,
             verbose=verbose,
-            audio_format=AudioCaps.AUDIO_FORMAT,
+            audio_format=audio_format,
             exclude_removed_audio=exclude_removed_audio,
             sr=sr,
             with_tags=with_tags,

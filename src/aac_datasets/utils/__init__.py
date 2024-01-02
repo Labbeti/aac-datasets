@@ -4,5 +4,3 @@
 """
 Utilities modules.
 """
-
-from .collate import BasicCollate, AdvancedCollate
