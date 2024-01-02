@@ -87,15 +87,16 @@ For Clotho, the **dev** subset should be used for training, val for validation a
 
 Here is additional statistics on the train subset for AudioCaps, Clotho and MACS:
 
-| | AudioCaps/train | Clotho/dev | MACS/full |
-|:---:|:---:|:---:|:---:|
-| Nb audios | 49,838 | 3,840 | 3,930 |
-| Total audio duration (h) | 136.6<sup>1</sup> | 24.0 | 10.9 |
-| Audio duration range (s) | 0.5-10 | 15-30 | 10 |
-| Nb captions per audio | 1 | 5 | 2-5 |
-| Nb captions | 49,838 | 19,195 | 17,275 |
-| Total nb words<sup>2</sup> | 402,482 | 217,362 | 160,006 |
-| Sentence size<sup>2</sup> | 2-52 | 8-20 | 5-40 |
+| | AudioCaps/train | Clotho/dev | MACS/full | WavCaps/full |
+|:---:|:---:|:---:|:---:|:---:|
+| Nb audios | 49,838 | 3,840 | 3,930 | 403,050 |
+| Total audio duration (h) | 136.6<sup>1</sup> | 24.0 | 10.9 | 7563.3 |
+| Audio duration range (s) | 0.5-10 | 15-30 | 10 | 1-67,109 |
+| Nb captions per audio | 1 | 5 | 2-5 | 1 |
+| Nb captions | 49,838 | 19,195 | 17,275 | 403,050 |
+| Total nb words<sup>2</sup> | 402,482 | 217,362 | 160,006 | 3,161,823 |
+| Sentence size<sup>2</sup> | 2-52 | 8-20 | 5-40 | 2-38 |
+| Vocabulary<sup>2</sup> | 4724 | 4369 | 2721 | 24600 |
 
 <sup>1</sup> This duration is estimated on the total duration of 46230/49838 files of 126.7h.
 
