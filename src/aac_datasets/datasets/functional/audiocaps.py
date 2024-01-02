@@ -540,19 +540,21 @@ def _is_prepared_audiocaps(
     captions_fname = links["captions"]["fname"]
     captions_fpath = osp.join(_get_audiocaps_root(root, sr), captions_fname)
     audio_subset_dpath = _get_audio_subset_dpath(root, subset, sr)
-    audio_fnames = os.listdir(audio_subset_dpath)
-    audio_fnames = [
-        fname for fname in audio_fnames if fname.endswith(f".{audio_format}")
-    ]
 
     msgs = []
 
     if not osp.isdir(audio_subset_dpath):
         msgs.append(f"Cannot find directory '{audio_subset_dpath}'.")
+    else:
+        audio_fnames = os.listdir(audio_subset_dpath)
+        audio_fnames = [
+            fname for fname in audio_fnames if fname.endswith(f".{audio_format}")
+        ]
+        if len(audio_fnames) == 0:
+            msgs.append(f"Cannot find any audio file in '{audio_subset_dpath}'.")
+
     if not osp.isfile(captions_fpath):
         msgs.append(f"Cannot find file '{captions_fpath}'.")
-    if len(audio_fnames) == 0:
-        msgs.append(f"Cannot find any audio file in '{audio_subset_dpath}'.")
 
     if verbose >= 0:
         for msg in msgs:
