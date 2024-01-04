@@ -462,24 +462,41 @@ def _is_prepared_clotho(root: str, version: str, subset: str) -> bool:
     if not all(map(osp.isdir, (audio_dpath, csv_dpath))):
         return False
 
-    if ClothoCard.CAPTIONS_PER_AUDIO[subset] == 0:
-        return True
-    if _CLOTHO_AUDIO_DNAMES[subset] is None:
-        return True
+    # TODO: rm
+    # if ClothoCard.CAPTIONS_PER_AUDIO[subset] == 0:
+    #     return True
+    # if _CLOTHO_AUDIO_DNAMES[subset] is None:
+    #     return True
 
     links = _CLOTHO_LINKS[version][subset]
-    captions_fname = links["captions"]["fname"]
-    captions_fpath = osp.join(csv_dpath, captions_fname)
 
-    if not osp.isfile(captions_fpath):
-        return False
+    if "captions" in links:
+        captions_fname = links["captions"]["fname"]
+        captions_fpath = osp.join(csv_dpath, captions_fname)
 
-    with open(captions_fpath, "r") as file:
-        reader = csv.DictReader(file)
-        lines = list(reader)
+        if not osp.isfile(captions_fpath):
+            return False
 
-    audio_subset_dpath = _get_audio_subset_dpath(root, version, subset)
-    return len(lines) == len(os.listdir(audio_subset_dpath))
+    if "metadata" in links:
+        metadata_fname = links["metadata"]["fname"]
+        metadata_fpath = osp.join(csv_dpath, metadata_fname)
+        if not osp.isfile(metadata_fpath):
+            return False
+
+    if "audio_archive" in links:
+        audio_subset_dpath = _get_audio_subset_dpath(root, version, subset)
+        audio_fnames = os.listdir(audio_subset_dpath)
+
+        if "captions" in links:
+            with open(captions_fpath, "r") as file:
+                reader = csv.DictReader(file)
+                lines = list(reader)
+            return len(audio_fnames) == len(lines)
+        else:
+            return len(audio_fnames) > 0
+
+    else:
+        return True
 
 
 # Audio directory names per subset
