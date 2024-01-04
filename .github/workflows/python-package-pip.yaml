@@ -72,12 +72,17 @@ jobs:
         
     - name: Build data root
       run: |
-        mkdir -p ~/.cache/aac-datasets
+        DATAROOT="~/.cache/aac-datasets"
+        mkdir -p "$DATAROOT"
   
     - name: Try to download Clotho val
       run: |
-        aac-datasets-download --root ~/.cache/aac-datasets --verbose 2 clotho --subsets val
+        aac-datasets-download --root "$DATAROOT" --verbose 2 clotho --subsets val
   
     - name: Try to download AudioCaps val
       run: |
-        aac-datasets-download --root ~/.cache/aac-datasets --verbose 2 audiocaps --subsets val
+        aac-datasets-download --root "$DATAROOT" --verbose 2 audiocaps --subsets val
+  
+    - name: Check data root
+      run: |
+        aac-datasets-check --root "$DATAROOT" --verbose 2 --datasets clotho audiocaps

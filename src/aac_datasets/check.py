@@ -5,7 +5,7 @@ import logging
 import os.path as osp
 
 from argparse import ArgumentParser, Namespace
-from typing import Dict, Iterable
+from typing import Dict, Iterable, Union
 
 import yaml
 
@@ -19,21 +19,28 @@ from aac_datasets.utils.globals import get_default_root
 from aac_datasets.download import _setup_logging
 
 
+DATASETS_NAMES = (AudioCapsCard.NAME, ClothoCard.NAME, MACSCard.NAME, WavCapsCard.NAME)
+
 pylog = logging.getLogger(__name__)
 
 
 def check_directory(
     root: str,
     verbose: int = 0,
-    datasets: Iterable[str] = ("audiocaps", "clotho", "macs"),
+    datasets: Union[Iterable[str], str] = DATASETS_NAMES,
 ) -> Dict[str, Dict[str, int]]:
     """Check which datasets are installed in root.
 
     :param root: The directory to check.
     :param verbose: The verbose level. defaults to 0.
-    :param datasets: The datasets to search in root directory. defaults to ("audiocaps", "clotho", "macs", "wavcaps").
+    :param datasets: The datasets to search in root directory. defaults to DATASETS_NAMES.
     :returns: A dictionary of datanames containing the length of each subset.
     """
+    if isinstance(datasets, str):
+        datasets = [datasets]
+    else:
+        datasets = list(datasets)
+
     data_infos = [
         (AudioCapsCard.NAME, AudioCaps),
         (ClothoCard.NAME, Clotho),
@@ -105,7 +112,7 @@ def _get_main_check_args() -> Namespace:
         "--datasets",
         type=str,
         nargs="+",
-        default=(AudioCapsCard.NAME, ClothoCard.NAME, MACSCard.NAME, WavCapsCard.NAME),
+        default=DATASETS_NAMES,
         help="The datasets to check in root directory.",
     )
 
