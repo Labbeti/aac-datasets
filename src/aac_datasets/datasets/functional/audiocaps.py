@@ -105,7 +105,7 @@ def load_audiocaps_dataset(
     audiocaps_root = _get_audiocaps_root(root, sr)
     audio_subset_dpath = _get_audio_subset_dpath(root, subset, sr)
 
-    if not _is_prepared_audiocaps(root, subset, sr, verbose):
+    if not _is_prepared_audiocaps(root, subset, sr, audio_format, verbose):
         raise RuntimeError(
             f"Cannot load data: audiocaps_{subset} is not prepared in data root={root}. Please use download=True in dataset constructor."
         )
@@ -312,7 +312,7 @@ def download_audiocaps_dataset(
     _check_subprog_help(ytdlp_path, "ytdlp")
     _check_subprog_help(ffmpeg_path, "ffmpeg")
 
-    if _is_prepared_audiocaps(root, subset, sr, -1) and not force:
+    if _is_prepared_audiocaps(root, subset, sr, audio_format, -1) and not force:
         return None
 
     audiocaps_root = _get_audiocaps_root(root, sr)
