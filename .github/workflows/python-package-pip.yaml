@@ -46,11 +46,11 @@ jobs:
 
     - name: Install soundfile for torchaudio, ffmpeg and yt-dlp for AudioCaps download
       run: |
+        sudo add-apt-repository ppa:tomtomtom/yt-dlp    # Add ppa repo to apt
         sudo apt-get update
         sudo apt-get install libsndfile1
         sudo apt-get install ffmpeg
         sudo apt-get install yt-dlp
-        yt-dlp -U
 
     # --- TESTS ---
     - name: Compile python files
