@@ -367,20 +367,22 @@ def download_audiocaps_dataset(
             ytdlp_path=ytdlp_path,
             verbose=verbose,
         )
+        download_kwds = {
+            f"{line['youtube_id']}-{line['start_time']}": {
+                line[key] for key in ("youtube_id", "start_time")
+            }
+            for line in captions_data
+        }
         with ThreadPoolExecutor(max_workers=max_workers) as executor:
             submitted_dict = {
                 i: executor.submit(
                     _download_from_youtube_and_verify,
-                    audiocap_id=line["audiocap_id"],
-                    youtube_id=line["youtube_id"],
-                    start_time=line["start_time"],
+                    **kwds,
                     **common_kwds,
                 )
-                for i, line in enumerate(
-                    tqdm.tqdm(captions_data, total=n_samples, disable=verbose < 1)
-                )
+                for i, kwds in enumerate(download_kwds.values())
             }
-            for i, submitted in submitted_dict.items():
+            for i, submitted in tqdm.tqdm(submitted_dict.items(), disable=verbose < 1):
                 file_exists, download_success, valid_file = submitted.result()
 
                 if verbose < 2:
@@ -563,7 +565,6 @@ def _is_prepared_audiocaps(
 
 
 def _download_from_youtube_and_verify(
-    audiocap_id: str,
     youtube_id: str,
     start_time: str,
     audio_subset_dpath: str,
@@ -581,7 +582,7 @@ def _download_from_youtube_and_verify(
     fpath = osp.join(audio_subset_dpath, fname)
     if not start_time.isdigit():
         raise RuntimeError(
-            f'Start time "{start_time}" is not an integer (audiocap_id={audiocap_id}, youtube_id={youtube_id}).'
+            f'Start time "{start_time}" is not an integer youtube_id={youtube_id}).'
         )
     start_time = int(start_time)
 
