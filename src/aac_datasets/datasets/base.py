@@ -191,7 +191,7 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
                 )
             elif idx.is_floating_point():
                 raise TypeError(
-                    f"Invalid tensor dtype. (found floating-point tensor but expected integer tensor)"
+                    "Invalid tensor dtype. (found floating-point tensor but expected integer tensor)"
                 )
             idx = idx.tolist()
 

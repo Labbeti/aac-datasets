@@ -340,7 +340,7 @@ def download_wavcaps_dataset(
     ign_patterns = [
         pattern
         for source in ign_sources
-        for pattern in (f"json_files/{source}/*.json", f"Zip_files/*")  # {source}/
+        for pattern in (f"json_files/{source}/*.json", "Zip_files/*")  # {source}/
     ]
     if verbose >= 2:
         pylog.debug(f"ign_sources={ign_sources}")
@@ -467,7 +467,7 @@ def download_wavcaps_dataset(
                 )
             file.extractall(audio_subset_dpath, missing_subnames)
             if verbose >= 2:
-                pylog.debug(f"Extraction done.")
+                pylog.debug("Extraction done.")
 
         src_fnames_found = (
             dict.fromkeys(name for name in os.listdir(src_root))
@@ -485,7 +485,7 @@ def download_wavcaps_dataset(
             tgt_fpath = osp.join(audio_subset_dpath, osp.basename(src_fpath))
             os.rename(src_fpath, tgt_fpath)
         if verbose >= 2:
-            pylog.debug(f"Move done.")
+            pylog.debug("Move done.")
 
         if verify_files:
             tgt_fnames_expected = [osp.basename(subname) for subname in flac_subnames]

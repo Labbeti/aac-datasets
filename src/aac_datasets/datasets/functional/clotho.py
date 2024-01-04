@@ -485,8 +485,10 @@ def _is_prepared_clotho(root: str, version: str, subset: str) -> bool:
 
     if "audio_archive" in links:
         audio_subset_dpath = _get_audio_subset_dpath(root, version, subset)
-        audio_fnames = os.listdir(audio_subset_dpath)
+        if not osp.isdir(audio_subset_dpath):
+            return False
 
+        audio_fnames = os.listdir(audio_subset_dpath)
         if "captions" in links:
             with open(captions_fpath, "r") as file:
                 reader = csv.DictReader(file)

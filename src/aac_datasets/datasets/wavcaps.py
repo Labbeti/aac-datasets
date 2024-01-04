@@ -5,7 +5,7 @@ import logging
 import os.path as osp
 
 from pathlib import Path
-from typing import Callable, ClassVar, List, Optional, Tuple, Union
+from typing import Callable, ClassVar, List, Optional, Union
 
 from torch import Tensor
 from typing_extensions import TypedDict
