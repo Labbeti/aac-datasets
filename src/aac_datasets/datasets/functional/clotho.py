@@ -470,6 +470,10 @@ def _is_prepared_clotho(root: str, version: str, subset: str) -> bool:
     links = _CLOTHO_LINKS[version][subset]
     captions_fname = links["captions"]["fname"]
     captions_fpath = osp.join(csv_dpath, captions_fname)
+
+    if not osp.isfile(captions_fpath):
+        return False
+
     with open(captions_fpath, "r") as file:
         reader = csv.DictReader(file)
         lines = list(reader)
