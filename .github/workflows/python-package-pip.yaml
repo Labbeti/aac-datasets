@@ -65,17 +65,11 @@ jobs:
       run: |
         python -m black --check --diff src
 
-    - name: Print ffmpeg version
-      run: |
-        ffmpeg -version
-
-    - name: Print yt-dlp version
-      run: |
-        yt-dlp --version
-
     - name: Print install info
       run: |
         aac-datasets-info
+        ffmpeg -version
+        yt-dlp --version
 
     - name: Test with pytest
       run: |

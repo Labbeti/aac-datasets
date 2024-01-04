@@ -369,7 +369,7 @@ def download_audiocaps_dataset(
         )
         download_kwds = {
             f"{line['youtube_id']}-{line['start_time']}": {
-                line[key] for key in ("youtube_id", "start_time")
+                k: line[k] for k in ("youtube_id", "start_time")
             }
             for line in captions_data
         }
