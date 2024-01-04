@@ -687,6 +687,8 @@ def _download_from_youtube(
         exitcode = subprocess.check_call(extract_command)
         return exitcode == 0
     except (CalledProcessError, PermissionError):
+        if verbose >= 2:
+            pylog.debug(err)
         return False
 
 
