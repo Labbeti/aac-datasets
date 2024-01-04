@@ -64,17 +64,23 @@ jobs:
     - name: Check format with Black
       run: |
         python -m black --check --diff src
-      
+
+    - name: Print ffmpeg version
+      run: |
+        ffmpeg --version
+
+    - name: Print yt-dlp version
+      run: |
+        yt-dlp --version
+
     - name: Print install info
       run: |
         aac-datasets-info
-        yt-dlp --version
-        ffmpeg --version
-  
+
     - name: Test with pytest
       run: |
         python -m pytest -v
-        
+
     - name: Build data root
       run: |
         dataroot=`eval echo $AAC_DATASETS_ROOT`
