@@ -67,7 +67,7 @@ jobs:
 
     - name: Print ffmpeg version
       run: |
-        ffmpeg --version
+        ffmpeg -version
 
     - name: Print yt-dlp version
       run: |
