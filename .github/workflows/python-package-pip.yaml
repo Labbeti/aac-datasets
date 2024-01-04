@@ -10,7 +10,7 @@ on:
 
 env:
   CACHE_NUMBER: 0  # increase to reset cache manually
-  AAC_DATASETS_ROOT: "~/.cache/data"
+  AAC_DATASETS_ROOT: "$HOME/.cache/data"
 
 # Cancel workflow if a new push occurs
 concurrency:
@@ -73,8 +73,9 @@ jobs:
         
     - name: Build data root
       run: |
-        echo "Building directory '$AAC_DATASETS_ROOT'..."
-        mkdir -p "$AAC_DATASETS_ROOT"
+        dataroot=`eval echo $AAC_DATASETS_ROOT`
+        echo "Building directory '$dataroot'..."
+        mkdir -p "$dataroot"
   
     - name: Try to download Clotho val
       run: |
