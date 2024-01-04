@@ -10,7 +10,7 @@ on:
 
 env:
   CACHE_NUMBER: 0  # increase to reset cache manually
-  DATAROOT: "$HOME/.cache/data"
+  AAC_DATASETS_ROOT: "$HOME/.cache/data"
 
 # Cancel workflow if a new push occurs
 concurrency:
@@ -73,16 +73,17 @@ jobs:
         
     - name: Build data root
       run: |
-        mkdir -p "$DATAROOT"
+        echo "Building directory '$AAC_DATASETS_ROOT'..."
+        mkdir -p "$AAC_DATASETS_ROOT"
   
     - name: Try to download Clotho val
       run: |
-        aac-datasets-download --root "$DATAROOT" --verbose 2 clotho --subsets val
+        aac-datasets-download --verbose 2 clotho --subsets val
   
     - name: Try to download AudioCaps val
       run: |
-        aac-datasets-download --root "$DATAROOT" --verbose 2 audiocaps --subsets val
+        aac-datasets-download --verbose 2 audiocaps --subsets val
   
     - name: Check data root
       run: |
-        aac-datasets-check --root "$DATAROOT" --verbose 2 --datasets clotho audiocaps
+        aac-datasets-check --verbose 2 --datasets clotho audiocaps
