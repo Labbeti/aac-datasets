@@ -585,7 +585,7 @@ def _download_from_youtube_and_verify(
         )
     start_time = int(start_time)
 
-    file_exists = fpath not in present_audio_fpaths
+    file_exists = fpath in present_audio_fpaths
     if not file_exists:
         download_success = _download_from_youtube(
             youtube_id=youtube_id,
