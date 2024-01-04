@@ -67,9 +67,9 @@ jobs:
       
     - name: Print install info
       run: |
-        aac-datasets-info
         ffmpeg --version
         yt-dlp --version
+        aac-datasets-info
   
     - name: Test with pytest
       run: |
