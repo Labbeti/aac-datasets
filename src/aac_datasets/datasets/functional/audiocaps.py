@@ -393,6 +393,9 @@ def download_audiocaps_dataset(
             verbose=verbose,
         )
         with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            if verbose >= 2:
+                pylog.debug(f"Using {executor._max_workers} workers.")
+
             submitted_dict = {
                 fname: executor.submit(
                     _download_from_youtube_and_verify,
@@ -409,35 +412,24 @@ def download_audiocaps_dataset(
                 if verbose < 2:
                     continue
 
-                prefix = f"[{i:5d}/{len(download_kwds)}] "
-
                 if not file_exists:
-                    if download_success:
-                        if valid_file:
-                            pylog.debug(
-                                f"{prefix}File '{fname}' has been downloaded and verified."
-                            )
-                        else:
-                            pylog.debug(
-                                f"{prefix}File '{fname}' has been downloaded but it was not valid and has been removed."
-                            )
+                    if not download_success:
+                        msg = f"File '{fname}' cannot be downloaded. (maybe the source video has been removed?)"
+                    elif valid_file:
+                        msg = f"File '{fname}' has been downloaded and verified."
+                    elif verify_files:
+                        msg = f"File '{fname}' has been downloaded but it was not valid and has been removed."
                     else:
-                        pylog.debug(
-                            f"{prefix}Cannot extract audio '{fname}'. (maybe the source video has been removed?)"
-                        )
+                        msg = f"File '{fname}' has been downloaded."
                 else:
                     if valid_file:
-                        pylog.debug(
-                            f"{prefix}File '{fname}' is already downloaded and has been verified."
-                        )
+                        msg = f"File '{fname}' is already downloaded and has been verified."
                     elif verify_files:
-                        pylog.debug(
-                            f"{prefix}File '{fname}' is already downloaded but it was not valid and has been removed."
-                        )
+                        msg = f"File '{fname}' is already downloaded but it was not valid and has been removed."
                     else:
-                        pylog.debug(
-                            f"{prefix}File '{fname}' is already downloaded but it is not verified due to verify_files={verify_files}."
-                        )
+                        msg = f"File '{fname}' is already downloaded."
+
+                pylog.debug(f"[{i+1:5d}/{len(download_kwds)}] {msg}")
 
         if verbose >= 1:
             duration = int(time.perf_counter() - start)

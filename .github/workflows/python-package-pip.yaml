@@ -87,7 +87,7 @@ jobs:
   
     - name: Try to download AudioCaps val
       run: |
-        aac-datasets-download --verbose 2 audiocaps --subsets val --max_workers 2 --with_tags true
+        aac-datasets-download --verbose 2 audiocaps --subsets val --max_workers none --with_tags true
   
     - name: Check data root
       run: |

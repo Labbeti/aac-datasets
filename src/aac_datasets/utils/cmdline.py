@@ -9,6 +9,7 @@ from typing import Optional
 
 _TRUE_VALUES = ("true", "t", "yes", "y", "1")
 _FALSE_VALUES = ("false", "f", "no", "n", "0")
+_NONE_VALUES = ("none",)
 
 
 def _str_to_bool(s: str) -> bool:
@@ -25,7 +26,7 @@ def _str_to_bool(s: str) -> bool:
 
 def _str_to_opt_int(s: str) -> Optional[int]:
     s = str(s).strip().lower()
-    if s == "none":
+    if s in _NONE_VALUES:
         return None
     else:
         return int(s)
@@ -33,7 +34,7 @@ def _str_to_opt_int(s: str) -> Optional[int]:
 
 def _str_to_opt_str(s: str) -> Optional[str]:
     s = str(s)
-    if s.lower() == "none":
+    if s.lower() in _NONE_VALUES:
         return None
     else:
         return s
