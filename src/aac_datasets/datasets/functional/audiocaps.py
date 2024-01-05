@@ -346,7 +346,6 @@ def download_audiocaps_dataset(
             # Keys: audiocap_id, youtube_id, start_time, caption
 
         def _cast_line(line: Dict[str, Any], audio_format: str) -> Dict[str, Any]:
-            line = dict(line)
             youtube_id = line["youtube_id"]
             start_time = line["start_time"]
 
@@ -358,7 +357,8 @@ def download_audiocaps_dataset(
             start_time = int(start_time)
             fname = f"{youtube_id}_{start_time}.{audio_format}"
 
-            return line | {"start_time": start_time, "fname": fname}
+            line.update({"start_time": start_time, "fname": fname})
+            return line
 
         captions_data = [_cast_line(line, audio_format) for line in captions_data]
         download_kwds = {
