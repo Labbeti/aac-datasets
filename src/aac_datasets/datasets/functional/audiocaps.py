@@ -346,17 +346,26 @@ def download_audiocaps_dataset(
             captions_data = list(reader)
             # Keys: audiocap_id, youtube_id, start_time, caption
 
-        def _cast_line(line: Dict[str, Any]) -> Dict[str, Any]:
-            start_time = line["start_time"]
+        def _cast_line(line: Dict[str, Any], audio_format: str) -> Dict[str, Any]:
             youtube_id = line["youtube_id"]
+            start_time = line["start_time"]
+
             if not start_time.isdigit():
                 raise RuntimeError(
                     f"Start time '{start_time}' is not an integer (with youtube_id={youtube_id})."
                 )
-            start_time = int(start_time)
-            return line | {"start_time": start_time}
 
-        captions_data = [_cast_line(line) for line in captions_data]
+            start_time = int(start_time)
+            fname = f"{youtube_id}_{start_time}.{audio_format}"
+
+            return line | {"start_time": start_time, "fname": fname}
+
+        captions_data = [_cast_line(line, audio_format) for line in captions_data]
+        download_kwds = {
+            line["fname"]: {k: line[k] for k in ("fname", "youtube_id", "start_time")}
+            for line in captions_data
+        }
+        del captions_data
 
         present_audio_fnames = os.listdir(audio_subset_dpath)
         present_audio_fpaths = [
@@ -376,58 +385,51 @@ def download_audiocaps_dataset(
             ytdlp_path=ytdlp_path,
             verbose=verbose,
         )
-        download_kwds = {
-            f"{line['youtube_id']}-{line['start_time']}": {
-                k: line[k] for k in ("youtube_id", "start_time")
-            }
-            for line in captions_data
-        }
         with ThreadPoolExecutor(max_workers=max_workers) as executor:
             submitted_dict = {
-                i: executor.submit(
+                fname: executor.submit(
                     _download_from_youtube_and_verify,
                     **kwds,
                     **common_kwds,
                 )
-                for i, kwds in enumerate(download_kwds.values())
+                for fname, kwds in download_kwds.items()
             }
-            for i, submitted in tqdm.tqdm(submitted_dict.items(), disable=verbose < 1):
+            for i, (fname, submitted) in enumerate(
+                tqdm.tqdm(submitted_dict.items(), disable=verbose < 1)
+            ):
                 file_exists, download_success, valid_file = submitted.result()
 
                 if verbose < 2:
                     continue
 
-                line = captions_data[i]
-                audiocap_id = line["audiocap_id"]
-                youtube_id = line["youtube_id"]
-                prefix = f"[{audiocap_id:6s};{i:5d}/{len(download_kwds)}] "
+                prefix = f"[{i:5d}/{len(download_kwds)}] "
 
                 if not file_exists:
                     if download_success:
                         if valid_file:
                             pylog.debug(
-                                f"{prefix}File '{youtube_id}' has been downloaded and verified."
+                                f"{prefix}File '{fname}' has been downloaded and verified."
                             )
                         else:
                             pylog.debug(
-                                f"{prefix}File '{youtube_id}' has been downloaded but it was not valid and has been removed."
+                                f"{prefix}File '{fname}' has been downloaded but it was not valid and has been removed."
                             )
                     else:
                         pylog.debug(
-                            f"{prefix}Cannot extract audio '{youtube_id}'. (maybe the source video has been removed?)"
+                            f"{prefix}Cannot extract audio '{fname}'. (maybe the source video has been removed?)"
                         )
                 else:
                     if valid_file:
                         pylog.info(
-                            f"{prefix}File '{youtube_id}' is already downloaded and has been verified."
+                            f"{prefix}File '{fname}' is already downloaded and has been verified."
                         )
                     elif verify_files:
                         pylog.debug(
-                            f"{prefix}File '{youtube_id}' is already downloaded but it was not valid and has been removed."
+                            f"{prefix}File '{fname}' is already downloaded but it was not valid and has been removed."
                         )
                     else:
                         pylog.debug(
-                            f"{prefix}File '{youtube_id}' is already downloaded but it is not verified due to verify_files={verify_files}."
+                            f"{prefix}File '{fname}' is already downloaded but it is not verified due to verify_files={verify_files}."
                         )
 
         if verbose >= 1:
@@ -574,10 +576,10 @@ def _is_prepared_audiocaps(
 
 
 def _download_from_youtube_and_verify(
+    fname: str,
     youtube_id: str,
     start_time: int,
     audio_subset_dpath: str,
-    audio_format: str,
     verify_files: bool,
     present_audio_fpaths: Dict[str, None],
     audio_duration: float,
@@ -587,10 +589,12 @@ def _download_from_youtube_and_verify(
     ytdlp_path: str,
     verbose: int,
 ) -> Tuple[bool, bool, bool]:
-    fname = f"{youtube_id}_{start_time}.{audio_format}"
     fpath = osp.join(audio_subset_dpath, fname)
 
     file_exists = fpath in present_audio_fpaths
+    download_success = False
+    valid_file = False
+
     if not file_exists:
         download_success = _download_from_youtube(
             youtube_id=youtube_id,
@@ -603,21 +607,16 @@ def _download_from_youtube_and_verify(
             ytdlp_path=ytdlp_path,
             verbose=verbose,
         )
-        if download_success:
-            valid_file = verify_files and _is_valid_audio_file(
-                fpath, sr, audio_n_channels
-            )
-        else:
-            valid_file = False
 
-    elif verify_files:
-        download_success = False
-        valid_file = verify_files and _is_valid_audio_file(fpath, sr, audio_n_channels)
-    else:
-        download_success = False
-        valid_file = False
+    if verify_files and (download_success or file_exists):
+        valid_file = _is_valid_audio_file(
+            fpath,
+            min_n_frames=1,
+            sr=sr,
+            n_channels=audio_n_channels,
+        )
 
-    if verify_files and not valid_file:
+    if verify_files and not valid_file and osp.isfile(fpath):
         os.remove(fpath)
 
     return file_exists, download_success, valid_file
@@ -716,8 +715,11 @@ def _check_subprog_help(
 
 def _is_valid_audio_file(
     fpath: str,
-    expected_sr: Optional[int],
-    expected_n_channels: Optional[int],
+    *,
+    min_n_frames: Optional[int] = None,
+    max_n_frames: Optional[int] = None,
+    sr: Optional[int] = None,
+    n_channels: Optional[int] = None,
 ) -> bool:
     try:
         metadata = torchaudio.info(fpath)  # type: ignore
@@ -726,24 +728,27 @@ def _is_valid_audio_file(
         pylog.error(msg)
         return False
 
-    if metadata.num_frames == 0:
-        msg = (
-            f"Found file '{fpath}' already downloaded but it is invalid (empty audio)."
-        )
-        pylog.error(msg)
-        return False
+    msgs = []
+    if min_n_frames is not None and metadata.num_frames < min_n_frames:
+        msg = f"Found file '{fpath}' already downloaded but it is invalid (audio is shorter than min_n_frames={min_n_frames} samples)."
+        msgs.append(msg)
 
-    if expected_sr is not None and metadata.sample_rate != expected_sr:
-        msg = f"Found file '{fpath}' already downloaded but it is invalid (invalid sr={metadata.sample_rate} != {expected_sr})."
-        pylog.error(msg)
-        return False
+    if max_n_frames is not None and metadata.num_frames > max_n_frames:
+        msg = f"Found file '{fpath}' already downloaded but it is invalid (audio is longer than max_n_frames={max_n_frames} samples)."
+        msgs.append(msg)
 
-    if expected_n_channels is not None and metadata.num_channels != expected_n_channels:
-        msg = f"Found file '{fpath}' already downloaded but it is invalid (invalid n_channels={metadata.num_channels} != {expected_sr})."
-        pylog.error(msg)
-        return False
+    if sr is not None and metadata.sample_rate != sr:
+        msg = f"Found file '{fpath}' already downloaded but it is invalid (invalid sr={metadata.sample_rate} != {sr})."
+        msgs.append(msg)
 
-    return True
+    if n_channels is not None and metadata.num_channels != n_channels:
+        msg = f"Found file '{fpath}' already downloaded but it is invalid (invalid n_channels={metadata.num_channels} != {sr})."
+        msgs.append(msg)
+
+    for msg in msgs:
+        pylog.error(msg)
+
+    return len(msgs) == 0
 
 
 def _get_youtube_link(youtube_id: str, start_time: Optional[int]) -> str:
