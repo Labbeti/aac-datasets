@@ -373,9 +373,8 @@ def download_audiocaps_dataset(
         ]
         present_audio_fpaths = dict.fromkeys(present_audio_fpaths)
 
-        common_kwds = dict(
+        common_kwds: Dict[str, Any] = dict(
             audio_subset_dpath=audio_subset_dpath,
-            audio_format=audio_format,
             verify_files=verify_files,
             present_audio_fpaths=present_audio_fpaths,
             audio_duration=audio_duration,
