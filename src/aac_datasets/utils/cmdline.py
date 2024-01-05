@@ -7,8 +7,8 @@ import sys
 from typing import Optional
 
 
-_TRUE_VALUES = ("true", "1", "t", "yes", "y")
-_FALSE_VALUES = ("false", "0", "f", "no", "n")
+_TRUE_VALUES = ("true", "t", "yes", "y", "1")
+_FALSE_VALUES = ("false", "f", "no", "n", "0")
 
 
 def _str_to_bool(s: str) -> bool:
@@ -21,6 +21,14 @@ def _str_to_bool(s: str) -> bool:
         raise ValueError(
             f"Invalid argument s={s}. (expected one of {_TRUE_VALUES + _FALSE_VALUES})"
         )
+
+
+def _str_to_opt_int(s: str) -> Optional[int]:
+    s = str(s).strip().lower()
+    if s == "none":
+        return None
+    else:
+        return int(s)
 
 
 def _str_to_opt_str(s: str) -> Optional[str]:

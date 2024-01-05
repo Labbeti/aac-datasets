@@ -3,6 +3,7 @@
 
 import logging
 import os.path as osp
+import random
 
 from argparse import ArgumentParser, Namespace
 from typing import Dict, Iterable, Union
@@ -63,6 +64,10 @@ def check_directory(
         for subset in ds_class.CARD.SUBSETS:
             try:
                 ds = ds_class(root, subset, verbose=0)
+                if len(ds) > 0:
+                    # Try to load a random item
+                    idx = random.randint(0, len(ds) - 1)
+                    _item = ds[idx]
                 found_dsets[subset] = ds
 
             except RuntimeError:

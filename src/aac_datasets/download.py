@@ -25,7 +25,12 @@ from aac_datasets.datasets.functional.wavcaps import (
     WavCapsCard,
     download_wavcaps_datasets,
 )
-from aac_datasets.utils.cmdline import _str_to_bool, _str_to_opt_str, _setup_logging
+from aac_datasets.utils.cmdline import (
+    _str_to_bool,
+    _str_to_opt_int,
+    _str_to_opt_str,
+    _setup_logging,
+)
 from aac_datasets.utils.globals import (
     get_default_root,
     get_default_ffmpeg_path,
@@ -93,6 +98,12 @@ def _get_main_download_args() -> Namespace:
         nargs="+",
         choices=AudioCapsCard.SUBSETS,
         help="AudioCaps subsets to download.",
+    )
+    audiocaps_subparser.add_argument(
+        "--max_workers",
+        type=_str_to_opt_int,
+        default=1,
+        help="Number of workers used for downloading multiple files in parallel.",
     )
 
     clotho_subparser = subparsers.add_parser(ClothoCard.NAME)
@@ -185,8 +196,9 @@ def _main_download() -> None:
             force=args.force,
             verbose=args.verbose,
             ffmpeg_path=args.ffmpeg_path,
-            ytdlp_path=args.ytdlp_path,
+            max_workers=args.max_workers,
             with_tags=args.with_tags,
+            ytdlp_path=args.ytdlp_path,
         )
 
     elif args.dataset == ClothoCard.NAME:

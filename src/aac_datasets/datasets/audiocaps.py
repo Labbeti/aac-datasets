@@ -111,7 +111,7 @@ class AudioCaps(AACDataset[AudioCapsItem]):
         exclude_removed_audio: bool = True,
         ffmpeg_path: Union[str, Path, None] = None,
         flat_captions: bool = False,
-        max_workers: Optional[int] = None,
+        max_workers: Optional[int] = 1,
         sr: int = 32_000,
         with_tags: bool = False,
         ytdlp_path: Union[str, Path, None] = None,
@@ -148,9 +148,10 @@ class AudioCaps(AACDataset[AudioCapsItem]):
             defaults to "ffmpeg".
         :param flat_captions: If True, map captions to audio instead of audio to caption.
             defaults to True.
-        :param max_workers: Number of thread given to ThreadPoolExecutor during download.
-            The value None will use `min(32, os.cpu_count() + 4)` workers.
-            defaults to None.
+        :param max_workers: Number of threads to download audio files in parallel.
+            Do not use a value too high to avoid "Too Many Requests" error.
+            The value None will use `min(32, os.cpu_count() + 4)` workers, which is the default of ThreadPoolExecutor.
+            defaults to 1.
         :param sr: The sample rate used for audio files in the dataset (in Hz).
             Since original YouTube videos are recorded in various settings, this parameter allow to download allow audio files with a specific sample rate.
             defaults to 32000.
@@ -177,6 +178,7 @@ class AudioCaps(AACDataset[AudioCapsItem]):
                 subset=subset,
                 force=force_download,
                 verbose=verbose,
+                verify_files=verify_files,
                 audio_duration=audio_duration,
                 audio_format=audio_format,
                 audio_n_channels=audio_n_channels,
@@ -184,7 +186,6 @@ class AudioCaps(AACDataset[AudioCapsItem]):
                 ffmpeg_path=ffmpeg_path,
                 max_workers=max_workers,
                 sr=sr,
-                verify_files=verify_files,
                 with_tags=with_tags,
                 ytdlp_path=ytdlp_path,
             )

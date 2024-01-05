@@ -162,7 +162,7 @@ def load_audiocaps_dataset(
 
     # Build global mappings
     fnames_dic = dict.fromkeys(
-        f"{line['youtube_id']}_{line['start_time']}.{audio_format}"
+        _AUDIO_FNAME_FORMAT.format(**line, audio_format=audio_format)
         for line in captions_data
     )
     audio_fnames_on_disk = dict.fromkeys(os.listdir(audio_subset_dpath))
@@ -192,7 +192,7 @@ def load_audiocaps_dataset(
         start_time = line["start_time"]
         caption = line["caption"]
 
-        fname = f"{youtube_id}_{start_time}.{audio_format}"
+        fname = _AUDIO_FNAME_FORMAT.format(**line, audio_format=audio_format)
         if fname in fname_to_idx:
             idx = fname_to_idx[fname]
 
@@ -220,7 +220,9 @@ def load_audiocaps_dataset(
         youtube_id = line["YTID"]
         # Note : In audioset, start_time is a string repr of a float value, audiocaps it is a string repr of an integer
         start_time = int(float(line["start_seconds"]))
-        fname = f"{youtube_id}_{start_time}.{audio_format}"
+        fname = _AUDIO_FNAME_FORMAT.format(
+            youtube_id=youtube_id, start_time=start_time, audio_format=audio_format
+        )
         if fname in fname_to_idx:
             tags_mid = line["positive_labels"]
             tags_mid = tags_mid.split(",")
@@ -263,7 +265,7 @@ def download_audiocaps_dataset(
     audio_n_channels: int = 1,
     download_audio: bool = True,
     ffmpeg_path: Union[str, Path, None] = None,
-    max_workers: Optional[int] = None,
+    max_workers: Optional[int] = 1,
     sr: int = 32_000,
     ytdlp_path: Union[str, Path, None] = None,
     with_tags: bool = False,
@@ -292,6 +294,10 @@ def download_audiocaps_dataset(
         defaults to True.
     :param ffmpeg_path: Path to ffmpeg executable file.
         defaults to "ffmpeg".
+    :param max_workers: Number of threads to download audio files in parallel.
+        Do not use a value too high to avoid "Too Many Requests" error.
+        The value None will use `min(32, os.cpu_count() + 4)` workers, which is the default of ThreadPoolExecutor.
+        defaults to 1.
     :param sr: The sample rate used for audio files in the dataset (in Hz).
         Since original YouTube videos are recorded in various settings, this parameter allow to download allow audio files with a specific sample rate.
         defaults to 32000.
@@ -355,7 +361,9 @@ def download_audiocaps_dataset(
                 )
 
             start_time = int(start_time)
-            fname = f"{youtube_id}_{start_time}.{audio_format}"
+            fname = _AUDIO_FNAME_FORMAT.format(
+                youtube_id=youtube_id, start_time=start_time, audio_format=audio_format
+            )
 
             line.update({"start_time": start_time, "fname": fname})
             return line
@@ -450,16 +458,17 @@ def download_audiocaps_datasets(
     subsets: Union[str, Iterable[str]] = AudioCapsCard.DEFAULT_SUBSET,
     force: bool = False,
     verbose: int = 0,
+    verify_files: bool = False,
     # AudioCaps-specific args
     audio_duration: float = 10.0,
     audio_format: str = "flac",
     audio_n_channels: int = 1,
     download_audio: bool = True,
     ffmpeg_path: Union[str, Path, None] = None,
+    max_workers: Optional[int] = 1,
     sr: int = 32_000,
-    verify_files: bool = False,
-    ytdlp_path: Union[str, Path, None] = None,
     with_tags: bool = False,
+    ytdlp_path: Union[str, Path, None] = None,
 ) -> None:
     """Function helper to download a list of subsets. See :func:`~aac_datasets.datasets.functional.audiocaps.download_audiocaps_dataset` for details."""
     if isinstance(subsets, str):
@@ -471,15 +480,16 @@ def download_audiocaps_datasets(
         root=root,
         force=force,
         verbose=verbose,
+        verify_files=verify_files,
         audio_duration=audio_duration,
         audio_format=audio_format,
         audio_n_channels=audio_n_channels,
         download_audio=download_audio,
         ffmpeg_path=ffmpeg_path,
+        max_workers=max_workers,
         sr=sr,
-        verify_files=verify_files,
-        ytdlp_path=ytdlp_path,
         with_tags=with_tags,
+        ytdlp_path=ytdlp_path,
     )
     for subset in subsets:
         download_audiocaps_dataset(
@@ -539,11 +549,11 @@ def _is_prepared_audiocaps(
         msgs.append(f"Cannot find directory '{audio_subset_dpath}'.")
     else:
         audio_fnames = os.listdir(audio_subset_dpath)
-        audio_fnames = [
-            fname for fname in audio_fnames if fname.endswith(f".{audio_format}")
-        ]
+        audio_fnames = [fname for fname in audio_fnames if fname.endswith(audio_format)]
         if len(audio_fnames) == 0:
-            msgs.append(f"Cannot find any audio file in '{audio_subset_dpath}'.")
+            msgs.append(
+                f"Cannot find any audio {audio_format} file in '{audio_subset_dpath}'."
+            )
 
     if not osp.isfile(captions_fpath):
         msgs.append(f"Cannot find file '{captions_fpath}'.")
@@ -814,3 +824,6 @@ _AUDIOSET_LINKS = {
         "url": "http://storage.googleapis.com/us_audioset/youtube_corpus/v1/csv/unbalanced_train_segments.csv",
     },
 }
+
+# Audio filename format for AudioCaps
+_AUDIO_FNAME_FORMAT = "{youtube_id}_{start_time}.{audio_format}"
