@@ -14,13 +14,13 @@ You can download each dataset subset by using the download=True option in datase
     _ = Clotho("/my/path/to/data", subset="dev", download=True)
 
 You can also do the same by using functions :
-.. :caption: Download Clotho development dataset (command line).
+.. :caption: Download Clotho development dataset (python).
 
 .. code-block:: python
 
-    from aac_datasets.download import download_clotho
+    from aac_datasets.download import download_clotho_dataset
 
-    download_clotho("/my/path/to/data", subsets=("dev",), download=True)
+    download_clotho_dataset("/my/path/to/data", subset="dev", download=True)
 
 Or by the command line :
 .. :caption: Download Clotho development dataset (command line).

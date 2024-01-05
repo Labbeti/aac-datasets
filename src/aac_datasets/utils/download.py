@@ -3,25 +3,41 @@
 
 import hashlib
 import os
+import os.path as osp
 
 from pathlib import Path
 from typing import List, Union
+
+from torch.hub import download_url_to_file
 
 
 HASH_TYPES = ("sha256", "md5")
 DEFAULT_CHUNK_SIZE = 256 * 1024**2  # 256 MiB
 
 
+def download_file(
+    url: str,
+    fpath: Union[str, Path],
+    make_intermediate: bool = False,
+    verbose: int = 0,
+) -> None:
+    if make_intermediate:
+        dpath = osp.dirname(fpath)
+        os.makedirs(dpath, exist_ok=True)
+
+    download_url_to_file(url, fpath, progress=verbose > 0)
+
+
 def safe_rmdir(
-    root: str,
+    root: Union[str, Path],
     rm_root: bool = True,
     error_on_non_empty_dir: bool = True,
 ) -> List[str]:
     """Remove all empty sub-directories.
 
     :param root: Root directory path.
-    :param rm_root: If True, remove the root directory. defaults to True.
-    :param error_on_non_empty_dir: If True, raises a RuntimeError if a subdirectory contains 1 file.
+    :param rm_root: If True, remove the root directory too. defaults to True.
+    :param error_on_non_empty_dir: If True, raises a RuntimeError if a subdirectory contains at least 1 file. Otherwise it will leave non-empty directories. defaults to True.
     :returns: The list of directories paths deleted.
     """
     deleted = []
@@ -34,23 +50,6 @@ def safe_rmdir(
         elif error_on_non_empty_dir:
             raise RuntimeError(f"Cannot remove non-empty dir {dpath}.")
     return deleted
-
-
-def validate_file(
-    fpath: Union[str, Path],
-    hash_value: str,
-    hash_type: str = "sha256",
-) -> bool:
-    """Validate a given file object with its hash.
-
-    :param fpath: The filepath or the file.
-    :param hash_value: The hash value as string.
-    :param hash_type: The hash type. defaults to "sha256".
-    :returns: True if the file hash corresponds to the hash value.
-    """
-    hash_value_found = hash_file(fpath, hash_type)
-    is_valid = hash_value_found == hash_value
-    return is_valid
 
 
 def hash_file(

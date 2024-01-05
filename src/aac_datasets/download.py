@@ -4,130 +4,42 @@
 import logging
 
 from argparse import ArgumentParser, Namespace
-from typing import Dict, Iterable, Optional
 
 import yaml
 
 import aac_datasets
 
-from aac_datasets.datasets.audiocaps import AudioCaps, AudioCapsCard
-from aac_datasets.datasets.clotho import Clotho, ClothoCard
-from aac_datasets.datasets.macs import MACS, MACSCard
-from aac_datasets.datasets.wavcaps import WavCaps, WavCapsCard, HUGGINGFACE_HUB_CACHE
-from aac_datasets.utils.cmdline import _str_to_bool, _setup_logging
-from aac_datasets.utils.paths import (
+from aac_datasets.datasets.functional.audiocaps import (
+    AudioCapsCard,
+    download_audiocaps_datasets,
+)
+from aac_datasets.datasets.functional.clotho import (
+    ClothoCard,
+    download_clotho_datasets,
+)
+from aac_datasets.datasets.functional.macs import (
+    MACSCard,
+    download_macs_datasets,
+)
+from aac_datasets.datasets.functional.wavcaps import (
+    WavCapsCard,
+    download_wavcaps_datasets,
+)
+from aac_datasets.utils.cmdline import (
+    _str_to_bool,
+    _str_to_opt_int,
+    _str_to_opt_str,
+    _setup_logging,
+)
+from aac_datasets.utils.globals import (
     get_default_root,
     get_default_ffmpeg_path,
-    get_default_ytdl_path,
+    get_default_ytdlp_path,
     get_default_zip_path,
 )
 
 
 pylog = logging.getLogger(__name__)
-
-
-def download_audiocaps(
-    root: str = ...,
-    verbose: int = 1,
-    force: bool = False,
-    download: bool = True,
-    ffmpeg_path: str = ...,
-    ytdl_path: str = ...,
-    with_tags: bool = False,
-    subsets: Iterable[str] = AudioCapsCard.SUBSETS,
-) -> Dict[str, AudioCaps]:
-    """Download :class:`~aac_datasets.datasets.audiocaps.AudioCaps` dataset subsets."""
-    AudioCaps.FORCE_PREPARE_DATA = force
-    datasets = {}
-    for subset in subsets:
-        datasets[subset] = AudioCaps(
-            root,
-            subset,
-            download=download,
-            verbose=verbose,
-            with_tags=with_tags,
-            ffmpeg_path=ffmpeg_path,
-            ytdl_path=ytdl_path,
-        )
-    return datasets
-
-
-def download_clotho(
-    root: str = ...,
-    verbose: int = 1,
-    force: bool = False,
-    download: bool = True,
-    version: str = ClothoCard.DEFAULT_VERSION,
-    clean_archives: bool = False,
-    subsets: Iterable[str] = ClothoCard.SUBSETS,
-) -> Dict[str, Clotho]:
-    """Download :class:`~aac_datasets.datasets.clotho.Clotho` dataset subsets."""
-    subsets = list(subsets)
-    if version == "v1":
-        if "val" in subsets:
-            if verbose >= 0:
-                pylog.warning(
-                    f"Excluding val subset since it did not exists for version '{version}'."
-                )
-            subsets = [subset for subset in subsets if subset != "val"]
-
-    Clotho.FORCE_PREPARE_DATA = force
-    Clotho.CLEAN_ARCHIVES = clean_archives
-
-    datasets = {}
-    for subset in subsets:
-        datasets[subset] = Clotho(
-            root, subset, download=download, verbose=verbose, version=version
-        )
-    return datasets
-
-
-def download_macs(
-    root: str = ...,
-    verbose: int = 1,
-    force: bool = False,
-    download: bool = True,
-    clean_archives: bool = False,
-    verify_files: bool = True,
-) -> Dict[str, MACS]:
-    """Download :class:`~aac_datasets.datasets.macs.MACS` dataset."""
-    MACS.FORCE_PREPARE_DATA = force
-    MACS.CLEAN_ARCHIVES = clean_archives
-    MACS.VERIFY_FILES = verify_files
-
-    datasets = {}
-    for subset in MACSCard.SUBSETS:
-        datasets[subset] = MACS(root, download=download, verbose=verbose)
-    return datasets
-
-
-def download_wavcaps(
-    root: str = ...,
-    verbose: int = 1,
-    force: bool = False,
-    download: bool = True,
-    clean_archives: bool = False,
-    subsets: Iterable[str] = WavCapsCard.SUBSETS,
-    hf_cache_dir: Optional[str] = HUGGINGFACE_HUB_CACHE,
-    revision: Optional[str] = WavCapsCard.DEFAULT_REVISION,
-    zip_path: str = ...,
-) -> Dict[str, WavCaps]:
-    """Download :class:`~aac_datasets.datasets.wavcaps.WavCaps` dataset."""
-
-    WavCaps.FORCE_PREPARE_DATA = force
-    WavCaps.CLEAN_ARCHIVES = clean_archives
-
-    datasets = {}
-    for subset in subsets:
-        datasets[subset] = WavCaps(
-            root,
-            download=download,
-            hf_cache_dir=hf_cache_dir,
-            revision=revision,
-            verbose=verbose,
-            zip_path=zip_path,
-        )
-    return datasets
 
 
 def _get_main_download_args() -> Namespace:
@@ -142,16 +54,16 @@ def _get_main_download_args() -> Namespace:
         help="The path to the parent directory of the datasets.",
     )
     parser.add_argument(
-        "--verbose",
-        type=int,
-        default=1,
-        help="Verbose level of the script. 0 means silent mode, 1 is default mode and 2 add additional debugging outputs.",
-    )
-    parser.add_argument(
         "--force",
         type=_str_to_bool,
         default=False,
         help="Force download of files, even if they are already downloaded.",
+    )
+    parser.add_argument(
+        "--verbose",
+        type=int,
+        default=1,
+        help="Verbose level of the script. 0 means silent mode, 1 is default mode and 2 add additional debugging outputs.",
     )
 
     subparsers = parser.add_subparsers(
@@ -168,9 +80,9 @@ def _get_main_download_args() -> Namespace:
         help="Path to ffmpeg used to download audio from youtube.",
     )
     audiocaps_subparser.add_argument(
-        "--ytdl_path",
+        "--ytdlp_path",
         type=str,
-        default=get_default_ytdl_path(),
+        default=get_default_ytdlp_path(),
         help="Path to yt-dl program used to extract metadata from a youtube video.",
     )
     audiocaps_subparser.add_argument(
@@ -186,6 +98,12 @@ def _get_main_download_args() -> Namespace:
         nargs="+",
         choices=AudioCapsCard.SUBSETS,
         help="AudioCaps subsets to download.",
+    )
+    audiocaps_subparser.add_argument(
+        "--max_workers",
+        type=_str_to_opt_int,
+        default=1,
+        help="Number of workers used for downloading multiple files in parallel.",
     )
 
     clotho_subparser = subparsers.add_parser(ClothoCard.NAME)
@@ -243,8 +161,8 @@ def _get_main_download_args() -> Namespace:
     )
     wavcaps_subparser.add_argument(
         "--hf_cache_dir",
-        type=str,
-        default=HUGGINGFACE_HUB_CACHE,
+        type=_str_to_opt_str,
+        default=None,
         help="Hugging face cache dir.",
     )
     wavcaps_subparser.add_argument(
@@ -272,45 +190,42 @@ def _main_download() -> None:
         pylog.debug(yaml.dump({"Arguments": args.__dict__}, sort_keys=False))
 
     if args.dataset == AudioCapsCard.NAME:
-        download_audiocaps(
+        download_audiocaps_datasets(
             root=args.root,
-            verbose=args.verbose,
-            force=args.force,
-            download=True,
-            ffmpeg_path=args.ffmpeg_path,
-            ytdl_path=args.ytdl_path,
-            with_tags=args.with_tags,
             subsets=args.subsets,
+            force=args.force,
+            verbose=args.verbose,
+            ffmpeg_path=args.ffmpeg_path,
+            max_workers=args.max_workers,
+            with_tags=args.with_tags,
+            ytdlp_path=args.ytdlp_path,
         )
 
     elif args.dataset == ClothoCard.NAME:
-        download_clotho(
+        download_clotho_datasets(
             root=args.root,
-            verbose=args.verbose,
-            force=args.force,
-            download=True,
-            version=args.version,
-            clean_archives=args.clean_archives,
             subsets=args.subsets,
+            force=args.force,
+            verbose=args.verbose,
+            clean_archives=args.clean_archives,
+            version=args.version,
         )
 
     elif args.dataset == MACSCard.NAME:
-        download_macs(
+        download_macs_datasets(
             root=args.root,
-            verbose=args.verbose,
             force=args.force,
-            download=True,
+            verbose=args.verbose,
             clean_archives=args.clean_archives,
         )
 
     elif args.dataset == WavCapsCard.NAME:
-        download_wavcaps(
+        download_wavcaps_datasets(
             root=args.root,
-            verbose=args.verbose,
-            force=args.force,
-            download=True,
-            clean_archives=args.clean_archives,
             subsets=args.subsets,
+            force=args.force,
+            verbose=args.verbose,
+            clean_archives=args.clean_archives,
             hf_cache_dir=args.hf_cache_dir,
             revision=args.revision,
             zip_path=args.zip_path,

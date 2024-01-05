@@ -10,20 +10,20 @@ __license__ = "MIT"
 __maintainer__ = "Etienne Labbé (Labbeti)"
 __name__ = "aac-datasets"
 __status__ = "Development"
-__version__ = "0.4.1"
+__version__ = "0.5.0"
 
 
 from .datasets.audiocaps import AudioCaps
 from .datasets.clotho import Clotho
 from .datasets.macs import MACS
 from .datasets.wavcaps import WavCaps
-from .utils.paths import (
+from .utils.globals import (
     get_default_ffmpeg_path,
     get_default_root,
-    get_default_ytdl_path,
+    get_default_ytdlp_path,
     set_default_ffmpeg_path,
     set_default_root,
-    set_default_ytdl_path,
+    set_default_ytdlp_path,
 )
 
 
@@ -34,8 +34,8 @@ __all__ = [
     "WavCaps",
     "get_default_ffmpeg_path",
     "get_default_root",
-    "get_default_ytdl_path",
+    "get_default_ytdlp_path",
     "set_default_ffmpeg_path",
     "set_default_root",
-    "set_default_ytdl_path",
+    "set_default_ytdlp_path",
 ]

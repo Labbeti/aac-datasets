@@ -23,16 +23,7 @@ classifiers = [
 maintainers = [
     {name = "Etienne Labbé (Labbeti)", email = "labbeti.pub@gmail.com"},
 ]
-dependencies = [
-    "torch>=1.10.1",
-    "torchaudio>=0.10.1",
-    "py7zr>=0.17.2",
-    "pyyaml>=6.0",
-    "tqdm>=4.64.0",
-    "huggingface-hub>=0.15.1",
-    "numpy>=1.21.2",
-]
-dynamic = ["version"]
+dynamic = ["version", "dependencies", "optional-dependencies"]
 
 [project.urls]
 Homepage = "https://pypi.org/project/aac-datasets/"
@@ -46,19 +37,11 @@ aac-datasets-check = "aac_datasets.check:_main_check"
 aac-datasets-download = "aac_datasets.download:_main_download"
 aac-datasets-info = "aac_datasets.info:print_install_info"
 
-[project.optional-dependencies]
-dev = [
-    "pytest==6.2.5",
-    "flake8==4.0.1",
-    "click==8.0.4",
-    "black==22.10.0",
-    "ipykernel==6.9.1",
-    "twine==4.0.1",
-]
-
 [tool.setuptools.packages.find]
 where = ["src"]  # list of folders that contain the packages (["."] by default)
 include = ["aac_datasets*"]  # package names should match these glob patterns (["*"] by default)
 
 [tool.setuptools.dynamic]
 version = {attr = "aac_datasets.__version__"}
+dependencies = {file = ["requirements.txt"]}
+optional-dependencies = {dev = { file = ["requirements-dev.txt"] }}

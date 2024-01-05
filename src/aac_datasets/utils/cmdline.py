@@ -4,9 +4,12 @@
 import logging
 import sys
 
+from typing import Optional
 
-_TRUE_VALUES = ("true", "1", "t", "yes", "y")
-_FALSE_VALUES = ("false", "0", "f", "no", "n")
+
+_TRUE_VALUES = ("true", "t", "yes", "y", "1")
+_FALSE_VALUES = ("false", "f", "no", "n", "0")
+_NONE_VALUES = ("none",)
 
 
 def _str_to_bool(s: str) -> bool:
@@ -21,10 +24,28 @@ def _str_to_bool(s: str) -> bool:
         )
 
 
-def _setup_logging(pkg_name: str, verbose: int) -> None:
-    format_ = "[%(asctime)s][%(name)s][%(levelname)s] - %(message)s"
+def _str_to_opt_int(s: str) -> Optional[int]:
+    s = str(s).strip().lower()
+    if s in _NONE_VALUES:
+        return None
+    else:
+        return int(s)
+
+
+def _str_to_opt_str(s: str) -> Optional[str]:
+    s = str(s)
+    if s.lower() in _NONE_VALUES:
+        return None
+    else:
+        return s
+
+
+def _setup_logging(pkg_name: str, verbose: int, set_format: bool = True) -> None:
     handler = logging.StreamHandler(sys.stdout)
-    handler.setFormatter(logging.Formatter(format_))
+    if set_format:
+        format_ = "[%(asctime)s][%(name)s][%(levelname)s] - %(message)s"
+        handler.setFormatter(logging.Formatter(format_))
+
     pkg_logger = logging.getLogger(pkg_name)
 
     found = False
@@ -43,4 +64,5 @@ def _setup_logging(pkg_name: str, verbose: int) -> None:
         level = logging.INFO
     else:
         level = logging.DEBUG
+
     pkg_logger.setLevel(level)

@@ -1,0 +1,10 @@
+# -*- coding: utf-8 -*-
+
+pytest==6.2.5
+flake8==4.0.1
+click==8.0.4
+black==22.10.0
+ipykernel==6.9.1
+twine==4.0.1
+sphinx
+sphinx-press-theme==0.8.0

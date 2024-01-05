@@ -12,7 +12,7 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
-   aac_datasets.datasets.legacy
+   aac_datasets.datasets.functional
 
 Submodules
 ----------

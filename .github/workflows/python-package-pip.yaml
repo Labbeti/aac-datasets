@@ -10,6 +10,7 @@ on:
 
 env:
   CACHE_NUMBER: 0  # increase to reset cache manually
+  AAC_DATASETS_ROOT: "$HOME/.cache/data"
 
 # Cancel workflow if a new push occurs
 concurrency:
@@ -23,7 +24,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        python-version: ["3.7", "3.8", "3.9", "3.10", "3.11"]
+        python-version: ["3.7", "3.11"]
 
     steps:
     # --- INSTALLATIONS ---
@@ -43,10 +44,13 @@ jobs:
       run: |
         python -m pip install "aac-datasets[dev] @ git+https://github.com/Labbeti/aac-datasets@${GITHUB_REF##*/}"
 
-    - name: Install soundfile for torchaudio
+    - name: Install soundfile for torchaudio, ffmpeg and yt-dlp for AudioCaps download
       run: |
-        # For soundfile dep
+        sudo add-apt-repository ppa:tomtomtom/yt-dlp    # Add ppa repo to apt
+        sudo apt-get update
         sudo apt-get install libsndfile1
+        sudo apt-get install ffmpeg
+        sudo apt-get install yt-dlp
 
     # --- TESTS ---
     - name: Compile python files
@@ -60,11 +64,31 @@ jobs:
     - name: Check format with Black
       run: |
         python -m black --check --diff src
-      
+
     - name: Print install info
       run: |
         aac-datasets-info
-  
+        ffmpeg -version
+        yt-dlp --version
+
     - name: Test with pytest
       run: |
         python -m pytest -v
+
+    - name: Build data root
+      run: |
+        dataroot=`eval echo $AAC_DATASETS_ROOT`
+        echo "Building directory '$dataroot'..."
+        mkdir -p "$dataroot"
+  
+    - name: Try to download Clotho val
+      run: |
+        aac-datasets-download --verbose 2 clotho --subsets val
+  
+    - name: Try to download AudioCaps val
+      run: |
+        aac-datasets-download --verbose 2 audiocaps --subsets val --max_workers none --with_tags true
+  
+    - name: Check data root
+      run: |
+        aac-datasets-check --verbose 2 --datasets clotho audiocaps

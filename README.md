@@ -56,29 +56,47 @@ for batch in dataloader:
     ...
 ```
 
-## Datasets stats
+## Download datasets
+To download a dataset, you can use `download` argument in dataset construction :
+```python
+dataset = Clotho(root=".", subset="dev", download=True)
+```
+However, if you want to download datasets from a script, you can also use the following command :
+```bash
+aac-datasets-download --root "." clotho --subsets "dev"
+```
+
+## Datasets information
 Here is the statistics for each dataset :
 
-| | AudioCaps | Clotho | MACS | WavCaps |
+<!-- | | AudioCaps | Clotho | MACS | WavCaps |
 |:---:|:---:|:---:|:---:|:---:|
-| Subsets | train, val, test | dev, val, eval, dcase_aac_test, dcase_aac_analysis, dcase_t2a_audio, dcase_t2a_captions | full | as, as_noac, bbc, fsd, fsd_nocl, sb |
+| Subsets | `train`, `val`, `test` | `dev`, `val`, `eval`, `dcase_aac_test`, `dcase_aac_analysis`, `dcase_t2a_audio`, `dcase_t2a_captions` | `full` | `as`, `as_noac`, `bbc`, `fsd`, `fsd_nocl`, `sb` |
 | Sample rate (kHz) | 32 | 44.1 | 48 | 32 |
 | Estimated size (GB) | 43 | 53 | 13 | 941 |
-| Audio source | AudioSet | FreeSound | TAU Urban Acoustic Scenes 2019 | AudioSet, BBC Sound Effects, FreeSound, SoundBible |
+| Audio source | AudioSet | FreeSound | TAU Urban Acoustic Scenes 2019 | AudioSet, BBC Sound Effects, FreeSound, SoundBible | -->
 
-For Clotho, the dev subset should be used for training, val for validation and eval for testing.
+| Dataset | Sampling<br>rate (kHz) | Estimated<br>size (GB) | Source | Subsets |
+|:---:|:---:|:---:|:---:|:---:|
+| AudioCaps | 32 | 43 | AudioSet | `train`<br>`val`<br>`test`<br>`train_v2` |
+| Clotho | 44.1 | 53  | Freesound | `dev`<br>`val`<br>`eval`<br>`dcase_aac_test`<br>`dcase_aac_analysis`<br>`dcase_t2a_audio`<br>`dcase_t2a_captions` |
+| MACS | 48 | 13 | TAU Urban Acoustic Scenes 2019 | `full` |
+| WavCaps | 32 | 941 | AudioSet<br>BBC Sound Effects<br>FreeSound<br>SoundBible | `as`<br>`as_noac`<br>`bbc`<br>`fsd`<br>`fsd_nocl`<br>`sb` |
 
-Here is the **train** subset statistics for AudioCaps, Clotho and MACS datasets :
+For Clotho, the **dev** subset should be used for training, val for validation and eval for testing.
 
-| | AudioCaps/train | Clotho/dev | MACS/full |
-|:---:|:---:|:---:|:---:|
-| Nb audios | 49,838 | 3,840 | 3,930 |
-| Total audio duration (h) | 136.6<sup>1</sup> | 24.0 | 10.9 |
-| Audio duration range (s) | 0.5-10 | 15-30 | 10 |
-| Nb captions per audio | 1 | 5 | 2-5 |
-| Nb captions | 49,838 | 19,195 | 17,275 |
-| Total nb words<sup>2</sup> | 402,482 | 217,362 | 160,006 |
-| Sentence size<sup>2</sup> | 2-52 | 8-20 | 5-40 |
+Here is additional statistics on the train subset for AudioCaps, Clotho and MACS:
+
+| | AudioCaps/train | Clotho/dev | MACS/full | WavCaps/full |
+|:---:|:---:|:---:|:---:|:---:|
+| Nb audios | 49,838 | 3,840 | 3,930 | 403,050 |
+| Total audio duration (h) | 136.6<sup>1</sup> | 24.0 | 10.9 | 7563.3 |
+| Audio duration range (s) | 0.5-10 | 15-30 | 10 | 1-67,109 |
+| Nb captions per audio | 1 | 5 | 2-5 | 1 |
+| Nb captions | 49,838 | 19,195 | 17,275 | 403,050 |
+| Total nb words<sup>2</sup> | 402,482 | 217,362 | 160,006 | 3,161,823 |
+| Sentence size<sup>2</sup> | 2-52 | 8-20 | 5-40 | 2-38 |
+| Vocabulary<sup>2</sup> | 4724 | 4369 | 2721 | 24600 |
 
 <sup>1</sup> This duration is estimated on the total duration of 46230/49838 files of 126.7h.
 
@@ -86,7 +104,7 @@ Here is the **train** subset statistics for AudioCaps, Clotho and MACS datasets 
 
 ## Requirements
 
-This package has been developped for Ubuntu 20.04, and it is expected to work on most Linux distributions.
+This package has been developped for Ubuntu 20.04, and it is expected to work on most Linux-based distributions.
 ### Python packages
 
 Python requirements are automatically installed when using pip on this repository.
@@ -104,7 +122,7 @@ numpy >= 1.21.2
 
 The external requirements needed to download **AudioCaps** are **ffmpeg** and **yt-dlp**.
 **ffmpeg** can be install on Ubuntu using `sudo apt install ffmpeg` and **yt-dlp** from the [official repo](https://github.com/yt-dlp/yt-dlp).
- <!-- programs can be downloaded on Ubuntu using `sudo apt install ffmpeg`. -->
+<!-- programs can be downloaded on Ubuntu using `sudo apt install ffmpeg`. -->
 
 You can also override their paths for AudioCaps:
 ```python
@@ -114,16 +132,6 @@ dataset = AudioCaps(
     ffmpeg_path="/my/path/to/ffmpeg",
     ytdl_path="/my/path/to/ytdlp",
 )
-```
-
-## Download datasets
-To download a dataset, you can use `download` argument in dataset construction :
-```python
-dataset = Clotho(root=".", subset="dev", download=True)
-```
-However, if you want to download datasets from a script, you can also use the following command :
-```bash
-aac-datasets-download --root "." clotho --subsets "dev"
 ```
 
 ## Additional information
@@ -139,9 +147,13 @@ downloader.download(format="wav")
 Then disable audio download and set the correct audio format before init AudioCaps :
 ```python
 from aac_datasets import AudioCaps
-AudioCaps.AUDIO_FORMAT = "wav"
-AudioCaps.DOWNLOAD_AUDIO = False  # this will only download labels and metadata files
-dataset = AudioCaps(root=root, subset="train", download=True)
+dataset = AudioCaps(
+    root=root,
+    subset="train",
+    download=True,
+    audio_format="wav",
+    download_audio=False,  # this will only download labels and metadata files
+)
 ```
 
 ## References
@@ -155,21 +167,21 @@ dataset = AudioCaps(root=root, subset="train", download=True)
 [3] F. Font, A. Mesaros, D. P. W. Ellis, E. Fonseca, M. Fuentes, and B. Elizalde, Proceedings of the 6th Workshop on Detection and Classication of Acoustic Scenes and Events (DCASE 2021). Barcelona, Spain: Music Technology Group - Universitat Pompeu Fabra, Nov. 2021. Available: https://doi.org/10.5281/zenodo.5770113
 
 #### WavCaps
-[1] X. Mei et al., “WavCaps: A ChatGPT-Assisted Weakly-Labelled Audio Captioning Dataset for Audio-Language Multimodal Research,” arXiv preprint arXiv:2303.17395, 2023, [Online]. Available: https://arxiv.org/pdf/2303.17395.pdf 
+[4] X. Mei et al., “WavCaps: A ChatGPT-Assisted Weakly-Labelled Audio Captioning Dataset for Audio-Language Multimodal Research,” arXiv preprint arXiv:2303.17395, 2023, [Online]. Available: https://arxiv.org/pdf/2303.17395.pdf 
 
 ## Cite the aac-datasets package
 If you use this software, please consider cite it as "Labbe, E. (2013). aac-datasets: Audio Captioning datasets for PyTorch.", or use the following BibTeX citation:
 
 ```
 @software{
-    Labbe_aac_datasets_2023,
+    Labbe_aac_datasets_2024,
     author = {Labbé, Etienne},
     license = {MIT},
-    month = {10},
+    month = {01},
     title = {{aac-datasets}},
     url = {https://github.com/Labbeti/aac-datasets/},
-    version = {0.4.1},
-    year = {2023}
+    version = {0.5.0},
+    year = {2024}
 }
 ```
 
