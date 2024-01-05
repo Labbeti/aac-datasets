@@ -337,17 +337,26 @@ def download_audiocaps_dataset(
 
     if download_audio:
         start = time.perf_counter()
-        with open(captions_fpath, "r") as file:
-            n_samples = len(file.readlines())
-
         if verbose >= 1:
-            pylog.info(f"Start downloading audio files for {subset} AudioCaps split.")
+            pylog.info(f"Start downloading audio files for AudioCaps {subset} split...")
 
         with open(captions_fpath, "r") as file:
             # Download audio files
             reader = csv.DictReader(file)
             captions_data = list(reader)
             # Keys: audiocap_id, youtube_id, start_time, caption
+
+        def _cast_line(line: Dict[str, Any]) -> Dict[str, Any]:
+            start_time = line["start_time"]
+            youtube_id = line["youtube_id"]
+            if not start_time.isdigit():
+                raise RuntimeError(
+                    f"Start time '{start_time}' is not an integer (with youtube_id={youtube_id})."
+                )
+            start_time = int(start_time)
+            return line | {"start_time": start_time}
+
+        captions_data = [_cast_line(line) for line in captions_data]
 
         present_audio_fnames = os.listdir(audio_subset_dpath)
         present_audio_fpaths = [
@@ -391,7 +400,7 @@ def download_audiocaps_dataset(
                 line = captions_data[i]
                 audiocap_id = line["audiocap_id"]
                 youtube_id = line["youtube_id"]
-                prefix = f"[{audiocap_id:6s};{i:5d}/{n_samples}] "
+                prefix = f"[{audiocap_id:6s};{i:5d}/{len(download_kwds)}] "
 
                 if not file_exists:
                     if download_success:
@@ -426,7 +435,7 @@ def download_audiocaps_dataset(
             pylog.info(
                 f"Download and preparation of AudioCaps for subset '{subset}' done in {duration}s."
             )
-            pylog.info(f"- {n_samples} total samples.")
+            pylog.info(f"- {len(download_kwds)} total samples.")
 
     if verbose >= 2:
         pylog.debug(
@@ -566,7 +575,7 @@ def _is_prepared_audiocaps(
 
 def _download_from_youtube_and_verify(
     youtube_id: str,
-    start_time: str,
+    start_time: int,
     audio_subset_dpath: str,
     audio_format: str,
     verify_files: bool,
@@ -580,11 +589,6 @@ def _download_from_youtube_and_verify(
 ) -> Tuple[bool, bool, bool]:
     fname = f"{youtube_id}_{start_time}.{audio_format}"
     fpath = osp.join(audio_subset_dpath, fname)
-    if not start_time.isdigit():
-        raise RuntimeError(
-            f'Start time "{start_time}" is not an integer youtube_id={youtube_id}).'
-        )
-    start_time = int(start_time)
 
     file_exists = fpath in present_audio_fpaths
     if not file_exists:
