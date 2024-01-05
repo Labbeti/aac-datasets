@@ -22,18 +22,16 @@ from torch import Tensor
 from typing_extensions import TypedDict, NotRequired
 
 try:
-    # To support torchaudio >=2.1.0
-    from torchaudio import AudioMetaData  # type: ignore
-except ImportError:
+    # To support torchaudio < 2.1.0
     from torchaudio.backend.common import AudioMetaData
+except (ImportError, ModuleNotFoundError):
+    from torchaudio import AudioMetaData  # type: ignore
 
 from aac_datasets.datasets.base import AACDataset
 from aac_datasets.datasets.functional.audiocaps import (
     AudioCapsCard,
     download_audiocaps_dataset,
-    download_class_labels_indices,
     load_audiocaps_dataset,
-    load_class_labels_indices,
     _get_audio_subset_dpath,
 )
 from aac_datasets.utils.globals import _get_root, _get_ffmpeg_path, _get_ytdlp_path

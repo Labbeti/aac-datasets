@@ -24,10 +24,10 @@ import tqdm
 from typing_extensions import TypedDict
 
 try:
-    # To support torchaudio >=2.1.0
-    from torchaudio import AudioMetaData  # type: ignore
-except ImportError:
+    # To support torchaudio < 2.1.0
     from torchaudio.backend.common import AudioMetaData
+except (ImportError, ModuleNotFoundError):
+    from torchaudio import AudioMetaData  # type: ignore
 
 from torch import Tensor
 from torch.utils.data.dataset import Dataset
@@ -453,7 +453,7 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
         return audio_metadata
 
     def _load_duration(self, idx: int) -> float:
-        audio_metadata = self.at(idx, "audio_metadata")
+        audio_metadata: AudioMetaData = self.at(idx, "audio_metadata")
         duration = audio_metadata.num_frames / audio_metadata.sample_rate
         return duration
 
