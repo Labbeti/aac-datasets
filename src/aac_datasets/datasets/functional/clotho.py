@@ -142,6 +142,10 @@ def load_clotho_dataset(
         # note 1: for "dcase_aac_analysis" subset which do not have any CSV file
         # note 2: force sorted list to have the same order on all OS
         audio_subset_dpath = _get_audio_subset_dpath(root, version, subset)
+        if audio_subset_dpath is None:
+            raise RuntimeError(
+                f"INTERNAL ERROR: Invalid audio subset dirpath. (found audio_subset_dpath={audio_subset_dpath}, with subset={subset})"
+            )
         fnames_lst = list(sorted(os.listdir(audio_subset_dpath)))
 
     idx_to_fname = {i: fname for i, fname in enumerate(fnames_lst)}
@@ -462,12 +466,6 @@ def _is_prepared_clotho(root: str, version: str, subset: str) -> bool:
     if not all(map(osp.isdir, (audio_dpath, csv_dpath))):
         return False
 
-    # TODO: rm
-    # if ClothoCard.CAPTIONS_PER_AUDIO[subset] == 0:
-    #     return True
-    # if _CLOTHO_AUDIO_DNAMES[subset] is None:
-    #     return True
-
     links = _CLOTHO_LINKS[version][subset]
 
     if "captions" in links:
@@ -485,11 +483,17 @@ def _is_prepared_clotho(root: str, version: str, subset: str) -> bool:
 
     if "audio_archive" in links:
         audio_subset_dpath = _get_audio_subset_dpath(root, version, subset)
+        if audio_subset_dpath is None:
+            raise RuntimeError(
+                f"INTERNAL ERROR: Invalid audio subset dirpath. (found audio_subset_dpath={audio_subset_dpath}, with subset={subset})"
+            )
         if not osp.isdir(audio_subset_dpath):
             return False
 
         audio_fnames = os.listdir(audio_subset_dpath)
         if "captions" in links:
+            captions_fname = links["captions"]["fname"]
+            captions_fpath = osp.join(csv_dpath, captions_fname)
             with open(captions_fpath, "r") as file:
                 reader = csv.DictReader(file)
                 lines = list(reader)

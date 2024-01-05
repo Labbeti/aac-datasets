@@ -25,6 +25,10 @@ import torchaudio
 import tqdm
 
 from aac_datasets.datasets.functional.common import DatasetCard
+from aac_datasets.utils.audioset_mapping import (
+    download_audioset_mapping,
+    load_audioset_mapping,
+)
 from aac_datasets.utils.download import download_file
 from aac_datasets.utils.globals import _get_root, _get_ffmpeg_path, _get_ytdlp_path
 
@@ -75,7 +79,7 @@ def load_audiocaps_dataset(
     exclude_removed_audio: bool = True,
     sr: int = 32_000,
     with_tags: bool = False,
-) -> Tuple[Dict[str, List[Any]], List[str]]:
+) -> Tuple[Dict[str, List[Any]], Dict[int, str]]:
     """Load AudioCaps metadata.
 
     :param root: Dataset root directory.
@@ -131,7 +135,16 @@ def load_audiocaps_dataset(
                 f"Please use download=True and with_tags=True in dataset constructor."
             )
 
-        audioset_classes_data = load_class_labels_indices(root, sr)
+        mid_to_index: Dict[str, int] = load_audioset_mapping(
+            "mid", "index", offline=True, cache_path=audiocaps_root, verbose=verbose
+        )
+        index_to_name: Dict[int, str] = load_audioset_mapping(
+            "index",
+            "display_name",
+            offline=True,
+            cache_path=audiocaps_root,
+            verbose=verbose,
+        )
 
         with open(unbal_tags_fpath, "r") as file:
             FIELDNAMES = ("YTID", "start_seconds", "end_seconds", "positive_labels")
@@ -143,7 +156,8 @@ def load_audiocaps_dataset(
                 next(reader)
             unbal_tags_data = list(reader)
     else:
-        audioset_classes_data = []
+        mid_to_index = {}
+        index_to_name = {}
         unbal_tags_data = []
 
     # Build global mappings
@@ -161,20 +175,6 @@ def load_audiocaps_dataset(
 
     dataset_size = len(fnames_lst)
     fname_to_idx = {fname: i for i, fname in enumerate(fnames_lst)}
-
-    mid_to_tag_name = {}
-    tag_name_to_index = {}
-
-    for line in audioset_classes_data:
-        # keys: index, mid, display_name
-        mid_to_tag_name[line["mid"]] = line["display_name"]
-        tag_name_to_index[line["display_name"]] = int(line["index"])
-
-    classes_indexes = list(tag_name_to_index.values())
-    assert len(classes_indexes) == 0 or classes_indexes == list(
-        range(classes_indexes[-1] + 1)
-    )
-    index_to_tagname = list(tag_name_to_index.keys())
 
     # Process each field into a single structure
     all_caps_dic: Dict[str, List[Any]] = {
@@ -224,8 +224,7 @@ def load_audiocaps_dataset(
         if fname in fname_to_idx:
             tags_mid = line["positive_labels"]
             tags_mid = tags_mid.split(",")
-            tags_names = [mid_to_tag_name[tag] for tag in tags_mid]
-            tags_indexes = [tag_name_to_index[tag] for tag in tags_names]
+            tags_indexes = [mid_to_index[tag_mid] for tag_mid in tags_mid]
 
             idx = fname_to_idx[fname]
             all_tags_lst[idx] = tags_indexes
@@ -248,7 +247,7 @@ def load_audiocaps_dataset(
             f"{AudioCapsCard.PRETTY_NAME}(subset={subset}) has been loaded. (len={len(fnames_lst)})"
         )
 
-    return raw_data, index_to_tagname
+    return raw_data, index_to_name
 
 
 def download_audiocaps_dataset(
@@ -318,7 +317,7 @@ def download_audiocaps_dataset(
     audiocaps_root = _get_audiocaps_root(root, sr)
     os.makedirs(audiocaps_root, exist_ok=True)
     if with_tags:
-        download_class_labels_indices(root)
+        _download_tags_files(root, sr, verbose)
 
     links = _AUDIOCAPS_LINKS[subset]
     audio_subset_dpath = _get_audio_subset_dpath(root, subset, sr)
@@ -347,6 +346,7 @@ def download_audiocaps_dataset(
             # Keys: audiocap_id, youtube_id, start_time, caption
 
         def _cast_line(line: Dict[str, Any], audio_format: str) -> Dict[str, Any]:
+            line = dict(line)
             youtube_id = line["youtube_id"]
             start_time = line["start_time"]
 
@@ -420,7 +420,7 @@ def download_audiocaps_dataset(
                         )
                 else:
                     if valid_file:
-                        pylog.info(
+                        pylog.debug(
                             f"{prefix}File '{fname}' is already downloaded and has been verified."
                         )
                     elif verify_files:
@@ -489,44 +489,25 @@ def download_audiocaps_datasets(
         )
 
 
-def load_class_labels_indices(
-    root: Union[str, Path, None] = None,
-    sr: int = 32_000,
-) -> List[Dict[str, str]]:
-    root = _get_root(root)
-    class_labels_indices_fname = _AUDIOSET_LINKS["class_labels_indices"]["fname"]
-    class_labels_indices_fpath = osp.join(
-        _get_audiocaps_root(root, sr), class_labels_indices_fname
-    )
-    if not osp.isfile(class_labels_indices_fpath):
-        raise ValueError(
-            f"Cannot find class_labels_indices file in root='{root}'."
-            f"Maybe use AudioCaps(root, download=True, with_tags=True) before or use a different root directory."
-        )
-
-    with open(class_labels_indices_fpath, "r") as file:
-        reader = csv.DictReader(file)
-        audioset_classes_data = list(reader)
-    return audioset_classes_data
-
-
-def download_class_labels_indices(
-    root: Union[str, Path, None] = None,
-    sr: int = 32_000,
-    verbose: int = 0,
+def _download_tags_files(
+    root: Union[str, Path, None],
+    sr: int,
+    verbose: int,
 ) -> None:
     root = _get_root(root)
     audiocaps_root = _get_audiocaps_root(root, sr)
 
-    for key in ("class_labels_indices", "unbalanced"):
-        infos = _AUDIOSET_LINKS[key]
-        url = infos["url"]
-        fname = infos["fname"]
-        fpath = osp.join(audiocaps_root, fname)
-        if not osp.isfile(fpath):
-            if verbose >= 1:
-                pylog.info(f"Downloading file '{fname}'...")
-            download_file(url, fpath, verbose=verbose)
+    target = "unbalanced"
+    infos = _AUDIOSET_LINKS[target]
+    url = infos["url"]
+    fname = infos["fname"]
+    fpath = osp.join(audiocaps_root, fname)
+    if not osp.isfile(fpath):
+        if verbose >= 1:
+            pylog.info(f"Downloading file '{fname}'...")
+        download_file(url, fpath, verbose=verbose)
+
+    download_audioset_mapping(audiocaps_root, verbose=verbose)
 
 
 def _get_audiocaps_root(root: str, sr: int) -> str:
@@ -627,9 +608,9 @@ def _download_from_youtube(
     fpath_out: str,
     start_time: int,
     audio_duration: float = 10.0,
-    sr: int = 16000,
+    sr: int = 32_000,
     audio_n_channels: int = 1,
-    target_format: str = "flac",
+    audio_format: str = "flac",
     acodec: str = "flac",
     ytdlp_path: Union[str, Path, None] = None,
     ffmpeg_path: Union[str, Path, None] = None,
@@ -670,7 +651,7 @@ def _download_from_youtube(
         "-vn",
         # Format (flac)
         "-f",
-        target_format,
+        audio_format,
         # Audio codec (flac)
         "-acodec",
         acodec,
@@ -688,8 +669,15 @@ def _download_from_youtube(
         fpath_out,
     ]
     try:
-        exitcode = subprocess.check_call(extract_command)
+        if verbose < 3:
+            stdout = subprocess.DEVNULL
+            stderr = subprocess.DEVNULL
+        else:
+            stdout = None
+            stderr = None
+        exitcode = subprocess.check_call(extract_command, stdout=stdout, stderr=stderr)
         return exitcode == 0
+
     except (CalledProcessError, PermissionError) as err:
         if verbose >= 2:
             pylog.debug(err)

@@ -191,7 +191,7 @@ class AudioCaps(AACDataset[AudioCapsItem]):
                 ytdlp_path=ytdlp_path,
             )
 
-        raw_data, index_to_tagname = load_audiocaps_dataset(
+        raw_data, index_to_name = load_audiocaps_dataset(
             root=root,
             subset=subset,
             verbose=verbose,
@@ -230,7 +230,7 @@ class AudioCaps(AACDataset[AudioCapsItem]):
         self._download = download
         self._exclude_removed_audio = exclude_removed_audio
         self._with_tags = with_tags
-        self._index_to_tagname = index_to_tagname
+        self._index_to_name = index_to_name
 
         self.add_online_columns(
             {
@@ -253,8 +253,8 @@ class AudioCaps(AACDataset[AudioCapsItem]):
         return self._exclude_removed_audio
 
     @property
-    def index_to_tagname(self) -> List[str]:
-        return self._index_to_tagname
+    def index_to_name(self) -> Dict[int, str]:
+        return self._index_to_name
 
     @property
     def root(self) -> str:
@@ -271,23 +271,6 @@ class AudioCaps(AACDataset[AudioCapsItem]):
     @property
     def with_tags(self) -> bool:
         return self._with_tags
-
-    # Public class methods
-    @classmethod
-    def load_class_labels_indices(
-        cls,
-        root: Union[str, Path, None] = None,
-        sr: int = 32_000,
-    ) -> List[Dict[str, str]]:
-        return load_class_labels_indices(root, sr)
-
-    @classmethod
-    def download_class_labels_indices(
-        cls,
-        root: Union[str, Path, None] = None,
-        sr: int = 32_000,
-    ) -> None:
-        return download_class_labels_indices(root, sr)
 
     # Magic methods
     def __repr__(self) -> str:

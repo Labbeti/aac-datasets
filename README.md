@@ -78,7 +78,7 @@ Here is the statistics for each dataset :
 
 | Dataset | Sampling<br>rate (kHz) | Estimated<br>size (GB) | Source | Subsets |
 |:---:|:---:|:---:|:---:|:---:|
-| AudioCaps | 32 | 43 | AudioSet | `train`<br>`val`<br>`test`
+| AudioCaps | 32 | 43 | AudioSet | `train`<br>`val`<br>`test`<br>`train_v2` |
 | Clotho | 44.1 | 53  | Freesound | `dev`<br>`val`<br>`eval`<br>`dcase_aac_test`<br>`dcase_aac_analysis`<br>`dcase_t2a_audio`<br>`dcase_t2a_captions` |
 | MACS | 48 | 13 | TAU Urban Acoustic Scenes 2019 | `full` |
 | WavCaps | 32 | 941 | AudioSet<br>BBC Sound Effects<br>FreeSound<br>SoundBible | `as`<br>`as_noac`<br>`bbc`<br>`fsd`<br>`fsd_nocl`<br>`sb` |
