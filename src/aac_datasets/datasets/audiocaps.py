@@ -40,7 +40,7 @@ from aac_datasets.utils.globals import _get_root, _get_ffmpeg_path, _get_ytdlp_p
 pylog = logging.getLogger(__name__)
 
 
-class AudioCapsItem(TypedDict, total=True):
+class AudioCapsItem(TypedDict):
     r"""Class representing a single AudioCaps item."""
 
     # Common attributes
