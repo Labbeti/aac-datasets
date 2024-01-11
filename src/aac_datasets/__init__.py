@@ -6,6 +6,8 @@
 
 __author__ = "Etienne Labbé (Labbeti)"
 __author_email__ = "labbeti.pub@gmail.com"
+__docs__ = "Audio Captioning Datasets"
+__docs_url__ = "https://aac-datasets.readthedocs.io/en/stable/"
 __license__ = "MIT"
 __maintainer__ = "Etienne Labbé (Labbeti)"
 __name__ = "aac-datasets"
