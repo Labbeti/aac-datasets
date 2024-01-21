@@ -373,7 +373,7 @@ def download_wavcaps_dataset(
     del snapshot_dpath
 
     # Build symlink to hf cache
-    if osp.exists(wavcaps_root):
+    if osp.lexists(wavcaps_root):
         if not osp.islink(wavcaps_root):
             raise RuntimeError("WavCaps root exists but it is not a symlink.")
         link_target_abspath = osp.abspath(osp.realpath(wavcaps_root))
