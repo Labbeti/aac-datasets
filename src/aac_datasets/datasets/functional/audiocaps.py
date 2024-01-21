@@ -640,7 +640,15 @@ def _download_from_youtube(
     lines = output.split("\n")
     if len(lines) < 2:
         return False
-    _video_link, audio_link = lines[:2]
+    video_link, audio_link = lines[:2]
+
+    # if yt-dlp only returns one link, it is a combined video audio
+    if len(audio_link) == 0:
+        if verbose >= 2:
+            pylog.debug(f"youtube_id={youtube_id} is combined video audio only (cant download)")
+        #     pylog.debug(f"youtube_id={youtube_id} is combined video audio only, using video_link.")
+        # audio_link = video_link # this does not work, not sure why. probably requires changes to ffmpeg command
+        return False
 
     # Download and extract audio from audio_link to fpath_out with ffmpeg
     extract_command = [
