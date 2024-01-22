@@ -25,7 +25,7 @@ from typing_extensions import TypedDict
 
 from aac_datasets.datasets.functional.common import DatasetCard
 from aac_datasets.utils.collections import list_dict_to_dict_list
-from aac_datasets.utils.download import safe_rmdir
+from aac_datasets.utils.download import safe_rmdir, download_file
 from aac_datasets.utils.globals import _get_root, _get_zip_path
 
 
@@ -129,11 +129,11 @@ def load_wavcaps_dataset(
     if subset in ("as_noac", "fsd_nocl"):
         if subset == "as_noac":
             target_subset = "as"
-            csv_fname = "blacklist_audiocaps.full.csv"
+            csv_fname = _WAVCAPS_LINKS["blacklist_audiocaps"]["fname"]
 
         elif subset == "fsd_nocl":
             target_subset = "fsd"
-            csv_fname = "blacklist_clotho.full.csv"
+            csv_fname = _WAVCAPS_LINKS["blacklist_clotho"]["fname"]
 
         else:
             raise ValueError(f"INTERNAL ERROR: Invalid argument subset={subset}.")
@@ -147,14 +147,13 @@ def load_wavcaps_dataset(
         )
         wavcaps_ids = raw_data["id"]
 
-        csv_fpath = (
-            Path(__file__)
-            .parent.parent.parent.parent.joinpath("data")
-            .joinpath(csv_fname)
-        )
+        wavcaps_root = _get_wavcaps_root(root, hf_cache_dir, revision)
+        csv_fpath = Path(wavcaps_root).joinpath(csv_fname)
+
         with open(csv_fpath, "r") as file:
             reader = csv.DictReader(file)
             data = list(reader)
+
         other_ids = [data_i["id"] for data_i in data]
         other_ids = dict.fromkeys(other_ids)
 
@@ -289,7 +288,13 @@ def download_wavcaps_dataset(
     :param zip_path: Path to zip executable path in shell.
         defaults to "zip".
     """
+
+    root = _get_root(root)
+    zip_path = _get_zip_path(zip_path)
+
     if subset == "as_noac":
+        _download_blacklist(root, hf_cache_dir, revision, "blacklist_audiocaps")
+
         return download_wavcaps_dataset(
             root=root,
             subset="as",
@@ -301,7 +306,10 @@ def download_wavcaps_dataset(
             zip_path=zip_path,
             verbose=verbose,
         )
+
     elif subset == "fsd_nocl":
+        _download_blacklist(root, hf_cache_dir, revision, "blacklist_clotho")
+
         return download_wavcaps_dataset(
             root=root,
             subset="fsd",
@@ -313,9 +321,6 @@ def download_wavcaps_dataset(
             zip_path=zip_path,
             verbose=verbose,
         )
-
-    root = _get_root(root)
-    zip_path = _get_zip_path(zip_path)
 
     if subset not in WavCapsCard.SUBSETS:
         raise ValueError(
@@ -643,6 +648,20 @@ def _load_json(fpath: str) -> Tuple[Dict[str, Any], int]:
     return data, size
 
 
+def _download_blacklist(
+    root: str,
+    hf_cache_dir: Optional[str],
+    revision: Optional[str],
+    name: str,
+) -> None:
+    info = _WAVCAPS_LINKS[name]
+    fname = info["fname"]
+    url = info["url"]
+    wavcaps_root = _get_wavcaps_root(root, hf_cache_dir, revision)
+    fpath = Path(wavcaps_root).joinpath(fname)
+    download_file(url, fpath, verbose=verbose)
+
+
 class _WavCapsRawItem(TypedDict):
     # Common values
     caption: str
@@ -684,4 +703,15 @@ _WAVCAPS_ARCHIVE_DNAMES = {
     "BBC_Sound_Effects": "BBC_Sound_Effects",
     "FreeSound": "FreeSound",
     "SoundBible": "SoundBible",
+}
+
+_WAVCAPS_LINKS = {
+    "blacklist_audiocaps": {
+        "url": "https://raw.githubusercontent.com/Labbeti/aac-datasets/main/data/wavcaps/blacklist_audiocaps.full.csv",
+        "fname": "blacklist_audiocaps.full.csv",
+    },
+    "blacklist_clotho": {
+        "url": "https://raw.githubusercontent.com/Labbeti/aac-datasets/main/data/wavcaps/blacklist_clotho.full.csv",
+        "fname": "blacklist_clotho.full.csv",
+    },
 }

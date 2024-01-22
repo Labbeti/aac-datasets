@@ -177,7 +177,6 @@ class WavCaps(AACDataset[WavCapsItem]):
             subset=subset,
             verbose=verbose,
             hf_cache_dir=hf_cache_dir,
-            repo_id=repo_id,
             revision=revision,
         )
 
