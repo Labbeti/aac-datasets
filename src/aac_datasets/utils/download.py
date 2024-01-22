@@ -44,7 +44,7 @@ def safe_rmdir(
     for dpath, dnames, fnames in os.walk(root, topdown=False):
         if not rm_root and dpath == root:
             continue
-        elif len(dnames) == 0 and len(fnames) == 0:
+        elif len(fnames) == 0 and (len(dnames) == 0 or all(osp.join(dpath, dname) in deleted for dname in dnames)): # if there are no sub-directories, or all the sub-directories were already deleted
             os.rmdir(dpath)
             deleted.append(dpath)
         elif error_on_non_empty_dir:
