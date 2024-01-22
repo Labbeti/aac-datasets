@@ -340,7 +340,7 @@ def download_wavcaps_dataset(
     ign_patterns = [
         pattern
         for source in ign_sources
-        for pattern in (f"json_files/{source}/*.json", "Zip_files/*")  # {source}/
+        for pattern in (f"json_files/{source}/*.json", f"Zip_files/{source}/*")
     ]
     if verbose >= 2:
         pylog.debug(f"ign_sources={ign_sources}")
