@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.5.1] UNRELEASED
+### Fixed
+- WavCaps download preparation (#3).
+- `safe_rmdir` function when sub-directories are deleted.
+
 ## [0.5.0] 2024-01-05
 ### Changed
 - Update typing for paths with python class `Path`.
