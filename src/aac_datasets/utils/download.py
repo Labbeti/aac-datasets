@@ -54,7 +54,10 @@ def safe_rmdir(
     ):
         if not rm_root and dpath == root:
             continue
-        elif len(fnames) == 0 and len(dnames) == 0:
+        elif len(fnames) == 0 and (
+            len(dnames) == 0
+            or all(osp.join(dpath, dname) in to_delete for dname in dnames)
+        ):
             to_delete.append(dpath)
         elif error_on_non_empty_dir:
             raise RuntimeError(f"Cannot remove non-empty directory '{dpath}'.")
