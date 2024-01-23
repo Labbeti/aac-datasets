@@ -50,12 +50,12 @@ class WavCaps(AACDataset[WavCapsItem]):
     HuggingFace source : https://huggingface.co/datasets/cvssp/WavCaps
 
     This dataset contains 4 training subsets, extracted from different sources:
-    - AudioSet strongly labeled (as)
-    - BBC Sound Effects (bbc)
-    - FreeSound (fsd)
-    - SoundBible (sb)
-    - AudioSet strongly labeled without AudioCaps (as_noac)
-    - FreeSound without Clotho (fsd_nocl)
+    - AudioSet strongly labeled ("audioset")
+    - BBC Sound Effects ("bbc")
+    - FreeSound ("freesound")
+    - SoundBible ("soundbible")
+    - AudioSet strongly labeled without AudioCaps ("audioset_no_audiocaps")
+    - FreeSound without Clotho ("freesound_no_clotho")
 
     .. warning::
         WavCaps download is experimental ; it requires a lot of disk space and can take very long time to download and extract, so you might expect errors.

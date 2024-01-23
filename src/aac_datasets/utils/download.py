@@ -32,24 +32,31 @@ def safe_rmdir(
     root: Union[str, Path],
     rm_root: bool = True,
     error_on_non_empty_dir: bool = True,
+    followlinks: bool = False,
 ) -> List[str]:
     """Remove all empty sub-directories.
 
     :param root: Root directory path.
     :param rm_root: If True, remove the root directory too. defaults to True.
     :param error_on_non_empty_dir: If True, raises a RuntimeError if a subdirectory contains at least 1 file. Otherwise it will leave non-empty directories. defaults to True.
+    :param followlinks: Indicates whether or not symbolic links shound be followed. defaults to False.
     :returns: The list of directories paths deleted.
     """
-    deleted = []
-    for dpath, dnames, fnames in os.walk(root, topdown=False):
+    to_delete = []
+
+    for dpath, dnames, fnames in os.walk(root, topdown=False, followlinks=followlinks):
         if not rm_root and dpath == root:
             continue
-        elif len(dnames) == 0 and len(fnames) == 0:
-            os.rmdir(dpath)
-            deleted.append(dpath)
+        elif len(fnames) == 0 and len(dnames) == 0:
+            to_delete.append(dpath)
         elif error_on_non_empty_dir:
-            raise RuntimeError(f"Cannot remove non-empty dir {dpath}.")
-    return deleted
+            print(f"{to_delete=}")
+            raise RuntimeError(f"Cannot remove non-empty directory {dpath}.")
+
+    for dpath in to_delete:
+        os.rmdir(dpath)
+
+    return to_delete
 
 
 def hash_file(
