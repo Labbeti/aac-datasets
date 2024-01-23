@@ -127,7 +127,7 @@ class WavCaps(AACDataset[WavCapsItem]):
             The data will be stored in the 'MACS' subdirectory.
             defaults to ".".
         :param subset: The subset of the dataset. Can be one of :attr:`~WavCapsCard.SUBSETS`.
-            defaults to "as".
+            defaults to "audioset".
         :param download: Download the dataset if download=True and if the dataset is not already downloaded.
             defaults to False.
         :param transform: The transform to apply to the global dict item. This transform is applied only in getitem method when argument is an integer.
