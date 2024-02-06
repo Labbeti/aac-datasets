@@ -4,16 +4,8 @@
 import copy
 import logging
 import os.path as osp
-
 from pathlib import Path
-from typing import (
-    Callable,
-    ClassVar,
-    Dict,
-    List,
-    Optional,
-    Union,
-)
+from typing import Callable, ClassVar, Dict, List, Optional, Union
 
 from torch import Tensor
 from typing_extensions import TypedDict
@@ -21,12 +13,11 @@ from typing_extensions import TypedDict
 from aac_datasets.datasets.base import AACDataset
 from aac_datasets.datasets.functional.macs import (
     MACSCard,
-    load_macs_dataset,
-    download_macs_dataset,
     _get_audio_dpath,
+    download_macs_dataset,
+    load_macs_dataset,
 )
 from aac_datasets.utils.globals import _get_root
-
 
 pylog = logging.getLogger(__name__)
 
@@ -199,8 +190,8 @@ class MACS(AACDataset[MACSItem]):
         """Get competence value for a specific annotator id."""
         return self._annotator_id_to_competence[annotator_id]
 
-    def _load_competences(self, idx: int) -> List[float]:
-        annotators_ids: List[int] = self.at(idx, "annotators_ids")
+    def _load_competences(self, index: int) -> List[float]:
+        annotators_ids: List[int] = self.at(index, "annotators_ids")
         competences = [self.get_competence(id_) for id_ in annotators_ids]
         return competences
 

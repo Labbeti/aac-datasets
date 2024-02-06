@@ -7,19 +7,10 @@ import os
 import os.path as osp
 import subprocess
 import time
-
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from subprocess import CalledProcessError
-from typing import (
-    Any,
-    Dict,
-    Iterable,
-    List,
-    Optional,
-    Tuple,
-    Union,
-)
+from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
 
 import torchaudio
 import tqdm
@@ -30,8 +21,7 @@ from aac_datasets.utils.audioset_mapping import (
     load_audioset_mapping,
 )
 from aac_datasets.utils.download import download_file
-from aac_datasets.utils.globals import _get_root, _get_ffmpeg_path, _get_ytdlp_path
-
+from aac_datasets.utils.globals import _get_ffmpeg_path, _get_root, _get_ytdlp_path
 
 pylog = logging.getLogger(__name__)
 
@@ -194,19 +184,19 @@ def load_audiocaps_dataset(
 
         fname = _AUDIO_FNAME_FORMAT.format(**line, audio_format=audio_format)
         if fname in fname_to_idx:
-            idx = fname_to_idx[fname]
+            index = fname_to_idx[fname]
 
-            if all_caps_dic["start_time"][idx] is None:
-                all_caps_dic["start_time"][idx] = start_time
-                all_caps_dic["youtube_id"][idx] = youtube_id
-                all_caps_dic["audiocaps_ids"][idx] = [audiocap_id]
-                all_caps_dic["captions"][idx] = [caption]
+            if all_caps_dic["start_time"][index] is None:
+                all_caps_dic["start_time"][index] = start_time
+                all_caps_dic["youtube_id"][index] = youtube_id
+                all_caps_dic["audiocaps_ids"][index] = [audiocap_id]
+                all_caps_dic["captions"][index] = [caption]
             else:
-                assert all_caps_dic["start_time"][idx] == start_time
-                assert all_caps_dic["youtube_id"][idx] == youtube_id
+                assert all_caps_dic["start_time"][index] == start_time
+                assert all_caps_dic["youtube_id"][index] == youtube_id
 
-                all_caps_dic["audiocaps_ids"][idx].append(audiocap_id)
-                all_caps_dic["captions"][idx].append(caption)
+                all_caps_dic["audiocaps_ids"][index].append(audiocap_id)
+                all_caps_dic["captions"][index].append(caption)
 
     # Load tags from audioset data
     all_tags_lst = [[] for _ in range(dataset_size)]
@@ -228,8 +218,8 @@ def load_audiocaps_dataset(
             tags_mid = tags_mid.split(",")
             tags_indexes = [mid_to_index[tag_mid] for tag_mid in tags_mid]
 
-            idx = fname_to_idx[fname]
-            all_tags_lst[idx] = tags_indexes
+            index = fname_to_idx[fname]
+            all_tags_lst[index] = tags_indexes
 
     raw_data = {
         "fname": fnames_lst,

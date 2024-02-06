@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import unittest
-
 from unittest import TestCase
 
 from aac_datasets.datasets.base import _flat_raw_data, _unflat_raw_data
@@ -12,11 +11,11 @@ class TestDatasetBase(TestCase):
     def test_flat_raw_data(self) -> None:
         raw_data = {
             "captions": [["a1", "a2", "a3"], ["b1"], ["c1", "c2"], []],
-            "idx": list(range(1, 5)),
+            "index": list(range(1, 5)),
         }
         expected_flat = {
             "captions": [["a1"], ["a2"], ["a3"], ["b1"], ["c1"], ["c2"], []],
-            "idx": [1, 1, 1, 2, 3, 3, 4],
+            "index": [1, 1, 1, 2, 3, 3, 4],
         }
         expected_sizes = [3, 1, 2, 0]
 

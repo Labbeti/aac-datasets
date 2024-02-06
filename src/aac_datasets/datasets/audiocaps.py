@@ -3,23 +3,13 @@
 
 import logging
 import os.path as osp
-
 from pathlib import Path
-from typing import (
-    Any,
-    Callable,
-    ClassVar,
-    Dict,
-    List,
-    Optional,
-    Union,
-)
+from typing import Any, Callable, ClassVar, Dict, List, Optional, Union
 
 import torch
 import torchaudio
-
 from torch import Tensor
-from typing_extensions import TypedDict, NotRequired
+from typing_extensions import NotRequired, TypedDict
 
 try:
     # To support torchaudio >= 2.1.0
@@ -30,12 +20,11 @@ except ImportError:
 from aac_datasets.datasets.base import AACDataset
 from aac_datasets.datasets.functional.audiocaps import (
     AudioCapsCard,
+    _get_audio_subset_dpath,
     download_audiocaps_dataset,
     load_audiocaps_dataset,
-    _get_audio_subset_dpath,
 )
-from aac_datasets.utils.globals import _get_root, _get_ffmpeg_path, _get_ytdlp_path
-
+from aac_datasets.utils.globals import _get_ffmpeg_path, _get_root, _get_ytdlp_path
 
 pylog = logging.getLogger(__name__)
 
@@ -284,10 +273,10 @@ class AudioCaps(AACDataset[AudioCapsItem]):
         return f"{AudioCapsCard.PRETTY_NAME}({repr_str})"
 
     # Private methods
-    def _load_audio(self, idx: int) -> Tensor:
-        if not self._raw_data["is_on_disk"][idx]:
+    def _load_audio(self, index: int) -> Tensor:
+        if not self._raw_data["is_on_disk"][index]:
             return torch.empty((0,))
-        fpath = self.at(idx, "fpath")
+        fpath = self.at(index, "fpath")
         audio, sr = torchaudio.load(fpath)  # type: ignore
 
         # Sanity check
@@ -302,9 +291,9 @@ class AudioCaps(AACDataset[AudioCapsItem]):
             )
         return audio
 
-    def _load_audio_metadata(self, idx: int) -> AudioMetaData:
-        if not self._raw_data["is_on_disk"][idx]:
+    def _load_audio_metadata(self, index: int) -> AudioMetaData:
+        if not self._raw_data["is_on_disk"][index]:
             return AudioMetaData(-1, -1, -1, -1, "unknown_encoding")
-        fpath = self.at(idx, "fpath")
+        fpath = self.at(index, "fpath")
         audio_metadata = torchaudio.info(fpath)  # type: ignore
         return audio_metadata

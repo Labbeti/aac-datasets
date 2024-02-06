@@ -8,12 +8,10 @@ import os
 import os.path as osp
 import subprocess
 import zipfile
-
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
 
 import tqdm
-
 from huggingface_hub import snapshot_download
 from huggingface_hub.constants import HUGGINGFACE_HUB_CACHE
 from huggingface_hub.utils.tqdm import (
@@ -25,9 +23,8 @@ from typing_extensions import TypedDict
 
 from aac_datasets.datasets.functional.common import DatasetCard
 from aac_datasets.utils.collections import list_dict_to_dict_list
-from aac_datasets.utils.download import safe_rmdir, download_file
+from aac_datasets.utils.download import download_file, safe_rmdir
 from aac_datasets.utils.globals import _get_root, _get_zip_path
-
 
 pylog = logging.getLogger(__name__)
 
@@ -174,7 +171,7 @@ def load_wavcaps_dataset(
             )
 
         raw_data = {
-            column: [column_data[idx] for idx in indexes]
+            column: [column_data[index] for index in indexes]
             for column, column_data in raw_data.items()
         }
         return raw_data
@@ -670,6 +667,7 @@ def _download_blacklist(
     hf_cache_dir: Optional[str],
     revision: Optional[str],
     name: str,
+    verbose: int = 0,
 ) -> None:
     info = _WAVCAPS_LINKS[name]
     fname = info["fname"]
