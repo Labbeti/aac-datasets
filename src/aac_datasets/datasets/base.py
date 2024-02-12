@@ -19,7 +19,6 @@ from typing import (
 
 import torchaudio
 import tqdm
-from typing_extensions import TypedDict
 
 try:
     # To support torchaudio >= 2.1.0
@@ -33,7 +32,7 @@ from torch.utils.data.dataset import Dataset
 pylog = logging.getLogger(__name__)
 
 
-ItemType = TypeVar("ItemType", bound=TypedDict, covariant=True)
+ItemType = TypeVar("ItemType", covariant=True)
 
 
 class AACDataset(Generic[ItemType], Dataset[ItemType]):
@@ -43,7 +42,7 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
     def __init__(
         self,
         raw_data: Optional[Dict[str, List[Any]]] = None,
-        transform: Optional[Callable] = None,
+        transform: Optional[Callable[[ItemType], Any]] = None,
         column_names: Optional[Iterable[str]] = None,
         flat_captions: bool = False,
         sr: Optional[int] = None,
@@ -146,7 +145,7 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
         self._columns = columns
 
     @transform.setter
-    def transform(self, transform: Optional[Callable]) -> None:
+    def transform(self, transform: Optional[Callable[[ItemType], Any]]) -> None:
         self._transform = transform
 
     # Public methods
@@ -156,6 +155,10 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
 
     @overload
     def at(self, index: Union[Iterable[int], slice, None], column: str) -> List:
+        ...
+
+    @overload
+    def at(self, index: Union[Iterable[int], slice, None]) -> Dict[str, List]:
         ...
 
     @overload
@@ -376,10 +379,10 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
         item = self.at(index, column)
         if (
             isinstance(index, int)
-            and (column is None or column == self._columns)
             and self._transform is not None
+            and (column is None or set(column) == set(self._columns))
         ):
-            item = self._transform(item)
+            item = self._transform(item)  # type: ignore
         return item
 
     def __len__(self) -> int:
@@ -394,7 +397,7 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
     def __repr__(self) -> str:
         info = {
             "size": len(self),
-            "num_columns": len(self.column_names),
+            "num_columns": self.num_columns,
         }
         repr_str = ", ".join(f"{k}={v}" for k, v in info.items())
         return f"{self.__class__.__name__}({repr_str})"

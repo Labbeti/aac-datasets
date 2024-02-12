@@ -5,7 +5,7 @@ import copy
 import logging
 import os.path as osp
 from pathlib import Path
-from typing import Callable, ClassVar, Dict, List, Optional, Union
+from typing import Any, Callable, ClassVar, Dict, List, Optional, Union
 
 from torch import Tensor
 from typing_extensions import TypedDict
@@ -71,7 +71,7 @@ class MACS(AACDataset[MACSItem]):
         root: Union[str, Path, None] = None,
         subset: str = MACSCard.DEFAULT_SUBSET,
         download: bool = False,
-        transform: Optional[Callable] = None,
+        transform: Optional[Callable[[MACSItem], Any]] = None,
         verbose: int = 0,
         force_download: bool = False,
         verify_files: bool = False,

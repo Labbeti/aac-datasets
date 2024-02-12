@@ -3,28 +3,20 @@
 
 import logging
 import os.path as osp
-
 from pathlib import Path
-from typing import (
-    Callable,
-    ClassVar,
-    List,
-    Optional,
-    Union,
-)
+from typing import Any, Callable, ClassVar, List, Optional, Union
 
 from torch import Tensor
-from typing_extensions import TypedDict, NotRequired
+from typing_extensions import NotRequired, TypedDict
 
 from aac_datasets.datasets.base import AACDataset
 from aac_datasets.datasets.functional.clotho import (
     ClothoCard,
-    load_clotho_dataset,
-    download_clotho_dataset,
     _get_audio_subset_dpath,
+    download_clotho_dataset,
+    load_clotho_dataset,
 )
 from aac_datasets.utils.globals import _get_root
-
 
 pylog = logging.getLogger(__name__)
 
@@ -108,7 +100,7 @@ class Clotho(AACDataset[ClothoItem]):
         root: Union[str, Path, None] = None,
         subset: str = ClothoCard.DEFAULT_SUBSET,
         download: bool = False,
-        transform: Optional[Callable] = None,
+        transform: Optional[Callable[[ClothoItem], Any]] = None,
         verbose: int = 0,
         force_download: bool = False,
         verify_files: bool = False,

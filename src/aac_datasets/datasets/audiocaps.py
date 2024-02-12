@@ -87,7 +87,7 @@ class AudioCaps(AACDataset[AudioCapsItem]):
         root: Union[str, Path, None] = None,
         subset: str = AudioCapsCard.DEFAULT_SUBSET,
         download: bool = False,
-        transform: Optional[Callable[[Dict[str, Any]], Any]] = None,
+        transform: Optional[Callable[[AudioCapsItem], Any]] = None,
         verbose: int = 0,
         force_download: bool = False,
         verify_files: bool = False,

@@ -3,9 +3,8 @@
 
 import logging
 import os.path as osp
-
 from pathlib import Path
-from typing import Callable, ClassVar, List, Optional, Union
+from typing import Any, Callable, ClassVar, List, Optional, Union
 
 from torch import Tensor
 from typing_extensions import TypedDict
@@ -13,12 +12,11 @@ from typing_extensions import TypedDict
 from aac_datasets.datasets.base import AACDataset
 from aac_datasets.datasets.functional.wavcaps import (
     WavCapsCard,
-    load_wavcaps_dataset,
-    download_wavcaps_dataset,
     _get_audio_subset_dpath,
+    download_wavcaps_dataset,
+    load_wavcaps_dataset,
 )
 from aac_datasets.utils.globals import _get_root, _get_zip_path
-
 
 pylog = logging.getLogger(__name__)
 
@@ -110,7 +108,7 @@ class WavCaps(AACDataset[WavCapsItem]):
         root: Union[str, Path, None] = None,
         subset: str = WavCapsCard.DEFAULT_SUBSET,
         download: bool = False,
-        transform: Optional[Callable] = None,
+        transform: Optional[Callable[[WavCapsItem], Any]] = None,
         verbose: int = 0,
         force_download: bool = False,
         verify_files: bool = False,
