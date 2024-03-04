@@ -17,7 +17,6 @@ sys.path.insert(0, os.path.abspath(".."))
 
 import aac_datasets
 
-
 # -- Project information -----------------------------------------------------
 
 project = aac_datasets.__name__
@@ -96,5 +95,5 @@ intersphinx_mapping = {
     "torchaudio": ("https://pytorch.org/audio/stable/", None),
 }
 
-# TODO: to be used with sphinx>=7.1
+# Only works with sphinx>=7.1
 maximum_signature_line_length = 10
