@@ -1,14 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from typing import Any, Dict, Iterable, List, TypeVar
-
+from typing import Any, Dict, Iterable, List, Mapping, Sequence, TypeVar
 
 T = TypeVar("T")
 
 
 def list_dict_to_dict_list(
-    lst: List[Dict[str, T]],
+    lst: Sequence[Mapping[str, T]],
     key_mode: str = "intersect",
     default: Any = None,
 ) -> Dict[str, List[T]]:
@@ -41,7 +40,7 @@ def list_dict_to_dict_list(
     return {key: [item.get(key, default) for item in lst] for key in keys}
 
 
-def intersect_lists(lst_of_lst: List[Iterable[T]]) -> List[T]:
+def intersect_lists(lst_of_lst: Sequence[Iterable[T]]) -> List[T]:
     """Performs intersection of elements in lists (like set intersection), but keep their original order."""
     if len(lst_of_lst) <= 0:
         return []
