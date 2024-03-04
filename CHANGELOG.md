@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.5.1] UNRELEASED
+## [0.5.1] 2024-03-04
 ### Fixed
 - WavCaps download preparation (#3).
 - `safe_rmdir` function when sub-directories are deleted.
@@ -88,7 +88,7 @@ All notable changes to this project will be documented in this file.
 - Weak private methods are now strongly private in datasets.
 - Rename `item_transform` to `transform` in datasets.
 - Rename `load_tags` to `with_tags` in `AudioCaps`.
- 
+
 ### Fixed
 - AudioCaps loading when `with_tags` is False.
 - Clotho files download.
