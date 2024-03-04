@@ -8,12 +8,10 @@ import os
 import os.path as osp
 import subprocess
 import zipfile
-
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
 
 import tqdm
-
 from huggingface_hub import snapshot_download
 from huggingface_hub.constants import HUGGINGFACE_HUB_CACHE
 from huggingface_hub.utils.tqdm import (
@@ -25,9 +23,8 @@ from typing_extensions import TypedDict
 
 from aac_datasets.datasets.functional.common import DatasetCard
 from aac_datasets.utils.collections import list_dict_to_dict_list
-from aac_datasets.utils.download import safe_rmdir
+from aac_datasets.utils.download import download_file, safe_rmdir
 from aac_datasets.utils.globals import _get_root, _get_zip_path
-
 
 pylog = logging.getLogger(__name__)
 
@@ -35,12 +32,12 @@ pylog = logging.getLogger(__name__)
 class WavCapsCard(DatasetCard):
     ANNOTATIONS_CREATORS: Tuple[str, ...] = ("machine-generated",)
     CAPTIONS_PER_AUDIO: Dict[str, int] = {
-        "as": 1,
+        "audioset": 1,
         "bbc": 1,
-        "fsd": 1,
-        "sb": 1,
-        "as_noac": 1,
-        "fsd_nocl": 1,
+        "freesound": 1,
+        "soundbible": 1,
+        "audioset_no_audiocaps": 1,
+        "freesound_no_clotho": 1,
     }
     CITATION: str = r"""
     @article{mei2023WavCaps,
@@ -52,7 +49,7 @@ class WavCapsCard(DatasetCard):
     }
     """
     DEFAULT_REVISION: str = "85a0c21e26fa7696a5a74ce54fada99a9b43c6de"
-    DEFAULT_SUBSET: str = "as_noac"
+    DEFAULT_SUBSET: str = "audioset_no_audiocaps"
     DESCRIPTION: str = "WavCaps: A ChatGPT-Assisted Weakly-Labelled Audio Captioning Dataset for Audio-Language Multimodal Research."
     EXPECTED_SIZES: Dict[str, int] = {
         "AudioSet_SL": 108317,
@@ -87,7 +84,7 @@ def load_wavcaps_dataset(
     :param root: Dataset root directory.
         defaults to ".".
     :param subset: The subset of MACS to use. Can be one of :attr:`~MACSCard.SUBSETS`.
-        defaults to "as_noac".
+        defaults to "audioset_no_audiocaps".
     :param verbose: Verbose level.
         defaults to 0.
 
@@ -97,13 +94,22 @@ def load_wavcaps_dataset(
         defaults to None.
     :returns: A dictionnary of lists containing each metadata.
     """
+
+    if subset in _WAVCAPS_OLD_SUBSETS_NAMES:
+        new_subset = _WAVCAPS_OLD_SUBSETS_NAMES[subset]
+        if verbose >= 0:
+            pylog.warning(
+                f"Deprecated subset name '{subset}', use '{new_subset}' instead."
+            )
+        subset = new_subset
+
     root = _get_root(root)
     if subset not in WavCapsCard.SUBSETS:
         raise ValueError(
             f"Invalid argument subset={subset}. (expected one of {WavCapsCard.SUBSETS})"
         )
 
-    if subset == "as":
+    if subset == "audioset":
         overlapped_ds = "AudioCaps"
         overlapped_subsets = ("val", "test")
         pylog.warning(
@@ -111,7 +117,7 @@ def load_wavcaps_dataset(
             "You can use as_noac subset for to avoid this bias with AudioCaps."
         )
 
-    elif subset == "fsd":
+    elif subset == "freesound":
         overlapped_ds = "Clotho"
         overlapped_subsets = (
             "val",
@@ -126,14 +132,14 @@ def load_wavcaps_dataset(
             f"You can use fsd_nocl subset for to avoid this bias for Clotho val, eval, dcase_t2a_audio and dcase_t2a_captions subsets. Data could still overlap with Clotho dcase_aac_test and dcase_aac_analysis subsets."
         )
 
-    if subset in ("as_noac", "fsd_nocl"):
-        if subset == "as_noac":
-            target_subset = "as"
-            csv_fname = "blacklist_audiocaps.full.csv"
+    if subset in ("audioset_no_audiocaps", "freesound_no_clotho"):
+        if subset == "audioset_no_audiocaps":
+            target_subset = "audioset"
+            csv_fname = _WAVCAPS_LINKS["blacklist_audiocaps"]["fname"]
 
-        elif subset == "fsd_nocl":
-            target_subset = "fsd"
-            csv_fname = "blacklist_clotho.full.csv"
+        elif subset == "freesound_no_clotho":
+            target_subset = "freesound"
+            csv_fname = _WAVCAPS_LINKS["blacklist_clotho"]["fname"]
 
         else:
             raise ValueError(f"INTERNAL ERROR: Invalid argument subset={subset}.")
@@ -147,14 +153,13 @@ def load_wavcaps_dataset(
         )
         wavcaps_ids = raw_data["id"]
 
-        csv_fpath = (
-            Path(__file__)
-            .parent.parent.parent.parent.joinpath("data")
-            .joinpath(csv_fname)
-        )
+        wavcaps_root = _get_wavcaps_root(root, hf_cache_dir, revision)
+        csv_fpath = Path(wavcaps_root).joinpath(csv_fname)
+
         with open(csv_fpath, "r") as file:
             reader = csv.DictReader(file)
             data = list(reader)
+
         other_ids = [data_i["id"] for data_i in data]
         other_ids = dict.fromkeys(other_ids)
 
@@ -166,7 +171,7 @@ def load_wavcaps_dataset(
             )
 
         raw_data = {
-            column: [column_data[idx] for idx in indexes]
+            column: [column_data[index] for index in indexes]
             for column, column_data in raw_data.items()
         }
         return raw_data
@@ -270,7 +275,7 @@ def download_wavcaps_dataset(
     :param root: Dataset root directory.
         defaults to ".".
     :param subset: The subset of MACS to use. Can be one of :attr:`~WavCapsCard.SUBSETS`.
-        defaults to "as_noac".
+        defaults to "audioset_no_audiocaps".
     :param force: If True, force to download again all files.
         defaults to False.
     :param verbose: Verbose level.
@@ -289,22 +294,24 @@ def download_wavcaps_dataset(
     :param zip_path: Path to zip executable path in shell.
         defaults to "zip".
     """
-    if subset == "as_noac":
+
+    if subset in _WAVCAPS_OLD_SUBSETS_NAMES:
+        new_subset = _WAVCAPS_OLD_SUBSETS_NAMES[subset]
+        if verbose >= 0:
+            pylog.warning(
+                f"Deprecated subset name '{subset}', use '{new_subset}' instead."
+            )
+        subset = new_subset
+
+    root = _get_root(root)
+    zip_path = _get_zip_path(zip_path)
+
+    if subset == "audioset_no_audiocaps":
+        _download_blacklist(root, hf_cache_dir, revision, "blacklist_audiocaps")
+
         return download_wavcaps_dataset(
             root=root,
-            subset="as",
-            revision=revision,
-            hf_cache_dir=hf_cache_dir,
-            force=force,
-            verify_files=verify_files,
-            clean_archives=clean_archives,
-            zip_path=zip_path,
-            verbose=verbose,
-        )
-    elif subset == "fsd_nocl":
-        return download_wavcaps_dataset(
-            root=root,
-            subset="fsd",
+            subset="audioset",
             revision=revision,
             hf_cache_dir=hf_cache_dir,
             force=force,
@@ -314,8 +321,20 @@ def download_wavcaps_dataset(
             verbose=verbose,
         )
 
-    root = _get_root(root)
-    zip_path = _get_zip_path(zip_path)
+    elif subset == "freesound_no_clotho":
+        _download_blacklist(root, hf_cache_dir, revision, "blacklist_clotho")
+
+        return download_wavcaps_dataset(
+            root=root,
+            subset="freesound",
+            revision=revision,
+            hf_cache_dir=hf_cache_dir,
+            force=force,
+            verify_files=verify_files,
+            clean_archives=clean_archives,
+            zip_path=zip_path,
+            verbose=verbose,
+        )
 
     if subset not in WavCapsCard.SUBSETS:
         raise ValueError(
@@ -340,7 +359,7 @@ def download_wavcaps_dataset(
     ign_patterns = [
         pattern
         for source in ign_sources
-        for pattern in (f"json_files/{source}/*.json", "Zip_files/*")  # {source}/
+        for pattern in (f"json_files/{source}/*.json", f"Zip_files/{source}/*")
     ]
     if verbose >= 2:
         pylog.debug(f"ign_sources={ign_sources}")
@@ -373,7 +392,7 @@ def download_wavcaps_dataset(
     del snapshot_dpath
 
     # Build symlink to hf cache
-    if osp.exists(wavcaps_root):
+    if osp.lexists(wavcaps_root):
         if not osp.islink(wavcaps_root):
             raise RuntimeError("WavCaps root exists but it is not a symlink.")
         link_target_abspath = osp.abspath(osp.realpath(wavcaps_root))
@@ -626,10 +645,10 @@ def _is_prepared_wavcaps(
 def _use_source(source: str, subset: str) -> bool:
     return any(
         (
-            source == "AudioSet_SL" and subset in ("as", "as_noac"),
+            source == "AudioSet_SL" and subset in ("audioset", "audioset_no_audiocaps"),
             source == "BBC_Sound_Effects" and subset in ("bbc",),
-            source == "FreeSound" and subset in ("fsd", "fsd_nocl"),
-            source == "SoundBible" and subset in ("sb",),
+            source == "FreeSound" and subset in ("freesound", "freesound_no_clotho"),
+            source == "SoundBible" and subset in ("soundbible",),
         )
     )
 
@@ -641,6 +660,21 @@ def _load_json(fpath: str) -> Tuple[Dict[str, Any], int]:
     size = len(data)
     data = list_dict_to_dict_list(data, key_mode="same")
     return data, size
+
+
+def _download_blacklist(
+    root: str,
+    hf_cache_dir: Optional[str],
+    revision: Optional[str],
+    name: str,
+    verbose: int = 0,
+) -> None:
+    info = _WAVCAPS_LINKS[name]
+    fname = info["fname"]
+    url = info["url"]
+    wavcaps_root = _get_wavcaps_root(root, hf_cache_dir, revision)
+    fpath = Path(wavcaps_root).joinpath(fname)
+    download_file(url, fpath, verbose=verbose)
 
 
 class _WavCapsRawItem(TypedDict):
@@ -684,4 +718,23 @@ _WAVCAPS_ARCHIVE_DNAMES = {
     "BBC_Sound_Effects": "BBC_Sound_Effects",
     "FreeSound": "FreeSound",
     "SoundBible": "SoundBible",
+}
+
+_WAVCAPS_LINKS = {
+    "blacklist_audiocaps": {
+        "url": "https://raw.githubusercontent.com/Labbeti/aac-datasets/main/data/wavcaps/blacklist_audiocaps.full.csv",
+        "fname": "blacklist_audiocaps.full.csv",
+    },
+    "blacklist_clotho": {
+        "url": "https://raw.githubusercontent.com/Labbeti/aac-datasets/main/data/wavcaps/blacklist_clotho.full.csv",
+        "fname": "blacklist_clotho.full.csv",
+    },
+}
+
+_WAVCAPS_OLD_SUBSETS_NAMES = {
+    "fsd": "freesound",
+    "as": "audioset",
+    "fsd_nocl": "freesound_no_clotho",
+    "as_noac": "audioset_no_audiocaps",
+    "sb": "soundbible",
 }

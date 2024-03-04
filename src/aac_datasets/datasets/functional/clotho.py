@@ -6,17 +6,8 @@ import csv
 import logging
 import os
 import os.path as osp
-
 from pathlib import Path
-from typing import (
-    Any,
-    Dict,
-    Iterable,
-    List,
-    Optional,
-    Tuple,
-    Union,
-)
+from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
 from zipfile import ZipFile
 
 from py7zr import SevenZipFile
@@ -24,7 +15,6 @@ from py7zr import SevenZipFile
 from aac_datasets.datasets.functional.common import DatasetCard
 from aac_datasets.utils.download import download_file, hash_file
 from aac_datasets.utils.globals import _get_root
-
 
 pylog = logging.getLogger(__name__)
 
@@ -167,8 +157,8 @@ def load_clotho_dataset(
 
     for line in captions_data:
         fname = line["file_name"]
-        idx = fname_to_idx[fname]
-        all_captions_lst[idx] = [line[caption_key] for caption_key in captions_keys]
+        index = fname_to_idx[fname]
+        all_captions_lst[index] = [line[caption_key] for caption_key in captions_keys]
 
     all_metadata_dic: Dict[str, List[Any]] = {
         key: [None for _ in range(dataset_size)] for key in subset_metadata_keys
@@ -179,11 +169,11 @@ def load_clotho_dataset(
             raise KeyError(
                 f"Cannot find metadata fname={fname} in captions file. (subset={subset})"
             )
-        idx = fname_to_idx[fname]
+        index = fname_to_idx[fname]
         for key in subset_metadata_keys:
             # The test subset does not have keywords in metadata, but has sound_id, sound_link, etc.
             if key in line:
-                all_metadata_dic[key][idx] = line[key]
+                all_metadata_dic[key][index] = line[key]
 
     raw_data = {
         "fname": fnames_lst,

@@ -3,7 +3,6 @@
 
 import logging
 import os.path as osp
-
 from typing import (
     Any,
     Callable,
@@ -21,8 +20,6 @@ from typing import (
 import torchaudio
 import tqdm
 
-from typing_extensions import TypedDict
-
 try:
     # To support torchaudio >= 2.1.0
     from torchaudio import AudioMetaData  # type: ignore
@@ -32,11 +29,10 @@ except ImportError:
 from torch import Tensor
 from torch.utils.data.dataset import Dataset
 
-
 pylog = logging.getLogger(__name__)
 
 
-ItemType = TypeVar("ItemType", bound=TypedDict, covariant=True)
+ItemType = TypeVar("ItemType", covariant=True)
 
 
 class AACDataset(Generic[ItemType], Dataset[ItemType]):
@@ -46,7 +42,7 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
     def __init__(
         self,
         raw_data: Optional[Dict[str, List[Any]]] = None,
-        transform: Optional[Callable] = None,
+        transform: Optional[Callable[[ItemType], Any]] = None,
         column_names: Optional[Iterable[str]] = None,
         flat_captions: bool = False,
         sr: Optional[int] = None,
@@ -149,31 +145,37 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
         self._columns = columns
 
     @transform.setter
-    def transform(self, transform: Optional[Callable]) -> None:
+    def transform(self, transform: Optional[Callable[[ItemType], Any]]) -> None:
         self._transform = transform
 
     # Public methods
     @overload
-    def at(self, idx: int) -> ItemType:
+    def at(self, index: int) -> ItemType:
         ...
 
     @overload
-    def at(self, idx: Union[Iterable[int], slice, None], column: str) -> List:
+    def at(self, index: Union[Iterable[int], slice, None], column: str) -> List:
+        ...
+
+    @overload
+    def at(self, index: Union[Iterable[int], slice, None]) -> Dict[str, List]:
         ...
 
     @overload
     def at(
-        self, idx: Union[Iterable[int], slice, None], column: Union[Iterable[str], None]
+        self,
+        index: Union[Iterable[int], slice, None],
+        column: Union[Iterable[str], None],
     ) -> Dict[str, List]:
         ...
 
     @overload
-    def at(self, idx: Any, column: Any) -> Any:
+    def at(self, index: Any, column: Any) -> Any:
         ...
 
     def at(
         self,
-        idx: Union[int, Iterable[int], None, slice] = None,
+        index: Union[int, Iterable[int], None, slice] = None,
         column: Union[str, Iterable[str], None] = None,
     ) -> Any:
         """Get a specific data field.
@@ -182,63 +184,63 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
         :param column: The name(s) of the column. Can be any value of :meth:`~Clotho.columns`.
         :returns: The field value. The type depends of the column.
         """
-        if idx is None:
-            idx = slice(None)
-        elif isinstance(idx, Tensor):
-            if idx.ndim not in (0, 1):
+        if index is None:
+            index = slice(None)
+        elif isinstance(index, Tensor):
+            if index.ndim not in (0, 1):
                 raise ValueError(
-                    f"Invalid number of dimensions for idx argument. (found idx.ndim={idx.ndim} but expected 0 or 1)"
+                    f"Invalid number of dimensions for index argument. (found index.ndim={index.ndim} but expected 0 or 1)"
                 )
-            elif idx.is_floating_point():
+            elif index.is_floating_point():
                 raise TypeError(
                     "Invalid tensor dtype. (found floating-point tensor but expected integer tensor)"
                 )
-            idx = idx.tolist()
+            index = index.tolist()
 
         if column is None:
             column = self.column_names
 
         if not isinstance(column, str) and isinstance(column, Iterable):
-            return {column_i: self.at(idx, column_i) for column_i in column}
+            return {column_i: self.at(index, column_i) for column_i in column}
 
-        if isinstance(idx, (int, slice)) and (
+        if isinstance(index, (int, slice)) and (
             column in self._raw_data.keys() and column not in self._online_fns
         ):
-            return self._raw_data[column][idx]  # type: ignore
+            return self._raw_data[column][index]  # type: ignore
 
-        if isinstance(idx, slice):
-            idx = range(len(self))[idx]
+        if isinstance(index, slice):
+            index = range(len(self))[index]
 
-        if isinstance(idx, Iterable):
-            idx = list(idx)
-            if all(isinstance(idx_i, bool) for idx_i in idx):
-                if len(idx) != len(self):
+        if isinstance(index, Iterable):
+            index = list(index)
+            if all(isinstance(idx_i, bool) for idx_i in index):
+                if len(index) != len(self):
                     raise IndexError(
-                        f"The length of the mask ({len(idx)}) does not match the length of the dataset ({len(self)})."
+                        f"The length of the mask ({len(index)}) does not match the length of the dataset ({len(self)})."
                     )
-                idx = [i for i, idx_i in enumerate(idx) if idx_i]
+                index = [i for i, idx_i in enumerate(index) if idx_i]
 
-            elif not all(isinstance(idx_i, int) for idx_i in idx):
+            elif not all(isinstance(idx_i, int) for idx_i in index):
                 raise TypeError(
-                    f"Invalid input type for idx={idx}. (expected Iterable[int], not Iterable[{idx[0].__class__.__name__}])"
+                    f"Invalid input type for index={index}. (expected Iterable[int], not Iterable[{index[0].__class__.__name__}])"
                 )
 
             values = [
                 self.at(idx_i, column)
                 for idx_i in tqdm.tqdm(
-                    idx,
+                    index,
                     desc=f"Loading column '{column}'...",
                     disable=self._verbose < 2,
                 )
             ]
             return values
 
-        if isinstance(idx, int):
-            return self._load_online_value(column, idx)
+        if isinstance(index, int):
+            return self._load_online_value(column, index)
         else:
             IDX_TYPES = ("int", "Iterable[int]", "None", "slice", "Tensor")
             raise TypeError(
-                f"Invalid argument type {type(idx)}. (expected one of {IDX_TYPES})"
+                f"Invalid argument type {type(index)}. (expected one of {IDX_TYPES})"
             )
 
     def has_raw_column(self, column: str) -> bool:
@@ -342,44 +344,45 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
 
     # Magic methods
     @overload
-    def __getitem__(self, idx: int) -> ItemType:
+    def __getitem__(self, index: int) -> ItemType:
         ...
 
     @overload
-    def __getitem__(self, idx: Tuple[Union[Iterable[int], slice, None], str]) -> List:
+    def __getitem__(self, index: Tuple[Union[Iterable[int], slice, None], str]) -> List:
         ...
 
     @overload
-    def __getitem__(self, idx: Union[Iterable[int], slice, None]) -> Dict[str, List]:
+    def __getitem__(self, index: Union[Iterable[int], slice, None]) -> Dict[str, List]:
         ...
 
     @overload
     def __getitem__(
-        self, idx: Tuple[Union[Iterable[int], slice, None], Union[Iterable[str], None]]
+        self,
+        index: Tuple[Union[Iterable[int], slice, None], Union[Iterable[str], None]],
     ) -> Dict[str, List]:
         ...
 
     @overload
-    def __getitem__(self, idx: Any) -> Any:
+    def __getitem__(self, index: Any) -> Any:
         ...
 
-    def __getitem__(self, idx: Any) -> Any:
+    def __getitem__(self, index: Any) -> Any:
         if (
-            isinstance(idx, tuple)
-            and len(idx) == 2
-            and (isinstance(idx[1], (str, Iterable)) or idx[1] is None)
+            isinstance(index, tuple)
+            and len(index) == 2
+            and (isinstance(index[1], (str, Iterable)) or index[1] is None)
         ):
-            idx, column = idx
+            index, column = index
         else:
             column = None
 
-        item = self.at(idx, column)
+        item = self.at(index, column)
         if (
-            isinstance(idx, int)
-            and (column is None or column == self._columns)
+            isinstance(index, int)
             and self._transform is not None
+            and (column is None or set(column) == set(self._columns))
         ):
-            item = self._transform(item)
+            item = self._transform(item)  # type: ignore
         return item
 
     def __len__(self) -> int:
@@ -394,7 +397,7 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
     def __repr__(self) -> str:
         info = {
             "size": len(self),
-            "num_columns": len(self.column_names),
+            "num_columns": self.num_columns,
         }
         repr_str = ", ".join(f"{k}={v}" for k, v in info.items())
         return f"{self.__class__.__name__}({repr_str})"
@@ -421,17 +424,17 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
         raw_data = _unflat_raw_data(self._raw_data, self._sizes)
         self._raw_data = raw_data
 
-    def _load_online_value(self, column: str, idx: int) -> Any:
+    def _load_online_value(self, column: str, index: int) -> Any:
         if column in self._online_fns:
             fn = self._online_fns[column]
-            return fn(self, idx)
+            return fn(self, index)
         else:
             raise ValueError(
-                f"Invalid argument column={column} at idx={idx}. (expected one of {self.all_columns})"
+                f"Invalid argument column={column} at index={index}. (expected one of {self.all_columns})"
             )
 
-    def _load_audio(self, idx: int) -> Tensor:
-        fpath = self.at(idx, "fpath")
+    def _load_audio(self, index: int) -> Tensor:
+        fpath = self.at(index, "fpath")
         audio_and_sr: Tuple[Tensor, int] = torchaudio.load(fpath)  # type: ignore
         audio, sr = audio_and_sr
 
@@ -447,33 +450,33 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
             )
         return audio
 
-    def _load_audio_metadata(self, idx: int) -> AudioMetaData:
-        fpath = self.at(idx, "fpath")
+    def _load_audio_metadata(self, index: int) -> AudioMetaData:
+        fpath = self.at(index, "fpath")
         audio_metadata = torchaudio.info(fpath)  # type: ignore
         return audio_metadata
 
-    def _load_duration(self, idx: int) -> float:
-        audio_metadata: AudioMetaData = self.at(idx, "audio_metadata")
+    def _load_duration(self, index: int) -> float:
+        audio_metadata: AudioMetaData = self.at(index, "audio_metadata")
         duration = audio_metadata.num_frames / audio_metadata.sample_rate
         return duration
 
-    def _load_fname(self, idx: int) -> str:
-        fpath = self.at(idx, "fpath")
+    def _load_fname(self, index: int) -> str:
+        fpath = self.at(index, "fpath")
         fname = osp.basename(fpath)
         return fname
 
-    def _load_num_channels(self, idx: int) -> int:
-        audio_metadata = self.at(idx, "audio_metadata")
+    def _load_num_channels(self, index: int) -> int:
+        audio_metadata = self.at(index, "audio_metadata")
         num_channels = audio_metadata.num_channels
         return num_channels
 
-    def _load_num_frames(self, idx: int) -> int:
-        audio_metadata = self.at(idx, "audio_metadata")
+    def _load_num_frames(self, index: int) -> int:
+        audio_metadata = self.at(index, "audio_metadata")
         num_frames = audio_metadata.num_frames
         return num_frames
 
-    def _load_sr(self, idx: int) -> int:
-        audio_metadata = self.at(idx, "audio_metadata")
+    def _load_sr(self, index: int) -> int:
+        audio_metadata = self.at(index, "audio_metadata")
         sr = audio_metadata.sample_rate
         return sr
 
@@ -525,7 +528,8 @@ def _unflat_raw_data(
         for key in raw_data.keys():
             if key == caps_column:
                 caps = [
-                    raw_data_flat[key][idx][0] for idx in range(cumsize, cumsize + size)
+                    raw_data_flat[key][index][0]
+                    for index in range(cumsize, cumsize + size)
                 ]
                 raw_data[key].append(caps)
             else:

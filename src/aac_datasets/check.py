@@ -4,21 +4,18 @@
 import logging
 import os.path as osp
 import random
-
 from argparse import ArgumentParser, Namespace
 from typing import Dict, Iterable, Union
 
 import yaml
 
 import aac_datasets
-
 from aac_datasets.datasets.audiocaps import AudioCaps, AudioCapsCard
 from aac_datasets.datasets.clotho import Clotho, ClothoCard
 from aac_datasets.datasets.macs import MACS, MACSCard
 from aac_datasets.datasets.wavcaps import WavCaps, WavCapsCard
-from aac_datasets.utils.globals import get_default_root
 from aac_datasets.download import _setup_logging
-
+from aac_datasets.utils.globals import get_default_root
 
 DATASETS_NAMES = (AudioCapsCard.NAME, ClothoCard.NAME, MACSCard.NAME, WavCapsCard.NAME)
 
@@ -66,8 +63,8 @@ def check_directory(
                 ds = ds_class(root, subset, verbose=0)
                 if len(ds) > 0:
                     # Try to load a random item
-                    idx = random.randint(0, len(ds) - 1)
-                    _item = ds[idx]
+                    index = random.randint(0, len(ds) - 1)
+                    ds[index]
                 found_dsets[subset] = ds
 
             except RuntimeError:

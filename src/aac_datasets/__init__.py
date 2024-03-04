@@ -6,11 +6,13 @@
 
 __author__ = "Etienne Labbé (Labbeti)"
 __author_email__ = "labbeti.pub@gmail.com"
+__docs__ = "Audio Captioning Datasets"
+__docs_url__ = "https://aac-datasets.readthedocs.io/en/stable/"
 __license__ = "MIT"
 __maintainer__ = "Etienne Labbé (Labbeti)"
 __name__ = "aac-datasets"
 __status__ = "Development"
-__version__ = "0.5.0"
+__version__ = "0.5.1"
 
 
 from .datasets.audiocaps import AudioCaps
@@ -25,7 +27,6 @@ from .utils.globals import (
     set_default_root,
     set_default_ytdlp_path,
 )
-
 
 __all__ = [
     "AudioCaps",

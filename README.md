@@ -67,7 +67,7 @@ aac-datasets-download --root "." clotho --subsets "dev"
 ```
 
 ## Datasets information
-Here is the statistics for each dataset :
+`aac-datasets` package contains 4 different datasets :
 
 <!-- | | AudioCaps | Clotho | MACS | WavCaps |
 |:---:|:---:|:---:|:---:|:---:|
@@ -85,7 +85,7 @@ Here is the statistics for each dataset :
 
 For Clotho, the **dev** subset should be used for training, val for validation and eval for testing.
 
-Here is additional statistics on the train subset for AudioCaps, Clotho and MACS:
+Here is additional statistics on the train subset for AudioCaps, Clotho, MACS and WavCaps:
 
 | | AudioCaps/train | Clotho/dev | MACS/full | WavCaps/full |
 |:---:|:---:|:---:|:---:|:---:|
@@ -96,7 +96,9 @@ Here is additional statistics on the train subset for AudioCaps, Clotho and MACS
 | Nb captions | 49,838 | 19,195 | 17,275 | 403,050 |
 | Total nb words<sup>2</sup> | 402,482 | 217,362 | 160,006 | 3,161,823 |
 | Sentence size<sup>2</sup> | 2-52 | 8-20 | 5-40 | 2-38 |
-| Vocabulary<sup>2</sup> | 4724 | 4369 | 2721 | 24600 |
+| Vocabulary<sup>2</sup> | 4724 | 4369 | 2721 | 24,600 |
+| Annotated by | Human | Human | Human | Machine |
+| Corrected by | Human | Human | None | None |
 
 <sup>1</sup> This duration is estimated on the total duration of 46230/49838 files of 126.7h.
 
@@ -167,7 +169,7 @@ dataset = AudioCaps(
 [3] F. Font, A. Mesaros, D. P. W. Ellis, E. Fonseca, M. Fuentes, and B. Elizalde, Proceedings of the 6th Workshop on Detection and Classication of Acoustic Scenes and Events (DCASE 2021). Barcelona, Spain: Music Technology Group - Universitat Pompeu Fabra, Nov. 2021. Available: https://doi.org/10.5281/zenodo.5770113
 
 #### WavCaps
-[4] X. Mei et al., “WavCaps: A ChatGPT-Assisted Weakly-Labelled Audio Captioning Dataset for Audio-Language Multimodal Research,” arXiv preprint arXiv:2303.17395, 2023, [Online]. Available: https://arxiv.org/pdf/2303.17395.pdf 
+[4] X. Mei et al., “WavCaps: A ChatGPT-Assisted Weakly-Labelled Audio Captioning Dataset for Audio-Language Multimodal Research,” arXiv preprint arXiv:2303.17395, 2023, [Online]. Available: https://arxiv.org/pdf/2303.17395.pdf
 
 ## Cite the aac-datasets package
 If you use this software, please consider cite it as "Labbe, E. (2013). aac-datasets: Audio Captioning datasets for PyTorch.", or use the following BibTeX citation:
@@ -177,10 +179,10 @@ If you use this software, please consider cite it as "Labbe, E. (2013). aac-data
     Labbe_aac_datasets_2024,
     author = {Labbé, Etienne},
     license = {MIT},
-    month = {01},
+    month = {03},
     title = {{aac-datasets}},
     url = {https://github.com/Labbeti/aac-datasets/},
-    version = {0.5.0},
+    version = {0.5.1},
     year = {2024}
 }
 ```

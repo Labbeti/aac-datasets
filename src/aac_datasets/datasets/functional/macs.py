@@ -7,23 +7,14 @@ import os
 import os.path as osp
 import shutil
 import zipfile
-
 from pathlib import Path
-from typing import (
-    Any,
-    Dict,
-    Iterable,
-    List,
-    Tuple,
-    Union,
-)
+from typing import Any, Dict, Iterable, List, Tuple, Union
 
 import yaml
 
 from aac_datasets.datasets.functional.common import DatasetCard
 from aac_datasets.utils.download import download_file, hash_file
 from aac_datasets.utils.globals import _get_root
-
 
 pylog = logging.getLogger(__name__)
 
@@ -149,9 +140,9 @@ def load_macs_dataset(
     for tau_tags in tau_tags_data:
         fname = osp.basename(tau_tags["filename"])
         if fname in fname_to_idx:
-            idx = fname_to_idx[fname]
+            index = fname_to_idx[fname]
             for key in tau_additional_keys:
-                raw_data[key][idx] = tau_tags[key]
+                raw_data[key][index] = tau_tags[key]
 
     # Sanity checks
     assert all(

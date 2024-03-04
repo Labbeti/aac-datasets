@@ -3,9 +3,8 @@
 
 import logging
 import os.path as osp
-
 from pathlib import Path
-from typing import Callable, ClassVar, List, Optional, Union
+from typing import Any, Callable, ClassVar, List, Optional, Union
 
 from torch import Tensor
 from typing_extensions import TypedDict
@@ -13,12 +12,11 @@ from typing_extensions import TypedDict
 from aac_datasets.datasets.base import AACDataset
 from aac_datasets.datasets.functional.wavcaps import (
     WavCapsCard,
-    load_wavcaps_dataset,
-    download_wavcaps_dataset,
     _get_audio_subset_dpath,
+    download_wavcaps_dataset,
+    load_wavcaps_dataset,
 )
 from aac_datasets.utils.globals import _get_root, _get_zip_path
-
 
 pylog = logging.getLogger(__name__)
 
@@ -50,12 +48,12 @@ class WavCaps(AACDataset[WavCapsItem]):
     HuggingFace source : https://huggingface.co/datasets/cvssp/WavCaps
 
     This dataset contains 4 training subsets, extracted from different sources:
-    - AudioSet strongly labeled (as)
-    - BBC Sound Effects (bbc)
-    - FreeSound (fsd)
-    - SoundBible (sb)
-    - AudioSet strongly labeled without AudioCaps (as_noac)
-    - FreeSound without Clotho (fsd_nocl)
+    - AudioSet strongly labeled ("audioset")
+    - BBC Sound Effects ("bbc")
+    - FreeSound ("freesound")
+    - SoundBible ("soundbible")
+    - AudioSet strongly labeled without AudioCaps ("audioset_no_audiocaps")
+    - FreeSound without Clotho ("freesound_no_clotho")
 
     .. warning::
         WavCaps download is experimental ; it requires a lot of disk space and can take very long time to download and extract, so you might expect errors.
@@ -110,7 +108,7 @@ class WavCaps(AACDataset[WavCapsItem]):
         root: Union[str, Path, None] = None,
         subset: str = WavCapsCard.DEFAULT_SUBSET,
         download: bool = False,
-        transform: Optional[Callable] = None,
+        transform: Optional[Callable[[WavCapsItem], Any]] = None,
         verbose: int = 0,
         force_download: bool = False,
         verify_files: bool = False,
@@ -127,7 +125,7 @@ class WavCaps(AACDataset[WavCapsItem]):
             The data will be stored in the 'MACS' subdirectory.
             defaults to ".".
         :param subset: The subset of the dataset. Can be one of :attr:`~WavCapsCard.SUBSETS`.
-            defaults to "as".
+            defaults to "audioset".
         :param download: Download the dataset if download=True and if the dataset is not already downloaded.
             defaults to False.
         :param transform: The transform to apply to the global dict item. This transform is applied only in getitem method when argument is an integer.
@@ -177,7 +175,6 @@ class WavCaps(AACDataset[WavCapsItem]):
             subset=subset,
             verbose=verbose,
             hf_cache_dir=hf_cache_dir,
-            repo_id=repo_id,
             revision=revision,
         )
 

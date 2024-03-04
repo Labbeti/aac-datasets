@@ -7,7 +7,7 @@ The original AudioCaps dataset contains only 3 subsets : `train`, `val` and `tes
 
 A fourth subset named `train_v2` is another version of the train subset where captions has been manually corrected or deleted. For more details, see paper "CoNeTTE: An efficient Audio Captioning system leveraging multiple datasets with Task Embedding".
 
-Clotho 
+Clotho
 ########################
 Clotho contains 7 subsets:
 
@@ -28,12 +28,12 @@ WavCaps
 ########################
 WavCaps contains 6 subsets:
 
-- `as` : contains 108K files from AudioSet strongly labeled dataset,
+- `audioset` : contains 108K files from AudioSet strongly labeled dataset,
 - `bbc` : contains 31K files from BBC Sound Effects website,
-- `fsd` : contains 262K files from FreeSound website,
-- `sb` : contains 1.2K files from SoundBible website,
-- `as_noac` : contains 99K files from as subset without overlapping data with AudioCaps,
-- `fsd_nocl` : contains 258K files from fsd subset without overlapping data with Clotho (except for subsets of task 6a).
+- `freesound` : contains 262K files from FreeSound website,
+- `soundbible` : contains 1.2K files from SoundBible website,
+- `audioset_no_audiocaps` : contains 99K files from as subset without overlapping data with AudioCaps,
+- `freesound_no_clotho` : contains 258K files from fsd subset without overlapping data with Clotho (except for subsets of task 6a).
 
 Since WavCaps does not contains validation or testing subsets, all of their data is used as additional training data.
-The subsets as_noac and `fsd_nocl` are provided to avoid biases when evaluating on AudioCaps or Clotho datasets.
+The subsets as_noac and `freesound_no_clotho` are provided to avoid biases when evaluating on AudioCaps or Clotho datasets.
