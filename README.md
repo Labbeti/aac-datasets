@@ -177,7 +177,7 @@ If you use this software, please consider cite it as "Labbe, E. (2013). aac-data
 ```
 @software{
     Labbe_aac_datasets_2024,
-    author = {Labbé, Etienne},
+    author = {Labbé, Étienne},
     license = {MIT},
     month = {03},
     title = {{aac-datasets}},
@@ -189,4 +189,4 @@ If you use this software, please consider cite it as "Labbe, E. (2013). aac-data
 
 ## Contact
 Maintainer:
-- Etienne Labbé "Labbeti": labbeti.pub@gmail.com
+- Étienne Labbé "Labbeti": labbeti.pub@gmail.com
