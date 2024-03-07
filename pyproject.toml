@@ -1,7 +1,7 @@
 [project]
 name = "aac-datasets"
 authors = [
-    {name = "Etienne Labbé (Labbeti)", email = "labbeti.pub@gmail.com"},
+    {name = "Étienne Labbé (Labbeti)", email = "labbeti.pub@gmail.com"},
 ]
 description = "Audio Captioning datasets for PyTorch."
 readme = "README.md"
@@ -23,7 +23,7 @@ classifiers = [
     "Operating System :: POSIX :: Linux",
 ]
 maintainers = [
-    {name = "Etienne Labbé (Labbeti)", email = "labbeti.pub@gmail.com"},
+    {name = "Étienne Labbé (Labbeti)", email = "labbeti.pub@gmail.com"},
 ]
 dynamic = ["version", "dependencies", "optional-dependencies"]
 
