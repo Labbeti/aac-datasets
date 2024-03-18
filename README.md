@@ -189,4 +189,4 @@ If you use this software, please consider cite it as "Labbe, E. (2013). aac-data
 
 ## Contact
 Maintainer:
-- Étienne Labbé "Labbeti": labbeti.pub@gmail.com
+- [Étienne Labbé](https://labbeti.github.io/) "Labbeti": labbeti.pub@gmail.com
