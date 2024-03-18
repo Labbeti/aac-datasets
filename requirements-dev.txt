@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-black==23.12.1
+black==23.3.0
 click==8.0.4
 flake8==4.0.1
 ipykernel==6.9.1
