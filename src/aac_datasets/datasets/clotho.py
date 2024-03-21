@@ -32,6 +32,7 @@ class ClothoItem(TypedDict):
     index: int
     subset: str
     sr: NotRequired[int]
+    duration: NotRequired[float]
     # Clotho-specific attributes
     keywords: NotRequired[List[str]]
     sound_id: NotRequired[str]  # warning: some files contains "Not found"
@@ -185,6 +186,7 @@ class Clotho(AACDataset[ClothoItem]):
             removed_columns = (
                 "audio",
                 "sr",
+                "duration",
                 "fname",
                 "sound_id",
                 "keywords",
@@ -195,6 +197,7 @@ class Clotho(AACDataset[ClothoItem]):
             )
         else:
             removed_columns = ()
+
         for name in removed_columns:
             column_names.remove(name)
 

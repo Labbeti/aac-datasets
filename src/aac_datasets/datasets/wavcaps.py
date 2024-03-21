@@ -30,6 +30,7 @@ class WavCapsItem(TypedDict):
     index: int
     subset: str
     sr: int
+    duration: float
     # WavCaps-specific attributes
     author: Optional[str]  # FSD and SB
     description: Optional[str]  # BBC, FSD and SB only

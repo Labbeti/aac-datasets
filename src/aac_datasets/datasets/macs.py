@@ -33,6 +33,7 @@ class MACSItem(TypedDict):
     index: int
     subset: str
     sr: int
+    duration: float
     # MACS-specific attributes
     annotators_ids: List[str]
     competences: List[float]

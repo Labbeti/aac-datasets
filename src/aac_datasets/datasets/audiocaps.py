@@ -40,6 +40,7 @@ class AudioCapsItem(TypedDict):
     index: int
     subset: str
     sr: int
+    duration: float
     # AudioCaps-specific attributes
     audiocaps_ids: List[int]
     start_time: int
