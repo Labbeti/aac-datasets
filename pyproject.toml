@@ -1,7 +1,7 @@
 [project]
 name = "aac-datasets"
 authors = [
-    {name = "Etienne Labbé (Labbeti)", email = "labbeti.pub@gmail.com"},
+    {name = "Étienne Labbé (Labbeti)", email = "labbeti.pub@gmail.com"},
 ]
 description = "Audio Captioning datasets for PyTorch."
 readme = "README.md"
@@ -17,11 +17,13 @@ classifiers = [
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "Topic :: Scientific/Engineering",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Operating System :: POSIX :: Linux",
 ]
 maintainers = [
-    {name = "Etienne Labbé (Labbeti)", email = "labbeti.pub@gmail.com"},
+    {name = "Étienne Labbé (Labbeti)", email = "labbeti.pub@gmail.com"},
 ]
 dynamic = ["version", "dependencies", "optional-dependencies"]
 
@@ -30,6 +32,7 @@ Homepage = "https://pypi.org/project/aac-datasets/"
 Documentation = "https://aac-datasets.readthedocs.io/"
 Repository = "https://github.com/Labbeti/aac-datasets.git"
 Changelog = "https://github.com/Labbeti/aac-datasets/blob/main/CHANGELOG.md"
+Tracker = "https://github.com/Labbeti/aac-datasets/issues"
 
 [project.scripts]
 aac-datasets = "aac_datasets.__main__:_print_usage"

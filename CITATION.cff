@@ -5,7 +5,7 @@ title: aac-datasets
 message: 'If you use this software, please cite it as below.'
 type: software
 authors:
-  - given-names: Etienne
+  - given-names: Étienne
     family-names: Labbé
     email: labbeti.pub@gmail.com
     affiliation: IRIT
@@ -22,5 +22,5 @@ keywords:
   - captioning
   - audio-captioning
 license: MIT
-version: 0.5.1
-date-released: '2024-03-04'
+version: 0.5.2
+date-released: '2024-03-23'

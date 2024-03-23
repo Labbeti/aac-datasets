@@ -28,11 +28,34 @@ except ImportError:
 
 from torch import Tensor
 from torch.utils.data.dataset import Dataset
+from typing_extensions import TypeGuard
+
+from aac_datasets.utils.type_checks import (
+    is_iterable_bool,
+    is_iterable_int,
+    is_iterable_str,
+)
 
 pylog = logging.getLogger(__name__)
 
-
 ItemType = TypeVar("ItemType", covariant=True)
+IndexType = Union[int, Iterable[int], Iterable[bool], Tensor, slice, None]
+ColumnType = Union[str, Iterable[str], None]
+
+
+def _is_index(index: Any) -> TypeGuard[IndexType]:
+    return (
+        isinstance(index, int)
+        or is_iterable_int(index)
+        or is_iterable_bool(index)
+        or isinstance(index, slice)
+        or index is None
+        or (isinstance(index, Tensor) and not index.is_floating_point())
+    )
+
+
+def _is_column(column: Any) -> TypeGuard[ColumnType]:
+    return isinstance(column, str) or is_iterable_str(column) or column is None
 
 
 class AACDataset(Generic[ItemType], Dataset[ItemType]):
@@ -154,29 +177,33 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
         ...
 
     @overload
-    def at(self, index: Union[Iterable[int], slice, None], column: str) -> List:
+    def at(
+        self, index: Union[Iterable[int], Iterable[bool], slice, None], column: str
+    ) -> List:
         ...
 
     @overload
-    def at(self, index: Union[Iterable[int], slice, None]) -> Dict[str, List]:
+    def at(
+        self, index: Union[Iterable[int], Iterable[bool], slice, None]
+    ) -> Dict[str, List]:
         ...
 
     @overload
     def at(
         self,
-        index: Union[Iterable[int], slice, None],
+        index: Union[Iterable[int], Iterable[bool], slice, None],
         column: Union[Iterable[str], None],
     ) -> Dict[str, List]:
         ...
 
     @overload
-    def at(self, index: Any, column: Any) -> Any:
+    def at(self, index: IndexType, column: ColumnType) -> Any:
         ...
 
     def at(
         self,
-        index: Union[int, Iterable[int], None, slice] = None,
-        column: Union[str, Iterable[str], None] = None,
+        index: IndexType = None,
+        column: ColumnType = None,
     ) -> Any:
         """Get a specific data field.
 
@@ -366,21 +393,30 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
     def __getitem__(self, index: Any) -> Any:
         ...
 
-    def __getitem__(self, index: Any) -> Any:
+    def __getitem__(self, index: Union[IndexType, Tuple[IndexType, ColumnType]]) -> Any:
         if (
             isinstance(index, tuple)
             and len(index) == 2
-            and (isinstance(index[1], (str, Iterable)) or index[1] is None)
+            and _is_index(index[0])
+            and _is_column(index[1])
         ):
             index, column = index
         else:
             column = None
 
-        item = self.at(index, column)
+        item = self.at(index, column)  # type: ignore
+
         if (
             isinstance(index, int)
             and self._transform is not None
-            and (column is None or set(column) == set(self._columns))
+            and (
+                column is None
+                or (
+                    isinstance(column, Iterable)
+                    and not isinstance(column, str)
+                    and set(column) == set(self._columns)
+                )
+            )
         ):
             item = self._transform(item)  # type: ignore
         return item
