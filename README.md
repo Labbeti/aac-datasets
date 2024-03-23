@@ -74,14 +74,14 @@ aac-datasets-download --root "." clotho --subsets "dev"
 | Subsets | `train`, `val`, `test` | `dev`, `val`, `eval`, `dcase_aac_test`, `dcase_aac_analysis`, `dcase_t2a_audio`, `dcase_t2a_captions` | `full` | `as`, `as_noac`, `bbc`, `fsd`, `fsd_nocl`, `sb` |
 | Sample rate (kHz) | 32 | 44.1 | 48 | 32 |
 | Estimated size (GB) | 43 | 53 | 13 | 941 |
-| Audio source | AudioSet | FreeSound | TAU Urban Acoustic Scenes 2019 | AudioSet, BBC Sound Effects, FreeSound, SoundBible | -->
+| Audio source | AudioSet | Freesound | TAU Urban Acoustic Scenes 2019 | AudioSet, BBC Sound Effects, Freesound, SoundBible | -->
 
 | Dataset | Sampling<br>rate (kHz) | Estimated<br>size (GB) | Source | Subsets |
 |:---:|:---:|:---:|:---:|:---:|
 | AudioCaps | 32 | 43 | AudioSet | `train`<br>`val`<br>`test`<br>`train_v2` |
 | Clotho | 44.1 | 53  | Freesound | `dev`<br>`val`<br>`eval`<br>`dcase_aac_test`<br>`dcase_aac_analysis`<br>`dcase_t2a_audio`<br>`dcase_t2a_captions` |
 | MACS | 48 | 13 | TAU Urban Acoustic Scenes 2019 | `full` |
-| WavCaps | 32 | 941 | AudioSet<br>BBC Sound Effects<br>FreeSound<br>SoundBible | `as`<br>`as_noac`<br>`bbc`<br>`fsd`<br>`fsd_nocl`<br>`sb` |
+| WavCaps | 32 | 941 | AudioSet<br>BBC Sound Effects<br>Freesound<br>SoundBible | `audioset`<br>`audioset_no_audiocaps`<br>`bbc`<br>`freesound`<br>`freesound_no_clotho`<br>`freesound_no_clotho_v2`<br>`soundbible` |
 
 For Clotho, the **dev** subset should be used for training, val for validation and eval for testing.
 
@@ -182,7 +182,7 @@ If you use this software, please consider cite it as "Labbe, E. (2013). aac-data
     month = {03},
     title = {{aac-datasets}},
     url = {https://github.com/Labbeti/aac-datasets/},
-    version = {0.5.1},
+    version = {0.5.2},
     year = {2024}
 }
 ```

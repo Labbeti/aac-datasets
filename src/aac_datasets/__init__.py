@@ -12,7 +12,7 @@ __license__ = "MIT"
 __maintainer__ = "Étienne Labbé (Labbeti)"
 __name__ = "aac-datasets"
 __status__ = "Development"
-__version__ = "0.5.1"
+__version__ = "0.5.2"
 
 
 from .datasets.audiocaps import AudioCaps

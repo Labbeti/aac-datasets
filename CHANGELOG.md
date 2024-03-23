@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.5.2] UNRELEASED
+## [0.5.2] 2024-03-23
 ### Added
 - `freesound_no_clotho_v2` subset to WavCaps to avoid all bias with Clotho test and analysis subsets.
 
