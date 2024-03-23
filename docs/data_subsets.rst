@@ -53,7 +53,7 @@ WavCaps contains 6 subsets:
 - `freesound_no_clotho` : contains 258K files from fsd subset without overlapping data with Clotho (except for subsets of task 6a).
 
 Since WavCaps does not contains validation or testing subsets, all of their data is used as additional training data.
-The subsets as_noac and `freesound_no_clotho` are provided to avoid biases when evaluating on AudioCaps or Clotho datasets.
+The subsets `audioset_no_audiocaps` and `freesound_no_clotho` are provided to avoid biases when evaluating on AudioCaps or Clotho datasets (except for Clotho `dcase_aac_test`).
 
 Datasets overlaps
 ########################
