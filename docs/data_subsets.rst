@@ -60,23 +60,23 @@ Datasets overlaps
 Audio-Text datasets typically comme from other audio classification datasets or similar websites, which might lead to overlaps that can create data leaks in your training.
 Here is a list of known overlaps between differents sound events that should be aware of:
 
-.. list-table:: Clotho subsets names
+.. list-table:: Overlaps between sound event datasets
    :header-rows: 1
 
    * - Dataset A
      - Dataset B
      - Proportion of A in B (%)
    * - AudioCaps
-     - AudioSet-train
+     - AudioSet (train)
      - 100
    * - Clotho
-     - FSD50K
+     - FSD50K (train)
      - 5.4
    * - AudioCaps
-     - WavCaps
+     - WavCaps (audioset)
      - 17.6
    * - Clotho
-     - WavCaps
+     - WavCaps (freesound)
      - 89.0
 
 If you do not take this overlaps into account, you might overestimate your results of your AAC model.
