@@ -5,6 +5,7 @@ Download a dataset
 ########################
 
 You can download each dataset subset by using the download=True option in dataset constructor.
+
 .. :caption: Download Clotho development dataset (python).
 
 .. code-block:: python
@@ -14,6 +15,7 @@ You can download each dataset subset by using the download=True option in datase
     _ = Clotho("/my/path/to/data", subset="dev", download=True)
 
 Or by the command line :
+
 .. :caption: Download Clotho development dataset (command line).
 
 .. code-block:: bash
