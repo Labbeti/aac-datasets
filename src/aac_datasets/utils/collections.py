@@ -2,16 +2,18 @@
 # -*- coding: utf-8 -*-
 
 from typing import (
+    Any,
     Dict,
     Iterable,
     List,
-    Literal,
     Mapping,
     Sequence,
     TypeVar,
     Union,
     overload,
 )
+
+from typing_extensions import Literal
 
 K = TypeVar("K")
 T = TypeVar("T")
@@ -26,7 +28,7 @@ KeyMode = Literal["intersect", "same", "union"]
 def list_dict_to_dict_list(
     lst: Sequence[Mapping[K, V]],
     key_mode: Literal["intersect", "same"],
-    default_val: W = None,
+    default_val: Any = None,
 ) -> Dict[K, List[V]]:
     ...
 
@@ -90,6 +92,6 @@ def union_lists(lst_of_lst: Iterable[Iterable[T]]) -> List[T]:
     """Performs union of elements in lists (like set union), but keep their original order."""
     out = {}
     for lst_i in lst_of_lst:
-        out |= dict.fromkeys(lst_i)
+        out.update(dict.fromkeys(lst_i))
     out = list(out)
     return out
