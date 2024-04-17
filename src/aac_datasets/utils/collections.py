@@ -1,24 +1,59 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from typing import Any, Dict, Iterable, List, Mapping, Sequence, TypeVar
+from typing import (
+    Dict,
+    Iterable,
+    List,
+    Literal,
+    Mapping,
+    Sequence,
+    TypeVar,
+    Union,
+    overload,
+)
 
+K = TypeVar("K")
 T = TypeVar("T")
+V = TypeVar("V")
+W = TypeVar("W")
+
+KEY_MODES = ("same", "intersect", "union")
+KeyMode = Literal["intersect", "same", "union"]
+
+
+@overload
+def list_dict_to_dict_list(
+    lst: Sequence[Mapping[K, V]],
+    key_mode: Literal["intersect", "same"],
+    default_val: W = None,
+) -> Dict[K, List[V]]:
+    ...
+
+
+@overload
+def list_dict_to_dict_list(
+    lst: Sequence[Mapping[K, V]],
+    key_mode: Literal["union"] = "union",
+    default_val: W = None,
+) -> Dict[K, List[Union[V, W]]]:
+    ...
 
 
 def list_dict_to_dict_list(
-    lst: Sequence[Mapping[str, T]],
-    key_mode: str = "intersect",
-    default: Any = None,
-) -> Dict[str, List[T]]:
+    lst: Sequence[Mapping[K, V]],
+    key_mode: KeyMode = "union",
+    default_val: W = None,
+) -> Dict[K, List[Union[V, W]]]:
     """Convert list of dicts to dict of lists.
 
-    :param lst: The list of dict to merge.
-    :param key_mode: Can be "same" or "intersect".
-        If "same", all the dictionaries must contains the same keys otherwise a ValueError will be raised.
-        If "intersect", only the intersection of all keys will be used in output.
-        If "union", the output dict will contains the union of all keys, and the missing value will use the argument default.
-    :returns: The dictionary of lists.
+    Args:
+        lst: The list of dict to merge.
+        key_mode: Can be "same" or "intersect".
+            If "same", all the dictionaries must contains the same keys otherwise a ValueError will be raised.
+            If "intersect", only the intersection of all keys will be used in output.
+            If "union", the output dict will contains the union of all keys, and the missing value will use the argument default_val.
+        default_val: Default value of an element when key_mode is "union". defaults to None.
     """
     if len(lst) <= 0:
         return {}
@@ -32,12 +67,11 @@ def list_dict_to_dict_list(
     elif key_mode == "union":
         keys = union_lists([item.keys() for item in lst])
     else:
-        KEY_MODES = ("same", "intersect", "union")
         raise ValueError(
             f"Invalid argument key_mode={key_mode}. (expected one of {KEY_MODES})"
         )
 
-    return {key: [item.get(key, default) for item in lst] for key in keys}
+    return {key: [item.get(key, default_val) for item in lst] for key in keys}
 
 
 def intersect_lists(lst_of_lst: Sequence[Iterable[T]]) -> List[T]:

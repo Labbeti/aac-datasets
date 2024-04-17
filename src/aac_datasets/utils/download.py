@@ -4,14 +4,11 @@
 import hashlib
 import os
 import os.path as osp
-
 from pathlib import Path
-from typing import List, Union
+from typing import List, Literal, Union
 
 import tqdm
-
 from torch.hub import download_url_to_file
-
 
 HASH_TYPES = ("sha256", "md5")
 DEFAULT_CHUNK_SIZE = 256 * 1024**2  # 256 MiB
@@ -70,7 +67,7 @@ def safe_rmdir(
 
 def hash_file(
     fpath: Union[str, Path],
-    hash_type: str,
+    hash_type: Literal["sha256", "md5"],
     chunk_size: int = DEFAULT_CHUNK_SIZE,
 ) -> str:
     """Return the hash value for a file.
