@@ -6,7 +6,6 @@ from argparse import ArgumentParser, Namespace
 
 import yaml
 
-import aac_datasets
 from aac_datasets.datasets.functional.audiocaps import (
     AudioCapsCard,
     download_audiocaps_datasets,
@@ -17,18 +16,14 @@ from aac_datasets.datasets.functional.wavcaps import (
     WavCapsCard,
     download_wavcaps_datasets,
 )
-from aac_datasets.utils.cmdline import (
-    _str_to_bool,
-    _str_to_opt_int,
-    _str_to_opt_str,
-    setup_logging,
-)
+from aac_datasets.utils.cmdline import _str_to_bool, _str_to_opt_int, _str_to_opt_str
 from aac_datasets.utils.globals import (
     get_default_ffmpeg_path,
     get_default_root,
     get_default_ytdlp_path,
     get_default_zip_path,
 )
+from aac_datasets.utils.log_utils import setup_logging_verbose
 
 pylog = logging.getLogger(__name__)
 
@@ -175,7 +170,7 @@ def _get_main_download_args() -> Namespace:
 
 def _main_download() -> None:
     args = _get_main_download_args()
-    setup_logging(aac_datasets.__package__, args.verbose)
+    setup_logging_verbose("aac_datasets", args.verbose)
 
     if args.verbose >= 2:
         pylog.debug(yaml.dump({"Arguments": args.__dict__}, sort_keys=False))
