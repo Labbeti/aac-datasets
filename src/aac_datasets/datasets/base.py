@@ -55,7 +55,7 @@ def _is_index(index: Any) -> TypeGuard[IndexType]:
 
 
 def _is_column(column: Any) -> TypeGuard[ColumnType]:
-    return isinstance(column, str) or is_iterable_str(column) or column is None
+    return is_iterable_str(column, accept_str=True) or column is None
 
 
 class AACDataset(Generic[ItemType], Dataset[ItemType]):
