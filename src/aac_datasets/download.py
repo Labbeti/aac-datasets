@@ -2,25 +2,17 @@
 # -*- coding: utf-8 -*-
 
 import logging
-
 from argparse import ArgumentParser, Namespace
 
 import yaml
 
 import aac_datasets
-
 from aac_datasets.datasets.functional.audiocaps import (
     AudioCapsCard,
     download_audiocaps_datasets,
 )
-from aac_datasets.datasets.functional.clotho import (
-    ClothoCard,
-    download_clotho_datasets,
-)
-from aac_datasets.datasets.functional.macs import (
-    MACSCard,
-    download_macs_datasets,
-)
+from aac_datasets.datasets.functional.clotho import ClothoCard, download_clotho_datasets
+from aac_datasets.datasets.functional.macs import MACSCard, download_macs_datasets
 from aac_datasets.datasets.functional.wavcaps import (
     WavCapsCard,
     download_wavcaps_datasets,
@@ -29,15 +21,14 @@ from aac_datasets.utils.cmdline import (
     _str_to_bool,
     _str_to_opt_int,
     _str_to_opt_str,
-    _setup_logging,
+    setup_logging,
 )
 from aac_datasets.utils.globals import (
-    get_default_root,
     get_default_ffmpeg_path,
+    get_default_root,
     get_default_ytdlp_path,
     get_default_zip_path,
 )
-
 
 pylog = logging.getLogger(__name__)
 
@@ -184,7 +175,7 @@ def _get_main_download_args() -> Namespace:
 
 def _main_download() -> None:
     args = _get_main_download_args()
-    _setup_logging(aac_datasets.__package__, args.verbose)
+    setup_logging(aac_datasets.__package__, args.verbose)
 
     if args.verbose >= 2:
         pylog.debug(yaml.dump({"Arguments": args.__dict__}, sort_keys=False))
