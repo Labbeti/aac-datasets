@@ -3,7 +3,7 @@
 
 import logging
 import sys
-from functools import cache
+from functools import lru_cache
 from logging import Logger
 from types import ModuleType
 from typing import List, Optional, Sequence, Union
@@ -13,7 +13,7 @@ pylog = logging.getLogger(__name__)
 DEFAULT_FMT = "[%(asctime)s][%(name)s][%(levelname)s] - %(message)s"
 
 
-@cache
+@lru_cache(maxsize=None)
 def warn_once(msg: str, logger: Union[Logger, ModuleType, None]) -> None:
     if logger is None:
         pylog = logging.root
