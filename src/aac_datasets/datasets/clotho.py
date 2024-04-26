@@ -83,7 +83,6 @@ class Clotho(AACDataset[ClothoItem]):
                 ├── clotho_metadata_validation.csv
                 ├── retrieval_audio_metadata.csv
                 └── retrieval_captions.csv
-
     """
 
     # Common globals

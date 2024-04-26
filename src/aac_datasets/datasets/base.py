@@ -44,6 +44,8 @@ ItemType = TypeVar("ItemType", covariant=True)
 IndexType = Union[int, Iterable[int], Iterable[bool], Tensor, slice, None]
 ColumnType = Union[str, Iterable[str], None]
 
+_IDX_TYPES = ("int", "Iterable[int]", "Iterable[bool]", "Tensor", "slice", "None")
+
 
 def _is_index(index: Any) -> TypeGuard[IndexType]:
     return (
@@ -70,7 +72,7 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
         transform: Optional[Callable[[ItemType], Any]] = None,
         column_names: Optional[Iterable[str]] = None,
         flat_captions: bool = False,
-        sr: Optional[int] = None,
+        sr: Union[int, Iterable[int], None] = None,
         verbose: int = 0,
     ) -> None:
         if raw_data is None:
@@ -78,6 +80,8 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
         if column_names is None:
             column_names = raw_data.keys()
         column_names = list(column_names)
+        if isinstance(sr, Iterable):
+            sr = list(sr)
 
         if len(raw_data) > 1:
             size = len(next(iter(raw_data.values())))
@@ -149,7 +153,7 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
         return len(self), len(self.column_names)
 
     @property
-    def sr(self) -> Optional[int]:
+    def sr(self) -> Union[int, List[int], None]:
         return self._sr
 
     @property
@@ -173,6 +177,10 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
     def transform(self, transform: Optional[Callable[[ItemType], Any]]) -> None:
         self._transform = transform
 
+    @verbose.setter
+    def verbose(self, verbose: int) -> None:
+        self._verbose = verbose
+
     # Public methods
     @overload
     def at(self, index: int) -> ItemType:
@@ -186,15 +194,9 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
 
     @overload
     def at(
-        self, index: Union[Iterable[int], Iterable[bool], slice, None]
-    ) -> Dict[str, List]:
-        ...
-
-    @overload
-    def at(
         self,
         index: Union[Iterable[int], Iterable[bool], slice, None],
-        column: Union[Iterable[str], None],
+        column: Union[Iterable[str], None] = None,
     ) -> Dict[str, List]:
         ...
 
@@ -215,15 +217,21 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
         """
         if index is None:
             index = slice(None)
+
         elif isinstance(index, Tensor):
-            if index.ndim not in (0, 1):
-                raise ValueError(
-                    f"Invalid number of dimensions for index argument. (found index.ndim={index.ndim} but expected 0 or 1)"
-                )
-            elif index.is_floating_point():
-                raise TypeError(
-                    "Invalid tensor dtype. (found floating-point tensor but expected integer tensor)"
-                )
+            if __debug__:
+                if index.ndim not in (0, 1):
+                    raise ValueError(
+                        f"Invalid number of dimensions for index argument. (found index.ndim={index.ndim} but expected 0 or 1)"
+                    )
+                elif index.is_floating_point():
+                    raise TypeError(
+                        "Invalid tensor dtype. (found floating-point tensor but expected integer or bool tensor)"
+                    )
+                elif index.is_complex():
+                    raise TypeError(
+                        "Invalid tensor dtype. (found complex tensor but expected integer or bool tensor)"
+                    )
             index = index.tolist()
 
         if column is None:
@@ -248,8 +256,7 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
                         f"The length of the mask ({len(index)}) does not match the length of the dataset ({len(self)})."
                     )
                 index = [i for i, idx_i in enumerate(index) if idx_i]
-
-            elif not is_iterable_int(index):
+            elif __debug__ and not is_iterable_int(index):
                 raise TypeError(
                     f"Invalid input type for index={index}. (expected Iterable[int], not Iterable[{index[0].__class__.__name__}])"
                 )
@@ -264,13 +271,12 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
             ]
             return values
 
-        if isinstance(index, int):
-            return self._load_online_value(column, index)
-        else:
-            IDX_TYPES = ("int", "Iterable[int]", "None", "slice", "Tensor")
+        if __debug__ and not isinstance(index, int):
             raise TypeError(
-                f"Invalid argument type {type(index)}. (expected one of {IDX_TYPES})"
+                f"Invalid argument type {type(index)}. (expected one of {_IDX_TYPES})"
             )
+
+        return self._load_online_value(column, index)
 
     def has_raw_column(self, column: str) -> bool:
         """Returns True if column name exists in raw data."""
@@ -315,18 +321,18 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
 
     def add_raw_column(
         self,
-        column: str,
+        column_name: str,
         column_data: List[Any],
         allow_replace: bool = False,
     ) -> None:
         """Add a new raw column to this dataset."""
-        if not allow_replace and column in self._raw_data:
+        if not allow_replace and column_name in self._raw_data:
             raise ValueError(
-                f"Column '{column}' already exists. Please choose another name or set allow_replace arg to True."
+                f"Column '{column_name}' already exists. Please choose another name or set allow_replace arg to True."
             )
         if len(self._raw_data) > 0 and len(column_data) != len(self):
-            raise ValueError(f"Invalid number of rows in column '{column}'.")
-        self._raw_data[column] = column_data
+            raise ValueError(f"Invalid number of rows in column '{column_name}'.")
+        self._raw_data[column_name] = column_data
 
     def add_online_column(
         self,
@@ -487,6 +493,9 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
         fpath = self.at(index, "fpath")
         audio_and_sr: Tuple[Tensor, int] = torchaudio.load(fpath)  # type: ignore
         audio, sr = audio_and_sr
+
+        if not __debug__:
+            return audio
 
         # Sanity check
         if audio.nelement() == 0:
