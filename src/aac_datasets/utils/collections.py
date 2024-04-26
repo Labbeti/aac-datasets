@@ -3,10 +3,12 @@
 
 from typing import (
     Any,
+    Callable,
     Dict,
     Iterable,
     List,
     Mapping,
+    Optional,
     Sequence,
     TypeVar,
     Union,
@@ -17,11 +19,22 @@ from typing_extensions import Literal
 
 K = TypeVar("K")
 T = TypeVar("T")
+U = TypeVar("U")
 V = TypeVar("V")
 W = TypeVar("W")
 
 KEY_MODES = ("same", "intersect", "union")
 KeyMode = Literal["intersect", "same", "union"]
+
+
+def all_eq(it: Iterable[T], eq_fn: Optional[Callable[[T, T], bool]] = None) -> bool:
+    """Returns true if all elements in inputs are equal."""
+    it = list(it)
+    first = it[0]
+    if eq_fn is None:
+        return all(first == elt for elt in it)
+    else:
+        return all(eq_fn(first, elt) for elt in it)
 
 
 @overload
@@ -95,3 +108,60 @@ def union_lists(lst_of_lst: Iterable[Iterable[T]]) -> List[T]:
         out.update(dict.fromkeys(lst_i))
     out = list(out)
     return out
+
+
+@overload
+def dict_list_to_list_dict(
+    dic: Mapping[T, Sequence[U]],
+    key_mode: Literal["same", "intersect"],
+    default_val: Any = None,
+) -> List[Dict[T, U]]:
+    ...
+
+
+@overload
+def dict_list_to_list_dict(
+    dic: Mapping[T, Sequence[U]],
+    key_mode: Literal["union"] = "union",
+    default_val: W = None,
+) -> List[Dict[T, Union[U, W]]]:
+    ...
+
+
+def dict_list_to_list_dict(
+    dic: Mapping[T, Sequence[U]],
+    key_mode: KeyMode = "union",
+    default_val: W = None,
+) -> List[Dict[T, Union[U, W]]]:
+    """Convert dict of lists with same sizes to list of dicts.
+
+    Example 1
+    ----------
+    ```
+    >>> dic = {"a": [1, 2], "b": [3, 4]}
+    >>> dict_list_to_list_dict(dic)
+    ... [{"a": 1, "b": 3}, {"a": 2, "b": 4}]
+    ```
+    """
+    if len(dic) == 0:
+        return []
+
+    lengths = [len(seq) for seq in dic.values()]
+    if key_mode == "same":
+        if not all_eq(lengths):
+            raise ValueError("Invalid sequences for batch.")
+        length = lengths[0]
+    elif key_mode == "intersect":
+        length = min(lengths)
+    elif key_mode == "union":
+        length = max(lengths)
+    else:
+        raise ValueError(
+            f"Invalid argument key_mode={key_mode}. (expected one of {KEY_MODES})"
+        )
+
+    result = [
+        {k: (v[i] if i < len(v) else default_val) for k, v in dic.items()}
+        for i in range(length)
+    ]
+    return result

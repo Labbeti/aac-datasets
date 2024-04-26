@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import copy
 import logging
 import os.path as osp
 from typing import (
@@ -30,6 +31,7 @@ from torch import Tensor
 from torch.utils.data.dataset import Dataset
 from typing_extensions import TypeGuard
 
+from aac_datasets.utils.collections import dict_list_to_list_dict
 from aac_datasets.utils.type_checks import (
     is_iterable_bool,
     is_iterable_int,
@@ -368,6 +370,12 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
         fn = self._online_fns.pop(column)
         self.add_raw_column(column, column_data, allow_replace=allow_replace)
         return fn
+
+    def to_dict(self) -> Dict[str, List[Any]]:
+        return copy.copy(self._raw_data)
+
+    def to_list(self) -> List[ItemType]:
+        return dict_list_to_list_dict(self._raw_data, key_mode="same")
 
     # Magic methods
     @overload
