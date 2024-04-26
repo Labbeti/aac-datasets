@@ -240,14 +240,14 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
 
         if isinstance(index, Iterable):
             index = list(index)
-            if all(isinstance(idx_i, bool) for idx_i in index):
+            if is_iterable_bool(index):
                 if len(index) != len(self):
                     raise IndexError(
                         f"The length of the mask ({len(index)}) does not match the length of the dataset ({len(self)})."
                     )
                 index = [i for i, idx_i in enumerate(index) if idx_i]
 
-            elif not all(isinstance(idx_i, int) for idx_i in index):
+            elif not is_iterable_int(index):
                 raise TypeError(
                     f"Invalid input type for index={index}. (expected Iterable[int], not Iterable[{index[0].__class__.__name__}])"
                 )
