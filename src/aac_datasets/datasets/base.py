@@ -36,6 +36,8 @@ from aac_datasets.utils.type_checks import (
     is_iterable_bool,
     is_iterable_int,
     is_iterable_str,
+    is_list_bool,
+    is_list_int,
 )
 
 pylog = logging.getLogger(__name__)
@@ -250,13 +252,14 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
 
         if isinstance(index, Iterable):
             index = list(index)
-            if is_iterable_bool(index):
+            if is_list_bool(index):
                 if len(index) != len(self):
                     raise IndexError(
                         f"The length of the mask ({len(index)}) does not match the length of the dataset ({len(self)})."
                     )
                 index = [i for i, idx_i in enumerate(index) if idx_i]
-            elif __debug__ and not is_iterable_int(index):
+
+            elif __debug__ and not is_list_int(index):
                 raise TypeError(
                     f"Invalid input type for index={index}. (expected Iterable[int], not Iterable[{index[0].__class__.__name__}])"
                 )
@@ -387,7 +390,7 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
 
     def to_list(self, load_online_values: bool = False) -> List[ItemType]:
         raw_data = self.to_dict(load_online_values)
-        return dict_list_to_list_dict(raw_data, key_mode="same")
+        return dict_list_to_list_dict(raw_data, key_mode="same")  # type: ignore
 
     # Magic methods
     @overload
