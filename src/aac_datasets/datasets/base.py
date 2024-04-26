@@ -371,11 +371,17 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
         self.add_raw_column(column, column_data, allow_replace=allow_replace)
         return fn
 
-    def to_dict(self) -> Dict[str, List[Any]]:
-        return copy.copy(self._raw_data)
+    def to_dict(self, load_online_values: bool = False) -> Dict[str, List[Any]]:
+        raw_data = copy.copy(self._raw_data)
+        if load_online_values:
+            for column_name in self._online_fns.keys():
+                column_data = self.at(None, column_name)
+                raw_data[column_name] = column_data
+        return raw_data
 
-    def to_list(self) -> List[ItemType]:
-        return dict_list_to_list_dict(self._raw_data, key_mode="same")
+    def to_list(self, load_online_values: bool = False) -> List[ItemType]:
+        raw_data = self.to_dict(load_online_values)
+        return dict_list_to_list_dict(raw_data, key_mode="same")
 
     # Magic methods
     @overload
