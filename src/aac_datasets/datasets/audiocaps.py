@@ -277,6 +277,7 @@ class AudioCaps(AACDataset[AudioCapsItem]):
     def _load_audio(self, index: int) -> Tensor:
         if not self._raw_data["is_on_disk"][index]:
             return torch.empty((0,))
+
         fpath = self.at(index, "fpath")
         audio, sr = torchaudio.load(fpath)  # type: ignore
 
