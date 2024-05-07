@@ -168,7 +168,7 @@ def load_wavcaps_dataset(
         else:
             raise ValueError(f"INTERNAL ERROR: Invalid argument subset={subset}.")
 
-        raw_data = load_wavcaps_dataset(
+        raw_data = _load_wavcaps_dataset_impl(
             root=root,
             subset=target_subset,
             verbose=verbose,
@@ -200,83 +200,13 @@ def load_wavcaps_dataset(
         }
         return raw_data
 
-    if not _is_prepared_wavcaps(root, hf_cache_dir, revision, subset, verbose):
-        raise RuntimeError(
-            f"{WavCapsCard.PRETTY_NAME} is not prepared in root={root}. Please use download=True to install it in root."
-        )
-
-    json_dpath = _get_json_dpath(root, hf_cache_dir, revision)
-    json_paths = [
-        ("AudioSet_SL", osp.join(json_dpath, "AudioSet_SL", "as_final.json")),
-        (
-            "BBC_Sound_Effects",
-            osp.join(json_dpath, "BBC_Sound_Effects", "bbc_final.json"),
-        ),
-        ("FreeSound", osp.join(json_dpath, "FreeSound", "fsd_final.json")),
-        ("SoundBible", osp.join(json_dpath, "SoundBible", "sb_final.json")),
-    ]
-    json_paths = [
-        (source, json_path)
-        for source, json_path in json_paths
-        if _use_source(source, subset)
-    ]
-
-    raw_data = {k: [] for k in _WAVCAPS_RAW_COLUMNS + ("source", "fname")}
-    for source, json_path in json_paths:
-        if verbose >= 2:
-            pylog.debug(f"Loading metadata in JSON '{json_path}'...")
-        json_data, size = _load_json(json_path)
-
-        sources = [source] * size
-        json_data.pop("audio", None)
-
-        if source == "AudioSet_SL":
-            ids = json_data["id"]
-            fnames = [id_.replace(".wav", ".flac") for id_ in ids]
-            raw_data["fname"] += fnames
-
-        elif source == "BBC_Sound_Effects":
-            ids = json_data["id"]
-            fnames = [f"{id_}.flac" for id_ in ids]
-            raw_data["fname"] += fnames
-
-        elif source == "FreeSound":
-            ids = json_data["id"]
-            fnames = [f"{id_}.flac" for id_ in ids]
-            raw_data["fname"] += fnames
-
-        elif source == "SoundBible":
-            ids = json_data["id"]
-            fnames = [f"{id_}.flac" for id_ in ids]
-            raw_data["fname"] += fnames
-
-        else:
-            raise RuntimeError(f"Invalid source={source}.")
-
-        for k in _WAVCAPS_RAW_COLUMNS:
-            if k in json_data:
-                raw_data[k] += json_data[k]
-            elif k in _DEFAULT_VALUES:
-                default_val = _DEFAULT_VALUES[k]
-                default_values = [default_val] * size
-                raw_data[k] += default_values
-            elif k in ("audio", "file_name"):
-                pass
-            else:
-                raise RuntimeError(f"Invalid column name {k}. (with source={source})")
-
-        raw_data["source"] += sources
-
-    raw_data.pop("audio")
-    raw_data.pop("file_name")
-    captions = raw_data.pop("caption")
-
-    # Convert str -> List[str] for captions to match other datasets captions type
-    raw_data["captions"] = [[caption] for caption in captions]
-
-    # Force floating-point precision for duration
-    raw_data["duration"] = list(map(float, raw_data["duration"]))
-
+    raw_data = _load_wavcaps_dataset_impl(
+        root=root,
+        subset=subset,
+        verbose=verbose,
+        hf_cache_dir=hf_cache_dir,
+        revision=revision,
+    )
     return raw_data
 
 
@@ -614,6 +544,94 @@ def download_wavcaps_datasets(
             subset=subset,
             **kwargs,
         )
+
+
+def _load_wavcaps_dataset_impl(
+    # Common args
+    root: str,
+    subset: str,
+    verbose: int,
+    # WavCaps-specific args
+    hf_cache_dir: Optional[str],
+    revision: Optional[str],
+) -> Dict[str, List[Any]]:
+    if not _is_prepared_wavcaps(root, hf_cache_dir, revision, subset, verbose):
+        raise RuntimeError(
+            f"{WavCapsCard.PRETTY_NAME} is not prepared in root={root}. Please use download=True to install it in root."
+        )
+
+    json_dpath = _get_json_dpath(root, hf_cache_dir, revision)
+    json_paths = [
+        ("AudioSet_SL", osp.join(json_dpath, "AudioSet_SL", "as_final.json")),
+        (
+            "BBC_Sound_Effects",
+            osp.join(json_dpath, "BBC_Sound_Effects", "bbc_final.json"),
+        ),
+        ("FreeSound", osp.join(json_dpath, "FreeSound", "fsd_final.json")),
+        ("SoundBible", osp.join(json_dpath, "SoundBible", "sb_final.json")),
+    ]
+    json_paths = [
+        (source, json_path)
+        for source, json_path in json_paths
+        if _use_source(source, subset)
+    ]
+
+    raw_data = {k: [] for k in _WAVCAPS_RAW_COLUMNS + ("source", "fname")}
+    for source, json_path in json_paths:
+        if verbose >= 2:
+            pylog.debug(f"Loading metadata in JSON '{json_path}'...")
+        json_data, size = _load_json(json_path)
+
+        sources = [source] * size
+        json_data.pop("audio", None)
+
+        if source == "AudioSet_SL":
+            ids = json_data["id"]
+            fnames = [id_.replace(".wav", ".flac") for id_ in ids]
+            raw_data["fname"] += fnames
+
+        elif source == "BBC_Sound_Effects":
+            ids = json_data["id"]
+            fnames = [f"{id_}.flac" for id_ in ids]
+            raw_data["fname"] += fnames
+
+        elif source == "FreeSound":
+            ids = json_data["id"]
+            fnames = [f"{id_}.flac" for id_ in ids]
+            raw_data["fname"] += fnames
+
+        elif source == "SoundBible":
+            ids = json_data["id"]
+            fnames = [f"{id_}.flac" for id_ in ids]
+            raw_data["fname"] += fnames
+
+        else:
+            raise RuntimeError(f"Invalid source={source}.")
+
+        for k in _WAVCAPS_RAW_COLUMNS:
+            if k in json_data:
+                raw_data[k] += json_data[k]
+            elif k in _DEFAULT_VALUES:
+                default_val = _DEFAULT_VALUES[k]
+                default_values = [default_val] * size
+                raw_data[k] += default_values
+            elif k in ("audio", "file_name"):
+                pass
+            else:
+                raise RuntimeError(f"Invalid column name {k}. (with source={source})")
+
+        raw_data["source"] += sources
+
+    raw_data.pop("audio")
+    raw_data.pop("file_name")
+    captions = raw_data.pop("caption")
+
+    # Convert str -> List[str] for captions to match other datasets captions type
+    raw_data["captions"] = [[caption] for caption in captions]
+
+    # Force floating-point precision for duration
+    raw_data["duration"] = list(map(float, raw_data["duration"]))
+    return raw_data
 
 
 def _get_wavcaps_root(
