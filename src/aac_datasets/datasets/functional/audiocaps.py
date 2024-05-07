@@ -211,7 +211,9 @@ def load_audiocaps_dataset(
         # Note : In audioset, start_time is a string repr of a float value, audiocaps it is a string repr of an integer
         start_time = int(float(line["start_seconds"]))
         fname = _AUDIO_FNAME_FORMAT.format(
-            youtube_id=youtube_id, start_time=start_time, audio_format=audio_format
+            youtube_id=youtube_id,
+            start_time=start_time,
+            audio_format=audio_format,
         )
         if fname in fname_to_idx:
             tags_mid = line["positive_labels"]
