@@ -32,7 +32,7 @@ from torch.utils.data.dataset import Dataset
 from typing_extensions import TypeGuard
 
 from aac_datasets.utils.collections import dict_list_to_list_dict
-from aac_datasets.utils.type_checks import (
+from aac_datasets.utils.type_guards import (
     is_iterable_bool,
     is_iterable_int,
     is_iterable_str,
