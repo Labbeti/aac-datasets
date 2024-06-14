@@ -46,7 +46,7 @@ ItemType = TypeVar("ItemType", covariant=True)
 IndexType = Union[int, Iterable[int], Iterable[bool], Tensor, slice, None]
 ColumnType = Union[str, Iterable[str], None]
 
-_IDX_TYPES = ("int", "Iterable[int]", "Iterable[bool]", "Tensor", "slice", "None")
+_INDEX_TYPES = ("int", "Iterable[int]", "Iterable[bool]", "Tensor", "slice", "None")
 
 
 def _is_index(index: Any) -> TypeGuard[IndexType]:
@@ -56,7 +56,12 @@ def _is_index(index: Any) -> TypeGuard[IndexType]:
         or is_iterable_bool(index)
         or isinstance(index, slice)
         or index is None
-        or (isinstance(index, Tensor) and not index.is_floating_point())
+        or (
+            isinstance(index, Tensor)
+            and not index.is_floating_point()
+            and not index.is_complex()
+            and index.ndim in (0, 1)
+        )
     )
 
 
@@ -276,7 +281,7 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
 
         if __debug__ and not isinstance(index, int):
             raise TypeError(
-                f"Invalid argument type {type(index)}. (expected one of {_IDX_TYPES})"
+                f"Invalid argument type {type(index)}. (expected one of {_INDEX_TYPES})"
             )
 
         return self._load_online_value(column, index)
