@@ -131,7 +131,7 @@ class Clotho(AACDataset[ClothoItem]):
             defaults to True.
         :param flat_captions: If True, map captions to audio instead of audio to caption.
             defaults to True.
-        :param version: The version of the dataset. Can be one of :attr:`~ClothoCard.versions`.
+        :param version: The version of the dataset. Can be one of :attr:`~ClothoCard.VERSIONS`.
             defaults to 'v2.1'.
         """
         if version not in ClothoCard.VERSIONS:
