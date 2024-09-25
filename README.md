@@ -45,7 +45,7 @@ audio, captions = item["audio"], item["captions"]
 ```python
 from torch.utils.data.dataloader import DataLoader
 from aac_datasets import Clotho
-from aac_datasets.utils import BasicCollate
+from aac_datasets.utils.collate import BasicCollate
 
 dataset = Clotho(root=".", download=True)
 dataloader = DataLoader(dataset, batch_size=4, collate_fn=BasicCollate())
