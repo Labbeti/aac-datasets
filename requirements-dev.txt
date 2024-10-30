@@ -2,6 +2,7 @@
 
 black==23.3.0
 click==8.0.4
+coverage[toml]~=7.5.0
 flake8==4.0.1
 ipykernel==6.9.1
 pre-commit
