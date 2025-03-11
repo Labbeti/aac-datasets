@@ -85,7 +85,7 @@ aac-datasets-download --root "." clotho --subsets "dev"
 
 For Clotho, the **dev** subset should be used for training, val for validation and eval for testing.
 
-Here is additional statistics on the train subset for AudioCaps, Clotho, MACS and WavCaps:
+Here is additional statistics of the train subsets from AudioCaps (v1), Clotho (v2.1), MACS and WavCaps:
 
 | | AudioCaps/train | Clotho/dev | MACS/full | WavCaps/full |
 |:---:|:---:|:---:|:---:|:---:|
@@ -187,6 +187,12 @@ If you use this software, please consider cite it as "Labbe, E. (2013). aac-data
     year = {2024}
 }
 ```
+
+## See also
+- [AudioCaps official data repository](https://github.com/cdjkim/audiocaps/tree/master)
+- [Clotho official data repository](https://zenodo.org/records/4783391)
+- [MACS official data repository](https://zenodo.org/records/5114771)
+- [WavCaps official data repository](https://huggingface.co/datasets/cvssp/WavCaps)
 
 ## Contact
 Maintainer:
