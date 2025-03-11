@@ -53,7 +53,7 @@ class WavCaps(AACDataset[WavCapsItem]):
     This dataset contains 4 training subsets, extracted from different sources:
     - BBC Sound Effects "bbc"
     - SoundBible "soundbible"
-    - AudioSet strongly labeled without AudioCaps "audioset_no_audiocaps"
+    - AudioSet strongly labeled without AudioCaps V1 val and test subsets "audioset_no_audiocaps_v1"
     - FreeSound without Clotho dev, val, eval and test subsets "freesound_no_clotho_v2"
 
     Other subsets exists but they does not comply DCASE Challenge rules:
@@ -155,9 +155,8 @@ class WavCaps(AACDataset[WavCapsItem]):
             defaults to "zip".
         """
         if subset not in WavCapsCard.SUBSETS:
-            raise ValueError(
-                f"Invalid argument subset={subset} for {WavCapsCard.PRETTY_NAME}. (expected one of {WavCapsCard.SUBSETS})"
-            )
+            msg = f"Invalid argument subset={subset} for {WavCapsCard.PRETTY_NAME}. (expected one of {WavCapsCard.SUBSETS})"
+            raise ValueError(msg)
 
         root = _get_root(root)
         zip_path = _get_zip_path(zip_path)

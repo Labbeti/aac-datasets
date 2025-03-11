@@ -72,6 +72,7 @@ def load_clotho_dataset(
     root: Union[str, Path, None] = None,
     subset: ClothoSubset = ClothoCard.DEFAULT_SUBSET,
     verbose: int = 0,
+    *,
     # Clotho-specific args
     version: ClothoVersion = ClothoCard.DEFAULT_VERSION,
 ) -> Dict[str, List[Any]]:
@@ -84,7 +85,7 @@ def load_clotho_dataset(
     :param verbose: Verbose level.
         defaults to 0.
 
-    :param version: The version of the dataset. Can be one of :attr:`~ClothoCard.versions`.
+    :param version: The version of the dataset. Can be one of :attr:`~ClothoCard.VERSIONS`.
         defaults to 'v2.1'.
     :returns: A dictionnary of lists containing each metadata.
     """
@@ -224,6 +225,7 @@ def download_clotho_dataset(
     force: bool = False,
     verbose: int = 0,
     verify_files: bool = True,
+    *,
     # Clotho-specific args
     clean_archives: bool = True,
     version: ClothoVersion = ClothoCard.DEFAULT_VERSION,
@@ -243,7 +245,7 @@ def download_clotho_dataset(
 
     :param clean_archives: If True, remove the compressed archives from disk to save space.
         defaults to True.
-    :param version: The version of the dataset. Can be one of :attr:`~ClothoCard.versions`.
+    :param version: The version of the dataset. Can be one of :attr:`~ClothoCard.VERSIONS`.
         defaults to 'v2.1'.
     """
     if subset == "val" and version == "v1":
@@ -408,6 +410,7 @@ def download_clotho_datasets(
     subsets: Union[ClothoSubset, Iterable[ClothoSubset]] = ClothoCard.DEFAULT_SUBSET,
     force: bool = False,
     verbose: int = 0,
+    *,
     # Clotho-specific args
     clean_archives: bool = True,
     verify_files: bool = True,

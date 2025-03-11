@@ -60,6 +60,7 @@ def load_macs_dataset(
     root: Union[str, Path, None] = None,
     subset: MACSSubset = MACSCard.DEFAULT_SUBSET,
     verbose: int = 0,
+    *,
 ) -> Tuple[Dict[str, List[Any]], Dict[int, float]]:
     """Load MACS metadata.
 
@@ -168,6 +169,7 @@ def download_macs_dataset(
     force: bool = False,
     verbose: int = 0,
     verify_files: bool = True,
+    *,
     # MACS-specific args
     clean_archives: bool = True,
 ) -> None:
@@ -311,6 +313,7 @@ def download_macs_datasets(
     subsets: Union[str, Iterable[str]] = MACSCard.DEFAULT_SUBSET,
     force: bool = False,
     verbose: int = 0,
+    *,
     # MACS-specific args
     clean_archives: bool = True,
     verify_files: bool = True,
