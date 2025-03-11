@@ -24,6 +24,7 @@ from aac_datasets.datasets.functional.audiocaps import (
     download_audiocaps_dataset,
     load_audiocaps_dataset,
     AudioCapsSubset,
+    AudioCapsVersion,
 )
 from aac_datasets.utils.globals import _get_ffmpeg_path, _get_root, _get_ytdlp_path
 
@@ -106,6 +107,7 @@ class AudioCaps(AACDataset[AudioCapsItem]):
         sr: int = 32_000,
         with_tags: bool = False,
         ytdlp_path: Union[str, Path, None] = None,
+        version: AudioCapsVersion = AudioCapsCard.DEFAULT_VERSION,
     ) -> None:
         """
         :param root: Dataset root directory.
@@ -153,6 +155,8 @@ class AudioCaps(AACDataset[AudioCapsItem]):
             defaults to False.
         :param ytdlp_path: Path to yt-dlp or ytdlp executable.
             defaults to "yt-dlp".
+        :param version: The version of the dataset. Can be one of :attr:`~AudioCapsCard.VERSIONS`.
+            defaults to 'v1'.
         """
         if subset not in AudioCapsCard.SUBSETS:
             raise ValueError(
@@ -179,6 +183,7 @@ class AudioCaps(AACDataset[AudioCapsItem]):
                 sr=sr,
                 with_tags=with_tags,
                 ytdlp_path=ytdlp_path,
+                version=version,
             )
 
         raw_data, index_to_name = load_audiocaps_dataset(
@@ -220,6 +225,7 @@ class AudioCaps(AACDataset[AudioCapsItem]):
         self._download = download
         self._exclude_removed_audio = exclude_removed_audio
         self._with_tags = with_tags
+        self._version: AudioCapsVersion = version
         self._index_to_name = index_to_name
 
         self.add_online_columns(
@@ -257,6 +263,10 @@ class AudioCaps(AACDataset[AudioCapsItem]):
     @property
     def subset(self) -> AudioCapsSubset:
         return self._subset
+
+    @property
+    def version(self) -> AudioCapsVersion:
+        return self._version
 
     @property
     def with_tags(self) -> bool:
