@@ -24,7 +24,7 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: ubuntu-22
+          - os: ubuntu-22.04
             python-version: 3.7
           - os: ubuntu-latest
             python-version: 3.13
