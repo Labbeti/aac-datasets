@@ -60,7 +60,6 @@ def load_macs_dataset(
     root: Union[str, Path, None] = None,
     subset: MACSSubset = MACSCard.DEFAULT_SUBSET,
     verbose: int = 0,
-    *,
 ) -> Tuple[Dict[str, List[Any]], Dict[int, float]]:
     """Load MACS metadata.
 
