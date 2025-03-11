@@ -91,6 +91,13 @@ def _get_main_download_args() -> Namespace:
         default=1,
         help="Number of workers used for downloading multiple files in parallel.",
     )
+    audiocaps_subparser.add_argument(
+        "--version",
+        type=str,
+        default=AudioCapsCard.DEFAULT_VERSION,
+        choices=AudioCapsCard.VERSIONS,
+        help="The version of the AudioCaps dataset.",
+    )
 
     clotho_subparser = subparsers.add_parser(ClothoCard.NAME)
     clotho_subparser.add_argument(
@@ -116,6 +123,7 @@ def _get_main_download_args() -> Namespace:
     )
 
     macs_subparser = subparsers.add_parser(MACSCard.NAME)
+    # Note : MACS only have 1 subset, so we do not add MACS subsets arg
     macs_subparser.add_argument(
         "--clean_archives",
         type=_str_to_bool,
@@ -128,7 +136,6 @@ def _get_main_download_args() -> Namespace:
         default=True,
         help="Verify if downloaded files have a valid checksum.",
     )
-    # Note : MACS only have 1 subset, so we do not add MACS subsets arg
 
     wavcaps_subparser = subparsers.add_parser(WavCapsCard.NAME)
     wavcaps_subparser.add_argument(
@@ -185,6 +192,7 @@ def _main_download() -> None:
             max_workers=args.max_workers,
             with_tags=args.with_tags,
             ytdlp_path=args.ytdlp_path,
+            version=args.version,
         )
 
     elif args.dataset == ClothoCard.NAME:
