@@ -22,9 +22,9 @@ class TestDatasetBase(TestCase):
         raw_data_flat_out, sizes_out = _flat_raw_data(raw_data, "captions")
         raw_data_out = _unflat_raw_data(raw_data_flat_out, sizes_out)
 
-        self.assertDictEqual(raw_data_flat_out, expected_flat)
-        self.assertListEqual(sizes_out, expected_sizes)
-        self.assertDictEqual(raw_data_out, raw_data)
+        assert raw_data_flat_out == expected_flat
+        assert sizes_out == expected_sizes
+        assert raw_data_out == raw_data
 
 
 if __name__ == "__main__":

@@ -14,7 +14,7 @@ class TestCollections(TestCase):
         expected = ["a", "b"]
 
         output = intersect_lists(input_)
-        self.assertListEqual(output, expected)
+        assert output == expected
 
 
 if __name__ == "__main__":

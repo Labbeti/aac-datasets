@@ -6,7 +6,7 @@ coverage[toml]
 flake8>=4.0.1
 ipykernel==6.9.1
 pre-commit
-pytest==6.2.5
+pytest>=6.2.5
 sphinx
 sphinx-press-theme==0.8.0
 twine==4.0.1
