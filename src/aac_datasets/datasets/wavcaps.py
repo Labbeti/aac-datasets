@@ -15,6 +15,8 @@ from aac_datasets.datasets.functional.wavcaps import (
     _get_audio_subset_dpath,
     download_wavcaps_dataset,
     load_wavcaps_dataset,
+    WavCapsSubset,
+    WavCapsSource,
 )
 from aac_datasets.utils.globals import _get_root, _get_zip_path
 
@@ -28,7 +30,7 @@ class WavCapsItem(TypedDict):
     dataset: str
     fname: str
     index: int
-    subset: str
+    subset: WavCapsSubset
     sr: int
     duration: float
     # WavCaps-specific attributes
@@ -38,7 +40,7 @@ class WavCapsItem(TypedDict):
     download_link: Optional[str]  # BBC, FSD and SB only
     href: Optional[str]  # FSD and SB only
     id: str
-    source: str
+    source: WavCapsSource
     tags: List[str]  # FSD only
 
 
@@ -110,7 +112,7 @@ class WavCaps(AACDataset[WavCapsItem]):
         self,
         # Common args
         root: Union[str, Path, None] = None,
-        subset: str = WavCapsCard.DEFAULT_SUBSET,
+        subset: WavCapsSubset = WavCapsCard.DEFAULT_SUBSET,
         download: bool = False,
         transform: Optional[Callable[[WavCapsItem], Any]] = None,
         verbose: int = 0,
@@ -205,7 +207,7 @@ class WavCaps(AACDataset[WavCapsItem]):
             verbose=verbose,
         )
         self._root = root
-        self._subset = subset
+        self._subset: WavCapsSubset = subset
         self._download = download
         self._hf_cache_dir = hf_cache_dir
         self._revision = revision
@@ -235,5 +237,5 @@ class WavCaps(AACDataset[WavCapsItem]):
         return self._sr  # type: ignore
 
     @property
-    def subset(self) -> str:
+    def subset(self) -> WavCapsSubset:
         return self._subset

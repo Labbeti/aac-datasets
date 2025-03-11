@@ -16,6 +16,7 @@ from aac_datasets.datasets.functional.macs import (
     _get_audio_dpath,
     download_macs_dataset,
     load_macs_dataset,
+    MACSSubset,
 )
 from aac_datasets.utils.globals import _get_root
 
@@ -31,7 +32,7 @@ class MACSItem(TypedDict):
     dataset: str
     fname: str
     index: int
-    subset: str
+    subset: MACSSubset
     sr: int
     duration: float
     # MACS-specific attributes
@@ -70,7 +71,7 @@ class MACS(AACDataset[MACSItem]):
         self,
         # Common args
         root: Union[str, Path, None] = None,
-        subset: str = MACSCard.DEFAULT_SUBSET,
+        subset: MACSSubset = MACSCard.DEFAULT_SUBSET,
         download: bool = False,
         transform: Optional[Callable[[MACSItem], Any]] = None,
         verbose: int = 0,
@@ -105,9 +106,8 @@ class MACS(AACDataset[MACSItem]):
             defaults to True.
         """
         if subset not in MACSCard.SUBSETS:
-            raise ValueError(
-                f"Invalid argument subset={subset} for MACS. (expected one of {MACSCard.SUBSETS})"
-            )
+            msg = f"Invalid argument subset={subset} for MACS. (expected one of {MACSCard.SUBSETS})"
+            raise ValueError(msg)
 
         root = _get_root(root)
 
@@ -145,7 +145,7 @@ class MACS(AACDataset[MACSItem]):
             verbose=verbose,
         )
         self._root = root
-        self._subset = subset
+        self._subset: MACSSubset = subset
         self._download = download
         self._transform = transform
         self._flat_captions = flat_captions
@@ -178,7 +178,7 @@ class MACS(AACDataset[MACSItem]):
         return self._sr  # type: ignore
 
     @property
-    def subset(self) -> str:
+    def subset(self) -> MACSSubset:
         return self._subset
 
     # Public methods

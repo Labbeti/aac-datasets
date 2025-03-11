@@ -8,15 +8,18 @@ import os.path as osp
 import shutil
 import zipfile
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Tuple, Union
+from typing import Any, Dict, Iterable, List, Tuple, Union, Literal
 
 import yaml
 
-from aac_datasets.datasets.functional.common import DatasetCard
+from aac_datasets.datasets.functional.common import DatasetCard, LinkInfoHash
 from aac_datasets.utils.download import download_file, hash_file
 from aac_datasets.utils.globals import _get_root
 
 pylog = logging.getLogger(__name__)
+
+
+MACSSubset = Literal["full"]
 
 
 class MACSCard(DatasetCard):
@@ -36,7 +39,7 @@ class MACSCard(DatasetCard):
         doi.         = {10.5281/zenodo.5770113}
     }
     """
-    DEFAULT_SUBSET: str = "full"
+    DEFAULT_SUBSET: MACSSubset = "full"
     DESCRIPTION: str = "Multi-Annotator Captioned Soundscapes dataset."
     HOMEPAGE: str = "https://zenodo.org/record/5114771"
     LANGUAGE: Tuple[str, ...] = ("en",)
@@ -55,7 +58,7 @@ class MACSCard(DatasetCard):
 def load_macs_dataset(
     # Common args
     root: Union[str, Path, None] = None,
-    subset: str = MACSCard.DEFAULT_SUBSET,
+    subset: MACSSubset = MACSCard.DEFAULT_SUBSET,
     verbose: int = 0,
 ) -> Tuple[Dict[str, List[Any]], Dict[int, float]]:
     """Load MACS metadata.
@@ -161,7 +164,7 @@ def load_macs_dataset(
 def download_macs_dataset(
     # Common args
     root: Union[str, Path, None] = None,
-    subset: str = MACSCard.DEFAULT_SUBSET,
+    subset: MACSSubset = MACSCard.DEFAULT_SUBSET,
     force: bool = False,
     verbose: int = 0,
     verify_files: bool = True,
@@ -363,8 +366,11 @@ def _is_prepared_macs(root: str) -> bool:
     return len(data) == len(fnames)
 
 
+# Internal typing to make easier to add new links without error
+MACSLinkType = Literal["license", "captions", "annotators_competences"]
+
 # MACS-specific files links.
-MACS_FILES = {
+MACS_FILES: Dict[MACSLinkType, LinkInfoHash] = {
     "licence": {
         "fname": "LICENSE.txt",
         "url": "https://zenodo.org/record/5114771/files/LICENSE.txt?download=1",

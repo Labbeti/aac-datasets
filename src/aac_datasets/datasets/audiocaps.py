@@ -23,6 +23,7 @@ from aac_datasets.datasets.functional.audiocaps import (
     _get_audio_subset_dpath,
     download_audiocaps_dataset,
     load_audiocaps_dataset,
+    AudioCapsSubset,
 )
 from aac_datasets.utils.globals import _get_ffmpeg_path, _get_root, _get_ytdlp_path
 
@@ -38,7 +39,7 @@ class AudioCapsItem(TypedDict):
     dataset: str
     fname: str
     index: int
-    subset: str
+    subset: AudioCapsSubset
     sr: int
     duration: float
     # AudioCaps-specific attributes
@@ -86,7 +87,7 @@ class AudioCaps(AACDataset[AudioCapsItem]):
         self,
         # Common args
         root: Union[str, Path, None] = None,
-        subset: str = AudioCapsCard.DEFAULT_SUBSET,
+        subset: AudioCapsSubset = AudioCapsCard.DEFAULT_SUBSET,
         download: bool = False,
         transform: Optional[Callable[[AudioCapsItem], Any]] = None,
         verbose: int = 0,
@@ -215,7 +216,7 @@ class AudioCaps(AACDataset[AudioCapsItem]):
 
         # Attributes
         self._root = root
-        self._subset = subset
+        self._subset: AudioCapsSubset = subset
         self._download = download
         self._exclude_removed_audio = exclude_removed_audio
         self._with_tags = with_tags
@@ -254,7 +255,7 @@ class AudioCaps(AACDataset[AudioCapsItem]):
         return self._sr  # type: ignore
 
     @property
-    def subset(self) -> str:
+    def subset(self) -> AudioCapsSubset:
         return self._subset
 
     @property

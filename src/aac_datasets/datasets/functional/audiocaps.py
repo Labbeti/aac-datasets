@@ -10,12 +10,12 @@ import time
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from subprocess import CalledProcessError
-from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
+from typing import Any, Dict, Iterable, List, Optional, Tuple, Union, Literal
 
 import torchaudio
 import tqdm
 
-from aac_datasets.datasets.functional.common import DatasetCard
+from aac_datasets.datasets.functional.common import DatasetCard, LinkInfo
 from aac_datasets.utils.audioset_mapping import (
     download_audioset_mapping,
     load_audioset_mapping,
@@ -25,10 +25,12 @@ from aac_datasets.utils.globals import _get_ffmpeg_path, _get_root, _get_ytdlp_p
 
 pylog = logging.getLogger(__name__)
 
+AudioCapsSubset = Literal["train", "val", "test", "train_v2"]
+
 
 class AudioCapsCard(DatasetCard):
     ANNOTATIONS_CREATORS: Tuple[str, ...] = ("crowdsourced",)
-    CAPTIONS_PER_AUDIO: Dict[str, int] = {
+    CAPTIONS_PER_AUDIO: Dict[AudioCapsSubset, int] = {
         "train": 1,
         "val": 5,
         "test": 5,
@@ -48,21 +50,21 @@ class AudioCapsCard(DatasetCard):
         url          = {https://aclanthology.org/N19-1011},
     }
     """
-    DEFAULT_SUBSET: str = "train"
+    DEFAULT_SUBSET: AudioCapsSubset = "train"
     HOMEPAGE: str = "https://audiocaps.github.io/"
     LANGUAGE: Tuple[str, ...] = ("en",)
     LANGUAGE_DETAILS: Tuple[str, ...] = ("en-US",)
     NAME: str = "audiocaps"
     PRETTY_NAME: str = "AudioCaps"
     SIZE_CATEGORIES: Tuple[str, ...] = ("10K<n<100K",)
-    SUBSETS: Tuple[str, ...] = tuple(CAPTIONS_PER_AUDIO.keys())
+    SUBSETS: Tuple[AudioCapsSubset, ...] = tuple(CAPTIONS_PER_AUDIO.keys())
     TASK_CATEGORIES: Tuple[str, ...] = ("audio-to-text", "text-to-audio")
 
 
 def load_audiocaps_dataset(
     # Common args
     root: Union[str, Path, None] = None,
-    subset: str = AudioCapsCard.DEFAULT_SUBSET,
+    subset: AudioCapsSubset = AudioCapsCard.DEFAULT_SUBSET,
     verbose: int = 0,
     # AudioCaps-specific args
     audio_format: str = "flac",
@@ -247,7 +249,7 @@ def load_audiocaps_dataset(
 def download_audiocaps_dataset(
     # Common args
     root: Union[str, Path, None] = None,
-    subset: str = AudioCapsCard.DEFAULT_SUBSET,
+    subset: AudioCapsSubset = AudioCapsCard.DEFAULT_SUBSET,
     force: bool = False,
     verbose: int = 0,
     verify_files: bool = False,
@@ -507,7 +509,7 @@ def _get_audiocaps_root(root: str, sr: int) -> str:
     return osp.join(root, "AUDIOCAPS")
 
 
-def _get_audio_subset_dpath(root: str, subset: str, sr: int) -> str:
+def _get_audio_subset_dpath(root: str, subset: AudioCapsSubset, sr: int) -> str:
     return osp.join(
         _get_audiocaps_root(root, sr),
         f"audio_{sr}Hz",
@@ -517,7 +519,7 @@ def _get_audio_subset_dpath(root: str, subset: str, sr: int) -> str:
 
 def _is_prepared_audiocaps(
     root: str,
-    subset: str = AudioCapsCard.DEFAULT_SUBSET,
+    subset: AudioCapsSubset = AudioCapsCard.DEFAULT_SUBSET,
     sr: int = 32_000,
     audio_format: str = "flac",
     verbose: int = 0,
@@ -763,15 +765,18 @@ def _get_youtube_link_embed(
 
 
 # Audio directory names per subset
-_AUDIOCAPS_AUDIO_DNAMES = {
+_AUDIOCAPS_AUDIO_DNAMES: Dict[AudioCapsSubset, str] = {
     "train": "train",
     "val": "val",
     "test": "test",
     "train_v2": "train",
 }
 
+# Internal typing to make easier to add new links without error
+_AudioCapsLinkType = Literal["captions"]
+
 # Archives and file links used to download AudioCaps labels and metadata
-_AUDIOCAPS_LINKS = {
+_AUDIOCAPS_LINKS: Dict[AudioCapsSubset, Dict[_AudioCapsLinkType, LinkInfo]] = {
     "train": {
         "captions": {
             "url": "https://raw.githubusercontent.com/cdjkim/audiocaps/master/dataset/train.csv",
@@ -799,7 +804,7 @@ _AUDIOCAPS_LINKS = {
 }
 
 # Archives and file links used to download AudioSet metadata
-_AUDIOSET_LINKS = {
+_AUDIOSET_LINKS: Dict[str, LinkInfo] = {
     "class_labels_indices": {
         "fname": "class_labels_indices.csv",
         "url": "http://storage.googleapis.com/us_audioset/youtube_corpus/v1/csv/class_labels_indices.csv",
