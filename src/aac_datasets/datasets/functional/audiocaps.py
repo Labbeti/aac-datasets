@@ -231,6 +231,7 @@ def load_audiocaps_dataset(
                 all_caps_dic["audiocaps_ids"][index] = [audiocap_id]
                 all_caps_dic["captions"][index] = [caption]
             else:
+                # sanity check
                 assert all_caps_dic["start_time"][index] == start_time
                 assert all_caps_dic["youtube_id"][index] == youtube_id
 

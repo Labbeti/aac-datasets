@@ -5,10 +5,11 @@ All notable changes to this project will be documented in this file.
 ## [0.6.0] UNRELEASED
 ### Added
 - Methods `to_dict` and `to_list` to datasets classes.
+- AudioCaps support for version `v2`.
 
 ### Changed
 - Rename AudioCaps v1 `train_v2` subset to `train_fixed` to avoid confusion with AudioCaps v2 `train` subset.
-- Rename WavCaps `audioset_no_audiocaps` subset to `audioset_no_audiocaps_v1` to specify whcih AudioCaps version is excluded.
+- Rename WavCaps `audioset_no_audiocaps` subset to `audioset_no_audiocaps_v1` to specify which AudioCaps version is excluded.
 
 ### Fixed
 - Remove invalid warning when using WavCaps subset `freesound_no_clotho_v2`.
