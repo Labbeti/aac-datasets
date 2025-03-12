@@ -7,10 +7,11 @@ import logging
 import os
 import os.path as osp
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional, Tuple, Union, Literal
+from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
 from zipfile import ZipFile
 
 from py7zr import SevenZipFile
+from typing_extensions import Literal
 
 from aac_datasets.datasets.functional.common import DatasetCard, LinkInfoHash
 from aac_datasets.utils.download import download_file, hash_file

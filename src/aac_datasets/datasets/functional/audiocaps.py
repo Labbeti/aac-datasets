@@ -10,10 +10,11 @@ import time
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from subprocess import CalledProcessError
-from typing import Any, Dict, Iterable, List, Optional, Tuple, Union, Literal
+from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
 
 import torchaudio
 import tqdm
+from typing_extensions import Literal
 
 from aac_datasets.datasets.functional.common import DatasetCard, LinkInfo
 from aac_datasets.utils.audioset_mapping import (

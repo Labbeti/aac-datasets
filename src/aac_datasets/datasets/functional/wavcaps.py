@@ -9,7 +9,7 @@ import os.path as osp
 import subprocess
 import zipfile
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional, Tuple, Union, Literal
+from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
 
 import tqdm
 from huggingface_hub import snapshot_download
@@ -19,7 +19,7 @@ from huggingface_hub.utils.tqdm import (
     disable_progress_bars,
     enable_progress_bars,
 )
-from typing_extensions import TypedDict
+from typing_extensions import Literal, TypedDict
 
 from aac_datasets.datasets.functional.common import DatasetCard, LinkInfo
 from aac_datasets.utils.collections import list_dict_to_dict_list

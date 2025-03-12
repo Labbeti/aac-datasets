@@ -8,9 +8,10 @@ import os.path as osp
 import shutil
 import zipfile
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Tuple, Union, Literal
+from typing import Any, Dict, Iterable, List, Tuple, Union
 
 import yaml
+from typing_extensions import Literal
 
 from aac_datasets.datasets.functional.common import DatasetCard, LinkInfoHash
 from aac_datasets.utils.download import download_file, hash_file
