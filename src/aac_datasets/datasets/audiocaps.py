@@ -160,9 +160,8 @@ class AudioCaps(AACDataset[AudioCapsItem]):
             defaults to 'v1'.
         """
         if subset not in AudioCapsCard.SUBSETS:
-            raise ValueError(
-                f"Invalid argument subset={subset} for AudioCaps. (expected one of {AudioCapsCard.SUBSETS})"
-            )
+            msg = f"Invalid argument subset={subset} for AudioCaps. (expected one of {AudioCapsCard.SUBSETS})"
+            raise ValueError(msg)
 
         root = _get_root(root)
         ytdlp_path = _get_ytdlp_path(ytdlp_path)
@@ -196,7 +195,7 @@ class AudioCaps(AACDataset[AudioCapsItem]):
             sr=sr,
             with_tags=with_tags,
         )
-        audio_subset_dpath = _get_audio_subset_dpath(root, subset, sr)
+        audio_subset_dpath = _get_audio_subset_dpath(root, subset, sr, version)
         size = len(next(iter(raw_data.values())))
         raw_data["dataset"] = [AudioCapsCard.NAME] * size
         raw_data["subset"] = [subset] * size
