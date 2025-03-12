@@ -20,11 +20,11 @@ except ImportError:
 from aac_datasets.datasets.base import AACDataset
 from aac_datasets.datasets.functional.audiocaps import (
     AudioCapsCard,
+    AudioCapsSubset,
+    AudioCapsVersion,
     _get_audio_subset_dpath,
     download_audiocaps_dataset,
     load_audiocaps_dataset,
-    AudioCapsSubset,
-    AudioCapsVersion,
 )
 from aac_datasets.utils.globals import _get_ffmpeg_path, _get_root, _get_ytdlp_path
 
@@ -63,18 +63,19 @@ class AudioCaps(AACDataset[AudioCapsItem]):
     AudioCaps paper : https://www.aclweb.org/anthology/N19-1011.pdf
 
     .. code-block:: text
-        :caption:  Dataset folder tree
+        :caption:  Dataset folder tree (for version v1)
 
         {root}
         └── AUDIOCAPS
-            ├── train.csv
-            ├── val.csv
-            ├── test.csv
+            ├── csv_files_v1
+            │   ├── train.csv
+            │   ├── val.csv
+            │   └── test.csv
             └── audio_32000Hz
                 ├── train
-                │    └── (46231/49838 flac files, ~42G for 32kHz)
+                │   └── (46231/49838 flac files, ~42G for 32kHz)
                 ├── val
-                │    └── (465/495 flac files, ~425M for 32kHz)
+                │   └── (465/495 flac files, ~425M for 32kHz)
                 └── test
                     └── (913/975 flac files, ~832M for 32kHz)
 

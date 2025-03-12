@@ -132,10 +132,13 @@ def load_audiocaps_dataset(
     if subset not in version_links:
         msg = f"Subset {subset} is not available for AudioCaps version {version}. (expected one of {tuple(version_links.keys())})"
         raise ValueError(msg)
+
     links = version_links[subset]
 
+    captions_dpath = _get_captions_dpath(root, subset, sr, version)
     captions_fname = links["captions"]["fname"]
-    captions_fpath = osp.join(audiocaps_root, captions_fname)
+    captions_fpath = osp.join(captions_dpath, captions_fname)
+
     with open(captions_fpath, "r") as file:
         reader = csv.DictReader(file)
         captions_data = list(reader)
@@ -155,7 +158,11 @@ def load_audiocaps_dataset(
             )
 
         mid_to_index: Dict[str, int] = load_audioset_mapping(
-            "mid", "index", offline=True, cache_path=audiocaps_root, verbose=verbose
+            "mid",
+            "index",
+            offline=True,
+            cache_path=audiocaps_root,
+            verbose=verbose,
         )
         index_to_name: Dict[int, str] = load_audioset_mapping(
             "index",
@@ -168,7 +175,10 @@ def load_audiocaps_dataset(
         with open(unbal_tags_fpath, "r") as file:
             FIELDNAMES = ("YTID", "start_seconds", "end_seconds", "positive_labels")
             reader = csv.DictReader(
-                file, FIELDNAMES, skipinitialspace=True, strict=True
+                file,
+                FIELDNAMES,
+                skipinitialspace=True,
+                strict=True,
             )
             # Skip the comments
             for _ in range(3):
@@ -361,8 +371,11 @@ def download_audiocaps_dataset(
     audio_subset_dpath = _get_audio_subset_dpath(root, subset, sr, version)
     os.makedirs(audio_subset_dpath, exist_ok=True)
 
+    captions_dpath = _get_captions_dpath(root, subset, sr, version)
+    os.makedirs(captions_dpath, exist_ok=True)
+
     captions_fname = links["captions"]["fname"]
-    captions_fpath = osp.join(audiocaps_root, captions_fname)
+    captions_fpath = osp.join(captions_dpath, captions_fname)
 
     if not osp.isfile(captions_fpath):
         url = links["captions"]["url"]
@@ -587,13 +600,32 @@ def _get_audiocaps_root(root: str, sr: int, version: AudioCapsVersion) -> str:
 
 
 def _get_audio_subset_dpath(
-    root: str, subset: AudioCapsSubset, sr: int, version: AudioCapsVersion
+    root: str,
+    subset: AudioCapsSubset,
+    sr: int,
+    version: AudioCapsVersion,
 ) -> str:
     return osp.join(
         _get_audiocaps_root(root, sr, version),
         f"audio_{sr}Hz",
         _AUDIOCAPS_AUDIO_DNAMES[subset],
     )
+
+
+def _get_captions_dpath(
+    root: str,
+    subset: AudioCapsSubset,
+    sr: int,
+    version: AudioCapsVersion,
+) -> str:
+    audiocaps_root = _get_audiocaps_root(root, sr, version)
+    captions_fname = _AUDIOCAPS_LINKS[version][subset]["captions"]["fname"]
+    captions_fpath = osp.join(audiocaps_root, captions_fname)
+    # For backward compatibility only
+    if version == "v1" and osp.isfile(captions_fpath):
+        return audiocaps_root
+    else:
+        return osp.join(audiocaps_root, f"csv_files_{version}")
 
 
 def _is_prepared_audiocaps(
@@ -610,8 +642,9 @@ def _is_prepared_audiocaps(
         raise ValueError(msg)
     links = version_links[subset]
 
+    captions_dpath = _get_captions_dpath(root, subset, sr, version)
     captions_fname = links["captions"]["fname"]
-    captions_fpath = osp.join(_get_audiocaps_root(root, sr, version), captions_fname)
+    captions_fpath = osp.join(captions_dpath, captions_fname)
     audio_subset_dpath = _get_audio_subset_dpath(root, subset, sr, version)
 
     msgs = []
@@ -837,19 +870,6 @@ def _get_youtube_link(youtube_id: str, start_time: Optional[int]) -> str:
         return link
     else:
         return f"{link}&t={start_time}s"
-
-
-def _get_youtube_link_embed(
-    youtube_id: str,
-    start_time: Optional[int],
-    duration: float = 10.0,
-) -> str:
-    link = f"https://www.youtube.com/embed/{youtube_id}"
-    if start_time is None:
-        return link
-    else:
-        end_time = start_time + duration
-        return f"{link}?start={start_time}&end={end_time}"
 
 
 # Audio directory names per subset

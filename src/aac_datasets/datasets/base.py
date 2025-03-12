@@ -94,9 +94,8 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
             size = len(next(iter(raw_data.values())))
             invalid_columns = [col for col, lst in raw_data.items() if len(lst) != size]
             if len(invalid_columns) > 0:
-                raise ValueError(
-                    f"Invalid raw_data number of items in the following columns: {tuple(invalid_columns)}."
-                )
+                msg = f"Invalid raw_data number of items in the following columns: {tuple(invalid_columns)}."
+                raise ValueError(msg)
 
         super().__init__()
         self._raw_data = raw_data
