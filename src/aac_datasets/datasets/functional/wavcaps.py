@@ -388,15 +388,15 @@ def download_wavcaps_dataset(
     else:
         os.symlink(snapshot_abs_dpath, wavcaps_root, True)
 
-    source_and_splitted = [
+    source_and_splitted_lst: List[Tuple[WavCapsSource, bool]] = [
         ("AudioSet_SL", True),
         ("BBC_Sound_Effects", True),
         ("FreeSound", True),
         ("SoundBible", False),
     ]
-    source_and_splitted = {
+    source_and_splitted: Dict[WavCapsSource, bool] = {
         source: is_splitted
-        for source, is_splitted in source_and_splitted
+        for source, is_splitted in source_and_splitted_lst
         if _use_source(source, subset)
     }
 
@@ -525,7 +525,7 @@ def download_wavcaps_dataset(
 def download_wavcaps_datasets(
     # Common args
     root: Union[str, Path, None] = None,
-    subsets: Union[str, Iterable[str]] = WavCapsCard.DEFAULT_SUBSET,
+    subsets: Union[WavCapsSubset, Iterable[WavCapsSubset]] = WavCapsCard.DEFAULT_SUBSET,
     force: bool = False,
     verbose: int = 0,
     *,
@@ -685,7 +685,7 @@ def _get_audio_subset_dpath(
     root: str,
     hf_cache_dir: Optional[str],
     revision: Optional[str],
-    source: str,
+    source: WavCapsSource,
 ) -> str:
     return osp.join(
         _get_audio_dpath(root, hf_cache_dir, revision),
@@ -700,7 +700,9 @@ def _is_prepared_wavcaps(
     subset: WavCapsSubset,
     verbose: int,
 ) -> bool:
-    sources = [source for source in WavCapsCard.SOURCES if _use_source(source, subset)]
+    sources: List[WavCapsSource] = [
+        source for source in WavCapsCard.SOURCES if _use_source(source, subset)
+    ]
     for source in sources:
         audio_subset_dpath = _get_audio_subset_dpath(
             root, hf_cache_dir, revision, source

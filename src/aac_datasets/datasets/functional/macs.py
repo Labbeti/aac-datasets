@@ -155,9 +155,8 @@ def load_macs_dataset(
     assert all(len(values) == dataset_size for values in raw_data.values())
 
     if verbose >= 1:
-        pylog.info(
-            f"Dataset {MACSCard.PRETTY_NAME} ({subset}) has been loaded. (len={len(next(iter(raw_data.values())))})"
-        )
+        msg = f"Dataset {MACSCard.PRETTY_NAME} ({subset}) has been loaded. (len={len(next(iter(raw_data.values())))})"
+        pylog.info(msg)
 
     return raw_data, annotator_id_to_competence
 
@@ -310,7 +309,7 @@ def download_macs_dataset(
 def download_macs_datasets(
     # Common args
     root: Union[str, Path, None] = None,
-    subsets: Union[str, Iterable[str]] = MACSCard.DEFAULT_SUBSET,
+    subsets: Union[MACSSubset, Iterable[MACSSubset]] = MACSCard.DEFAULT_SUBSET,
     force: bool = False,
     verbose: int = 0,
     *,
@@ -370,7 +369,7 @@ def _is_prepared_macs(root: str) -> bool:
 
 
 # Internal typing to make easier to add new links without error
-MACSLinkType = Literal["license", "captions", "annotators_competences"]
+MACSLinkType = Literal["licence", "captions", "annotators_competences"]
 
 # MACS-specific files links.
 MACS_FILES: Dict[MACSLinkType, LinkInfoHash] = {

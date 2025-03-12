@@ -469,7 +469,9 @@ def _get_audio_subset_dpath(
 
 
 def _is_prepared_clotho(
-    root: str, version: ClothoVersion, subset: ClothoSubset
+    root: str,
+    version: ClothoVersion,
+    subset: ClothoSubset,
 ) -> bool:
     audio_dpath = _get_audio_dpath(root, version)
     csv_dpath = _get_csv_dpath(root, version)
