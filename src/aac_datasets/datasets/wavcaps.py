@@ -12,11 +12,11 @@ from typing_extensions import TypedDict
 from aac_datasets.datasets.base import AACDataset
 from aac_datasets.datasets.functional.wavcaps import (
     WavCapsCard,
+    WavCapsSource,
+    WavCapsSubset,
     _get_audio_subset_dpath,
     download_wavcaps_dataset,
     load_wavcaps_dataset,
-    WavCapsSubset,
-    WavCapsSource,
 )
 from aac_datasets.utils.globals import _get_root, _get_zip_path
 
@@ -59,7 +59,6 @@ class WavCaps(AACDataset[WavCapsItem]):
     Other subsets exists but they does not comply DCASE Challenge rules:
     - AudioSet strongly labeled "audioset"
     - FreeSound "freesound"
-    - FreeSound without Clotho dev, val, eval subsets "freesound_no_clotho"
 
     .. warning::
         WavCaps download is experimental ; it requires a lot of disk space and can take very long time to download and extract, so you might expect errors.

@@ -35,7 +35,6 @@ WavCapsSubset = Literal[
     "freesound",
     "soundbible",
     "audioset_no_audiocaps_v1",
-    "freesound_no_clotho",
     "freesound_no_clotho_v2",
 ]
 
@@ -48,7 +47,6 @@ class WavCapsCard(DatasetCard):
         "freesound": 1,
         "soundbible": 1,
         "audioset_no_audiocaps_v1": 1,
-        "freesound_no_clotho": 1,
         "freesound_no_clotho_v2": 1,
     }
     CITATION: str = r"""
@@ -149,39 +147,21 @@ def load_wavcaps_dataset(
         )
         pylog.warning(msg)
 
-    elif subset == "freesound_no_clotho":
-        overlapped_ds = "Clotho"
-        overlapped_subsets = (
-            "dcase_aac_test",
-            "dcase_aac_analysis",
-        )
-        recommanded = "freesound_no_clotho_v2"
-        msg = (
-            f"You selected WavCaps subset '{subset}', be careful to not use these data as training when evaluating on {overlapped_ds} {overlapped_subsets} subsets. "
-            f"Data could still overlap with Clotho dcase_aac_test and dcase_aac_analysis subsets."
-            f"You can use {recommanded} subset for to avoid this bias with {overlapped_ds}."
-        )
-        pylog.warning(msg)
-
     if subset in (
         "audioset_no_audiocaps_v1",
-        "freesound_no_clotho",
         "freesound_no_clotho_v2",
     ):
         if subset == "audioset_no_audiocaps_v1":
             target_subset = "audioset"
             csv_fname = _WAVCAPS_LINKS["blacklist_audiocaps"]["fname"]
 
-        elif subset == "freesound_no_clotho":
-            target_subset = "freesound"
-            csv_fname = _WAVCAPS_LINKS["blacklist_clotho"]["fname"]
-
         elif subset == "freesound_no_clotho_v2":
             target_subset = "freesound"
             csv_fname = _WAVCAPS_LINKS["blacklist_clotho_v2"]["fname"]
 
         else:
-            raise ValueError(f"INTERNAL ERROR: Invalid argument subset={subset}.")
+            msg = f"INTERNAL ERROR: Invalid argument subset={subset}."
+            raise ValueError(msg)
 
         raw_data = _load_wavcaps_dataset_impl(
             root=root,
@@ -280,21 +260,6 @@ def download_wavcaps_dataset(
         return download_wavcaps_dataset(
             root=root,
             subset="audioset",
-            revision=revision,
-            hf_cache_dir=hf_cache_dir,
-            force=force,
-            verify_files=verify_files,
-            clean_archives=clean_archives,
-            zip_path=zip_path,
-            verbose=verbose,
-        )
-
-    elif subset == "freesound_no_clotho":
-        _download_blacklist(root, hf_cache_dir, revision, "blacklist_clotho")
-
-        return download_wavcaps_dataset(
-            root=root,
-            subset="freesound",
             revision=revision,
             hf_cache_dir=hf_cache_dir,
             force=force,
@@ -729,9 +694,7 @@ def _use_source(source: WavCapsSource, subset: WavCapsSubset) -> bool:
             source == "AudioSet_SL"
             and subset in ("audioset", "audioset_no_audiocaps_v1"),
             source == "BBC_Sound_Effects" and subset in ("bbc",),
-            source == "FreeSound"
-            and subset
-            in ("freesound", "freesound_no_clotho", "freesound_no_clotho_v2"),
+            source == "FreeSound" and subset in ("freesound", "freesound_no_clotho_v2"),
             source == "SoundBible" and subset in ("soundbible",),
         )
     )
@@ -822,7 +785,7 @@ _WAVCAPS_LINKS: Dict[str, LinkInfo] = {
 _WAVCAPS_OLD_SUBSETS_NAMES: Dict[str, WavCapsSubset] = {
     "fsd": "freesound",
     "as": "audioset",
-    "fsd_nocl": "freesound_no_clotho",
+    "fsd_nocl": "freesound_no_clotho_v2",
     "as_noac": "audioset_no_audiocaps_v1",
     "sb": "soundbible",
     "audioset_no_audiocaps": "audioset_no_audiocaps_v1",
