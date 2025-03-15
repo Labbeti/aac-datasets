@@ -81,7 +81,7 @@ aac-datasets-download --root "." clotho --subsets "dev"
 | AudioCaps | 32 | 43 | AudioSet | `train`<br>`val`<br>`test`<br>`train_fixed` |
 | Clotho | 44.1 | 53  | Freesound | `dev`<br>`val`<br>`eval`<br>`dcase_aac_test`<br>`dcase_aac_analysis`<br>`dcase_t2a_audio`<br>`dcase_t2a_captions` |
 | MACS | 48 | 13 | TAU Urban Acoustic Scenes 2019 | `full` |
-| WavCaps | 32 | 941 | AudioSet<br>BBC Sound Effects<br>Freesound<br>SoundBible | `audioset`<br>`audioset_no_audiocaps_v1`<br>`bbc`<br>`freesound`<br>`freesound_no_clotho`<br>`freesound_no_clotho_v2`<br>`soundbible` |
+| WavCaps | 32 | 941 | AudioSet<br>BBC Sound Effects<br>Freesound<br>SoundBible | `audioset`<br>`audioset_no_audiocaps_v1`<br>`bbc`<br>`freesound`<br>`freesound_no_clotho_v2`<br>`soundbible` |
 
 For Clotho, the **dev** subset should be used for training, val for validation and eval for testing.
 
