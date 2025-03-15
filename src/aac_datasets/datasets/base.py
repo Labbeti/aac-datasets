@@ -16,7 +16,6 @@ from typing import (
     TypeVar,
     Union,
     overload,
-    TypeAlias,
 )
 
 import torchaudio
@@ -30,7 +29,7 @@ except ImportError:
 
 from torch import Tensor
 from torch.utils.data.dataset import Dataset
-from typing_extensions import TypeGuard
+from typing_extensions import TypeAlias, TypeGuard
 
 from aac_datasets.utils.collections import dict_list_to_list_dict
 from aac_datasets.utils.type_guards import (
