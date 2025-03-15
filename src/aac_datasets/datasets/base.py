@@ -16,6 +16,7 @@ from typing import (
     TypeVar,
     Union,
     overload,
+    TypeAlias,
 )
 
 import torchaudio
@@ -43,8 +44,8 @@ from aac_datasets.utils.type_guards import (
 pylog = logging.getLogger(__name__)
 
 ItemType = TypeVar("ItemType", covariant=True)
-IndexType = Union[int, Iterable[int], Iterable[bool], Tensor, slice, None]
-ColumnType = Union[str, Iterable[str], None]
+IndexType: TypeAlias = Union[int, Iterable[int], Iterable[bool], Tensor, slice, None]
+ColumnType: TypeAlias = Union[str, Iterable[str], None]
 
 _INDEX_TYPES = ("int", "Iterable[int]", "Iterable[bool]", "Tensor", "slice", "None")
 
