@@ -52,7 +52,7 @@ class MACSCard(DatasetCard):
     PRETTY_NAME: str = "MACS"
     SAMPLE_RATE: int = 48_000  # Hz
     SIZE_CATEGORIES: Tuple[str, ...] = ("1K<n<10K",)
-    SUBSETS: Tuple[str, ...] = ("full",)
+    SUBSETS: Tuple[MACSSubset, ...] = ("full",)
     TASK_CATEGORIES: Tuple[str, ...] = ("audio-to-text", "text-to-audio")
 
 

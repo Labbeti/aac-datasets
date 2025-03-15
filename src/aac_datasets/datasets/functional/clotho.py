@@ -63,7 +63,7 @@ class ClothoCard(DatasetCard):
     PRETTY_NAME: str = "Clotho"
     SAMPLE_RATE: int = 44_100  # Hz
     SIZE_CATEGORIES: Tuple[str, ...] = ("1K<n<10K",)
-    SUBSETS: Tuple[str, ...] = tuple(CAPTIONS_PER_AUDIO.keys())
+    SUBSETS: Tuple[ClothoSubset, ...] = tuple(CAPTIONS_PER_AUDIO.keys())
     TASK_CATEGORIES: Tuple[str, ...] = ("audio-to-text", "text-to-audio")
     VERSIONS: Tuple[ClothoVersion, ...] = ("v1", "v2", "v2.1")
 
