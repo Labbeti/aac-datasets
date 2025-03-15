@@ -8,4 +8,4 @@ soundfile; sys_platform == 'win32'
 torch>=1.10.1
 torchaudio>=0.10.1
 tqdm>=4.64.0
-typing-extensions
+typing-extensions>=4.6.0
