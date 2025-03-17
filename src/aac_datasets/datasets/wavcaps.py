@@ -196,10 +196,13 @@ class WavCaps(AACDataset[WavCapsItem]):
         ]
         raw_data["index"] = list(range(size))
 
+        column_names = list(WavCapsItem.__required_keys__) + list(  # type: ignore
+            WavCapsItem.__optional_keys__  # type: ignore
+        )  # type: ignore
         super().__init__(
             raw_data=raw_data,
             transform=transform,
-            column_names=WavCapsItem.__required_keys__,
+            column_names=column_names,
             flat_captions=False,
             sr=WavCapsCard.SAMPLE_RATE,
             verbose=verbose,

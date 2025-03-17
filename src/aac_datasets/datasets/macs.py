@@ -136,10 +136,13 @@ class MACS(AACDataset[MACSItem]):
         ]
         raw_data["index"] = list(range(size))
 
+        column_names = list(MACSItem.__required_keys__) + list(  # type: ignore
+            MACSItem.__optional_keys__  # type: ignore
+        )
         super().__init__(
             raw_data=raw_data,
             transform=transform,
-            column_names=MACSItem.__required_keys__,
+            column_names=column_names,
             flat_captions=flat_captions,
             sr=MACSCard.SAMPLE_RATE,
             verbose=verbose,

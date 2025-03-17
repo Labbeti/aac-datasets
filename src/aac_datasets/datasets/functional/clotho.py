@@ -14,6 +14,7 @@ from py7zr import SevenZipFile
 from typing_extensions import Literal
 
 from aac_datasets.datasets.functional.common import DatasetCard, LinkInfoHash
+from aac_datasets.utils.collections import union_dicts
 from aac_datasets.utils.download import download_file, hash_file
 from aac_datasets.utils.globals import _get_root
 
@@ -112,7 +113,7 @@ def load_clotho_dataset(
 
         if subset == "dcase_t2a_captions":
             captions_data = [
-                data | {"file_name": f"no_fname_{i}"}
+                union_dicts(data, {"file_name": f"no_fname_{i}"})
                 for i, data in enumerate(captions_data)
             ]
 

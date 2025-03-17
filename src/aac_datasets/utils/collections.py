@@ -147,6 +147,7 @@ def dict_list_to_list_dict(
         return []
 
     lengths = [len(seq) for seq in dic.values()]
+
     if key_mode == "same":
         if not all_eq(lengths):
             raise ValueError("Invalid sequences for batch.")
@@ -156,8 +157,9 @@ def dict_list_to_list_dict(
     elif key_mode == "union":
         length = max(lengths)
     else:
+        msg = f"Invalid argument key_mode={key_mode}. (expected one of {KEY_MODES})"
         raise ValueError(
-            f"Invalid argument key_mode={key_mode}. (expected one of {KEY_MODES})"
+            msg
         )
 
     result = [
@@ -165,3 +167,11 @@ def dict_list_to_list_dict(
         for i in range(length)
     ]
     return result
+
+
+def union_dicts(*dicts: Dict[T, U]) -> Dict[T, U]:
+    """Performs union of elements in dicts."""
+    out = {}
+    for dic in dicts:
+        out.update(dic)
+    return out

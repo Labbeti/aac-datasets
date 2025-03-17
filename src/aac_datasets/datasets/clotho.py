@@ -165,8 +165,8 @@ class Clotho(AACDataset[ClothoItem]):
             )
 
         # Exclude some columns containing empty values for several subsets
-        column_names = list(ClothoItem.__required_keys__) + list(
-            ClothoItem.__optional_keys__
+        column_names = list(ClothoItem.__required_keys__) + list(  # type: ignore
+            ClothoItem.__optional_keys__  # type: ignore
         )
         if subset == "dcase_aac_test":
             removed_columns = ("captions", "sound_id", "keywords", "sound_link")

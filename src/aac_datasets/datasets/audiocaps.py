@@ -204,8 +204,8 @@ class AudioCaps(AACDataset[AudioCapsItem]):
         ]
         raw_data["index"] = list(range(size))
 
-        column_names = list(AudioCapsItem.__required_keys__) + list(
-            AudioCapsItem.__optional_keys__
+        column_names = list(AudioCapsItem.__required_keys__) + list(  # type: ignore
+            AudioCapsItem.__optional_keys__  # type: ignore
         )
         if not with_tags:
             column_names.remove("tags")

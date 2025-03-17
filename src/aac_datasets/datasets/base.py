@@ -31,7 +31,7 @@ from torch import Tensor
 from torch.utils.data.dataset import Dataset
 from typing_extensions import TypeAlias, TypeGuard
 
-from aac_datasets.utils.collections import dict_list_to_list_dict
+from aac_datasets.utils.collections import dict_list_to_list_dict, union_dicts
 from aac_datasets.utils.type_guards import (
     is_iterable_bool,
     is_iterable_int,
@@ -127,7 +127,7 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
     @property
     def all_columns(self) -> List[str]:
         """The name of all columns of the dataset."""
-        return list(self._raw_data | self._online_fns)
+        return list(union_dicts(self._raw_data, self._online_fns))
 
     @property
     def column_names(self) -> List[str]:
@@ -193,7 +193,7 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
         ...
 
     @overload
-    def at(
+    def at(  # type: ignore
         self,
         index: Union[Iterable[int], Iterable[bool], slice, None],
         column: str,
@@ -407,7 +407,7 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
         ...
 
     @overload
-    def __getitem__(self, index: Tuple[Union[Iterable[int], slice, None], str]) -> List:
+    def __getitem__(self, index: Tuple[Union[Iterable[int], slice, None], str]) -> List:  # type: ignore
         ...
 
     @overload

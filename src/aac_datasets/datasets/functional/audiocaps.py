@@ -21,6 +21,7 @@ from aac_datasets.utils.audioset_mapping import (
     download_audioset_mapping,
     load_audioset_mapping,
 )
+from aac_datasets.utils.collections import union_dicts
 from aac_datasets.utils.download import download_file
 from aac_datasets.utils.globals import _get_ffmpeg_path, _get_root, _get_ytdlp_path
 
@@ -494,10 +495,11 @@ def _download_audio_files(
 
         start_time = int(start_time)
         fname = _AUDIO_FNAME_FORMAT.format(
-            youtube_id=youtube_id, start_time=start_time, audio_format=audio_format
+            youtube_id=youtube_id,
+            start_time=start_time,
+            audio_format=audio_format,
         )
-
-        line.update({"start_time": start_time, "fname": fname})
+        line = union_dicts(line, {"start_time": start_time, "fname": fname})
         return line
 
     captions_data = [_cast_line(line, audio_format) for line in captions_data]

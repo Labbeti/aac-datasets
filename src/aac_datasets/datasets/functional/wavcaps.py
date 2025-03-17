@@ -748,7 +748,7 @@ _DEFAULT_VALUES = {
 }
 
 _WAVCAPS_RAW_COLUMNS = tuple(
-    _WavCapsRawItem.__required_keys__ | _WavCapsRawItem.__optional_keys__
+    _WavCapsRawItem.__required_keys__ | _WavCapsRawItem.__optional_keys__  # type: ignore
 )
 
 _WAVCAPS_AUDIO_DNAMES: Dict[WavCapsSource, str] = {
