@@ -158,9 +158,7 @@ def dict_list_to_list_dict(
         length = max(lengths)
     else:
         msg = f"Invalid argument key_mode={key_mode}. (expected one of {KEY_MODES})"
-        raise ValueError(
-            msg
-        )
+        raise ValueError(msg)
 
     result = [
         {k: (v[i] if i < len(v) else default_val) for k, v in dic.items()}
