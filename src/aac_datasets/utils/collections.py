@@ -82,9 +82,7 @@ def list_dict_to_dict_list(
     elif key_mode == "union":
         keys = union_lists([item.keys() for item in lst])
     else:
-        raise ValueError(
-            f"Invalid argument {key_mode=}. (expected one of {KEY_MODES})"
-        )
+        raise ValueError(f"Invalid argument {key_mode=}. (expected one of {KEY_MODES})")
 
     return {key: [item.get(key, default_val) for item in lst] for key in keys}
 

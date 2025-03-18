@@ -403,9 +403,7 @@ def download_audiocaps_dataset(
         )
 
     if verbose >= 2:
-        msg = (
-            f"Dataset {AudioCapsCard.PRETTY_NAME} {subset=}) has been prepared."
-        )
+        msg = f"Dataset {AudioCapsCard.PRETTY_NAME} {subset=}) has been prepared."
         pylog.debug(msg)
 
 

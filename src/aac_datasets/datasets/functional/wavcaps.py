@@ -115,9 +115,7 @@ def load_wavcaps_dataset(
 
     root = _get_root(root)
     if subset not in WavCapsCard.SUBSETS:
-        msg = (
-            f"Invalid argument {subset=}. (expected one of {WavCapsCard.SUBSETS})"
-        )
+        msg = f"Invalid argument {subset=}. (expected one of {WavCapsCard.SUBSETS})"
         raise ValueError(msg)
 
     if subset == "audioset":
