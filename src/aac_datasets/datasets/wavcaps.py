@@ -154,7 +154,7 @@ class WavCaps(AACDataset[WavCapsItem]):
             defaults to "zip".
         """
         if subset not in WavCapsCard.SUBSETS:
-            msg = f"Invalid argument subset={subset} for {WavCapsCard.PRETTY_NAME}. (expected one of {WavCapsCard.SUBSETS})"
+            msg = f"Invalid argument {subset=} for {WavCapsCard.PRETTY_NAME}. (expected one of {WavCapsCard.SUBSETS})"
             raise ValueError(msg)
 
         root = _get_root(root)
@@ -198,7 +198,8 @@ class WavCaps(AACDataset[WavCapsItem]):
 
         column_names = list(WavCapsItem.__required_keys__) + list(  # type: ignore
             WavCapsItem.__optional_keys__  # type: ignore
-        )  # type: ignore
+        )
+
         super().__init__(
             raw_data=raw_data,
             transform=transform,

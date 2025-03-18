@@ -81,7 +81,7 @@ def hash_file(
         hasher = hashlib.md5()
     else:
         raise ValueError(
-            f"Invalid argument hash_type={hash_type}. (expected one of {HASH_TYPES})"
+            f"Invalid argument {hash_type=}. (expected one of {HASH_TYPES})"
         )
 
     with open(fpath, "rb") as file:

@@ -137,7 +137,7 @@ class Clotho(AACDataset[ClothoItem]):
             defaults to 'v2.1'.
         """
         if version not in ClothoCard.VERSIONS:
-            msg = f"Invalid Clotho argument version={version}. Must be one of {ClothoCard.VERSIONS}."
+            msg = f"Invalid Clotho argument {version=}. Must be one of {ClothoCard.VERSIONS}."
             raise ValueError(msg)
 
         if version == "v2":
@@ -148,7 +148,7 @@ class Clotho(AACDataset[ClothoItem]):
             pylog.warning(msg)
 
         if subset not in ClothoCard.SUBSETS:
-            msg = f"Invalid Clotho argument subset={subset} for version={version}. Must be one of {ClothoCard.SUBSETS}."
+            msg = f"Invalid Clotho argument subset={subset} for {version=}. Must be one of {ClothoCard.SUBSETS}."
             raise ValueError(msg)
 
         root = _get_root(root)

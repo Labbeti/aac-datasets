@@ -160,7 +160,7 @@ class AudioCaps(AACDataset[AudioCapsItem]):
             defaults to 'v1'.
         """
         if subset not in AudioCapsCard.SUBSETS:
-            msg = f"Invalid argument subset={subset} for AudioCaps. (expected one of {AudioCapsCard.SUBSETS})"
+            msg = f"Invalid argument {subset=} for AudioCaps. (expected one of {AudioCapsCard.SUBSETS})"
             raise ValueError(msg)
 
         root = _get_root(root)
@@ -295,7 +295,7 @@ class AudioCaps(AACDataset[AudioCapsItem]):
         # Sanity check
         if audio.nelement() == 0:
             raise RuntimeError(
-                f"Invalid audio number of elements in {fpath}. (expected audio.nelement()={audio.nelement()} > 0)"
+                f"Invalid audio number of elements in {fpath}. (expected {audio.nelement()=} > 0)"
             )
 
         if self._sr is not None and (self._sr != sr):

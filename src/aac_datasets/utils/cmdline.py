@@ -16,7 +16,7 @@ def _str_to_bool(s: str) -> bool:
         return False
     else:
         raise ValueError(
-            f"Invalid argument s={s}. (expected one of {_TRUE_VALUES + _FALSE_VALUES})"
+            f"Invalid argument {s=}. (expected one of {_TRUE_VALUES + _FALSE_VALUES})"
         )
 
 

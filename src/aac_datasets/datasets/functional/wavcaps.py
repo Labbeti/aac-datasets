@@ -116,7 +116,7 @@ def load_wavcaps_dataset(
     root = _get_root(root)
     if subset not in WavCapsCard.SUBSETS:
         msg = (
-            f"Invalid argument subset={subset}. (expected one of {WavCapsCard.SUBSETS})"
+            f"Invalid argument {subset=}. (expected one of {WavCapsCard.SUBSETS})"
         )
         raise ValueError(msg)
 
@@ -160,7 +160,7 @@ def load_wavcaps_dataset(
             csv_fname = _WAVCAPS_LINKS["blacklist_clotho_v2"]["fname"]
 
         else:
-            msg = f"INTERNAL ERROR: Invalid argument subset={subset}."
+            msg = f"INTERNAL ERROR: Invalid argument {subset=}."
             raise ValueError(msg)
 
         raw_data = _load_wavcaps_dataset_impl(
@@ -286,7 +286,7 @@ def download_wavcaps_dataset(
 
     if subset not in WavCapsCard.SUBSETS:
         raise ValueError(
-            f"Invalid argument subset={subset}. (expected one of {WavCapsCard.SUBSETS})"
+            f"Invalid argument {subset=}. (expected one of {WavCapsCard.SUBSETS})"
         )
 
     # note: verbose=-1 to disable warning triggered when dset is not prepared
@@ -483,7 +483,7 @@ def download_wavcaps_dataset(
                     continue
                 fpath = osp.join(archive_source_dpath, name)
                 if verbose >= 1:
-                    pylog.info(f"Removing archive file {name} for source={source}...")
+                    pylog.info(f"Removing archive file {name} for {source=}...")
                 os.remove(fpath)
 
 
@@ -536,7 +536,7 @@ def _load_wavcaps_dataset_impl(
     revision: Optional[str],
 ) -> Dict[str, List[Any]]:
     if not _is_prepared_wavcaps(root, hf_cache_dir, revision, subset, verbose):
-        msg = f"{WavCapsCard.PRETTY_NAME} is not prepared in root={root}. Please use download=True to install it in root."
+        msg = f"{WavCapsCard.PRETTY_NAME} is not prepared in {root=}. Please use download=True to install it in root."
         raise RuntimeError(msg)
 
     json_dpath = _get_json_dpath(root, hf_cache_dir, revision)
@@ -585,7 +585,7 @@ def _load_wavcaps_dataset_impl(
             raw_data["fname"] += fnames
 
         else:
-            msg = f"Invalid source={source} in json_path={json_path}. (expected one of {WavCapsCard.SOURCES})"
+            msg = f"Invalid source={source} in {json_path=}. (expected one of {WavCapsCard.SOURCES})"
             raise RuntimeError(msg)
 
         for k in _WAVCAPS_RAW_COLUMNS:
@@ -598,7 +598,7 @@ def _load_wavcaps_dataset_impl(
             elif k in ("audio", "file_name"):
                 pass
             else:
-                raise RuntimeError(f"Invalid column name {k}. (with source={source})")
+                raise RuntimeError(f"Invalid column name {k}. (with {source=})")
 
         raw_data["source"] += sources
 
@@ -674,7 +674,7 @@ def _is_prepared_wavcaps(
         )
         if not osp.isdir(audio_subset_dpath):
             if verbose >= 0:
-                msg = f"Cannot find directory audio_subset_dpath={audio_subset_dpath}."
+                msg = f"Cannot find directory {audio_subset_dpath=}."
                 pylog.error(msg)
             return False
 
@@ -682,7 +682,7 @@ def _is_prepared_wavcaps(
         expected_size = WavCapsCard.EXPECTED_SIZES[source]
         if expected_size != len(audio_fnames):
             if verbose >= 0:
-                msg = f"Invalid number of files for source={source}. (expected {expected_size} but found {len(audio_fnames)} files)"
+                msg = f"Invalid number of files for {source=}. (expected {expected_size} but found {len(audio_fnames)} files)"
                 pylog.error(msg)
             return False
     return True

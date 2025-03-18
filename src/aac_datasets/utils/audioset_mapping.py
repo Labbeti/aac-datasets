@@ -52,15 +52,15 @@ def load_audioset_mapping(
     NAMES = ("index", "mid", "display_name")
     if key_name not in NAMES:
         raise ValueError(
-            f"Invalid argument key_name={key_name}. (expected one of {NAMES})"
+            f"Invalid argument {key_name=}. (expected one of {NAMES})"
         )
     if val_name not in NAMES:
         raise ValueError(
-            f"Invalid argument val_name={val_name}. (expected one of {NAMES})"
+            f"Invalid argument {val_name=}. (expected one of {NAMES})"
         )
     if key_name == val_name:
         raise ValueError(
-            f"Invalid arguments key_name={key_name} with val_name={val_name}. (expected different values)"
+            f"Invalid arguments key_name={key_name} with {val_name=}. (expected different values)"
         )
 
     cache_path = get_audioset_mapping_cache_path(cache_path)
@@ -72,7 +72,7 @@ def load_audioset_mapping(
     if not osp.isfile(map_fpath):
         if offline:
             raise FileNotFoundError(
-                f"Cannot find or download audioset mapping file in '{map_fpath}' with mode offline={offline}."
+                f"Cannot find or download audioset mapping file in '{map_fpath}' with mode {offline=}."
             )
 
         download_audioset_mapping(cache_path, verbose)

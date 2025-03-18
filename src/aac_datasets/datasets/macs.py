@@ -106,7 +106,7 @@ class MACS(AACDataset[MACSItem]):
             defaults to True.
         """
         if subset not in MACSCard.SUBSETS:
-            msg = f"Invalid argument subset={subset} for MACS. (expected one of {MACSCard.SUBSETS})"
+            msg = f"Invalid argument {subset=} for MACS. (expected one of {MACSCard.SUBSETS})"
             raise ValueError(msg)
 
         root = _get_root(root)

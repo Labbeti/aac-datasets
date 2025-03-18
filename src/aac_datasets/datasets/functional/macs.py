@@ -76,7 +76,7 @@ def load_macs_dataset(
     root = _get_root(root)
     if not _is_prepared_macs(root):
         raise RuntimeError(
-            f"Cannot load data: macs is not prepared in data root={root}. Please use download=True in dataset constructor."
+            f"Cannot load data: macs is not prepared in data {root=}. Please use download=True in dataset constructor."
         )
 
     macs_dpath = _get_macs_root(root)
@@ -155,7 +155,7 @@ def load_macs_dataset(
     assert all(len(values) == dataset_size for values in raw_data.values())
 
     if verbose >= 1:
-        msg = f"Dataset {MACSCard.PRETTY_NAME} ({subset}) has been loaded. (len={len(next(iter(raw_data.values())))})"
+        msg = f"Dataset {MACSCard.PRETTY_NAME} ({subset}) has been loaded. {len(next(iter(raw_data.values())))=})"
         pylog.info(msg)
 
     return raw_data, annotator_id_to_competence
@@ -262,7 +262,7 @@ def download_macs_dataset(
 
         if verbose >= 2:
             pylog.debug(
-                f"Check to extract TAU Urban acoustic scenes archive zip_fname={zip_fname}..."
+                f"Check to extract TAU Urban acoustic scenes archive {zip_fname=}..."
             )
 
         is_audio_archive = name.startswith("audio")

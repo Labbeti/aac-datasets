@@ -229,7 +229,7 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
         elif isinstance(index, Tensor):
             if __debug__:
                 if index.ndim not in (0, 1):
-                    msg = f"Invalid number of dimensions for index argument. (found index.ndim={index.ndim} but expected 0 or 1)"
+                    msg = f"Invalid number of dimensions for index argument. (found {index.ndim=} but expected 0 or 1)"
                     raise ValueError(msg)
                 elif index.is_floating_point():
                     msg = "Invalid tensor dtype. (found floating-point tensor but expected integer or bool tensor)"
@@ -262,7 +262,7 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
                 index = [i for i, idx_i in enumerate(index) if idx_i]
 
             elif __debug__ and not is_list_int(index):
-                msg = f"Invalid input type for index={index}. (expected Iterable[int], not Iterable[{index[0].__class__.__name__}])"
+                msg = f"Invalid input type for {index=}. (expected Iterable[int], not Iterable[{index[0].__class__.__name__}])"
                 raise TypeError(msg)
 
             values = [
@@ -346,7 +346,7 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
     ) -> None:
         """Add a new post-processed column to this dataset."""
         if not allow_replace and column in self._online_fns:
-            msg = f"Column '{column}' already exists in {self} and found argument allow_replace={allow_replace}."
+            msg = f"Column '{column}' already exists in {self} and found argument {allow_replace=}."
             raise ValueError(msg)
         self._online_fns[column] = load_fn
 
@@ -366,7 +366,7 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
     ) -> Callable[[Any, int], Any]:
         """Load all data from a post-column data into raw data."""
         if column not in self._online_fns:
-            msg = f"Invalid argument column={column}."
+            msg = f"Invalid argument {column=}."
             raise ValueError(msg)
 
         column_data = [
@@ -475,12 +475,12 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
         expected_columns = dict.fromkeys(self.all_columns)
         invalid_columns = [name for name in columns if name not in expected_columns]
         if len(invalid_columns) > 0:
-            msg = f"Invalid argument columns={columns}. (found {len(invalid_columns)} invalids column names for {self.__class__.__name__}: {invalid_columns})"
+            msg = f"Invalid argument {columns=}. (found {len(invalid_columns)} invalids column names for {self.__class__.__name__}: {invalid_columns})"
             raise ValueError(msg)
 
         invalid_columns = [name for name in columns if not self.has_column(name)]
         if len(invalid_columns) > 0:
-            msg = f"Invalid argument columns={columns}. (found {len(invalid_columns)} invalids column names for {self.__class__.__name__}: {invalid_columns})"
+            msg = f"Invalid argument {columns=}. (found {len(invalid_columns)} invalids column names for {self.__class__.__name__}: {invalid_columns})"
             raise ValueError(msg)
 
     def _flat_raw_data(self) -> None:
@@ -498,7 +498,7 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
             return fn(self, index)
         else:
             raise ValueError(
-                f"Invalid argument column={column} at index={index}. (expected one of {self.all_columns})"
+                f"Invalid argument column={column} at {index=}. (expected one of {self.all_columns})"
             )
 
     def _load_audio(self, index: int) -> Tensor:
@@ -511,7 +511,7 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
 
         # Sanity check
         if audio.nelement() == 0:
-            msg = f"Invalid audio number of elements in {fpath}. (expected audio.nelement()={audio.nelement()} > 0)"
+            msg = f"Invalid audio number of elements in {fpath}. (expected {audio.nelement()=} > 0)"
             raise RuntimeError(msg)
 
         if self._sr is not None and (self._sr != sr):

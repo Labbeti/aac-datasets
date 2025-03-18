@@ -106,7 +106,7 @@ def __get_default_value(value_name: str) -> str:
 
     pylog.error(f"Values: {values}")
     raise RuntimeError(
-        f"Invalid default value for value_name={value_name}. (all default values are None)"
+        f"Invalid default value for {value_name=}. (all default values are None)"
     )
 
 

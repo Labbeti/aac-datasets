@@ -126,7 +126,7 @@ def load_audiocaps_dataset(
         version=version,
     )
     if not is_prepared:
-        msg = f"Cannot load data: audiocaps_{subset} is not prepared in data root={root}. Please use download=True in dataset constructor."
+        msg = f"Cannot load data: audiocaps_{subset} is not prepared in data {root=}. Please use download=True in dataset constructor."
         raise RuntimeError(msg)
 
     version_links = _AUDIOCAPS_LINKS[version]
@@ -278,7 +278,7 @@ def load_audiocaps_dataset(
     raw_data["start_time"] = list(map(int, raw_data["start_time"]))
 
     if verbose >= 1:
-        msg = f"{AudioCapsCard.PRETTY_NAME}(subset={subset}) has been loaded. (len={len(fnames_lst)})"
+        msg = f"{AudioCapsCard.PRETTY_NAME}(subset={subset}) has been loaded. {len(fnames_lst)=})"
         pylog.info(msg)
 
     return raw_data, index_to_name
@@ -382,7 +382,7 @@ def download_audiocaps_dataset(
     if not osp.isfile(captions_fpath):
         url = links["captions"]["url"]
         if url is None:
-            msg = f"AudioCaps subset '{subset}' cannot be automatically downloaded. (found url={url})"
+            msg = f"AudioCaps subset '{subset}' cannot be automatically downloaded. (found {url=})"
             raise ValueError(msg)
         download_file(url, captions_fpath, verbose=verbose)
 
@@ -404,7 +404,7 @@ def download_audiocaps_dataset(
 
     if verbose >= 2:
         msg = (
-            f"Dataset {AudioCapsCard.PRETTY_NAME} (subset={subset}) has been prepared."
+            f"Dataset {AudioCapsCard.PRETTY_NAME} {subset=}) has been prepared."
         )
         pylog.debug(msg)
 
@@ -490,7 +490,7 @@ def _download_audio_files(
         start_time = line["start_time"]
 
         if not start_time.isdigit():
-            msg = f"Start time '{start_time}' is not an integer (with youtube_id={youtube_id})."
+            msg = f"Start time '{start_time}' is not an integer (with {youtube_id=})."
             raise RuntimeError(msg)
 
         start_time = int(start_time)
@@ -846,19 +846,19 @@ def _is_valid_audio_file(
 
     msgs = []
     if min_n_frames is not None and metadata.num_frames < min_n_frames:
-        msg = f"Found file '{fpath}' already downloaded but it is invalid (audio is shorter than min_n_frames={min_n_frames} samples)."
+        msg = f"Found file '{fpath}' already downloaded but it is invalid (audio is shorter than {min_n_frames=} samples)."
         msgs.append(msg)
 
     if max_n_frames is not None and metadata.num_frames > max_n_frames:
-        msg = f"Found file '{fpath}' already downloaded but it is invalid (audio is longer than max_n_frames={max_n_frames} samples)."
+        msg = f"Found file '{fpath}' already downloaded but it is invalid (audio is longer than {max_n_frames=} samples)."
         msgs.append(msg)
 
     if sr is not None and metadata.sample_rate != sr:
-        msg = f"Found file '{fpath}' already downloaded but it is invalid (invalid sr={metadata.sample_rate} != {sr})."
+        msg = f"Found file '{fpath}' already downloaded but it is invalid (invalid {metadata.sample_rate=} != {sr})."
         msgs.append(msg)
 
     if n_channels is not None and metadata.num_channels != n_channels:
-        msg = f"Found file '{fpath}' already downloaded but it is invalid (invalid n_channels={metadata.num_channels} != {sr})."
+        msg = f"Found file '{fpath}' already downloaded but it is invalid (invalid {metadata.num_channels=} != {sr})."
         msgs.append(msg)
 
     for msg in msgs:
