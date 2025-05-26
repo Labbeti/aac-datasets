@@ -283,9 +283,8 @@ def download_wavcaps_dataset(
         )
 
     if subset not in WavCapsCard.SUBSETS:
-        raise ValueError(
-            f"Invalid argument {subset=}. (expected one of {WavCapsCard.SUBSETS})"
-        )
+        msg = f"Invalid argument {subset=}. (expected one of {WavCapsCard.SUBSETS})"
+        raise ValueError(msg)
 
     # note: verbose=-1 to disable warning triggered when dset is not prepared
     if not force and _is_prepared_wavcaps(
