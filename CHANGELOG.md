@@ -2,10 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.6.0] UNRELEASED
+## [0.6.0] 2025-05-26
 ### Added
-- Methods `to_dict` and `to_list` to datasets classes.
 - AudioCaps support for version `v2`.
+- Methods `to_dict` and `to_list` to datasets classes.
 
 ### Changed
 - Rename AudioCaps v1 `train_v2` subset to `train_fixed` to avoid confusion with AudioCaps v2 `train` subset.

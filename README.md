@@ -139,7 +139,7 @@ dataset = AudioCaps(
 
 ## Additional information
 ### Compatibility with audiocaps-download
-If you want to use [audiocaps-download 1.0](https://github.com/MorenoLaQuatra/audiocaps-download) package to download AudioCaps, you will have to respect the AudioCaps folder tree:
+If you want to use [audiocaps-download 1.0](https://github.com/MorenoLaQuatra/audiocaps-download) package to download AudioCaps (v1 only), you will have to respect the AudioCaps folder tree:
 ```python
 from audiocaps_download import Downloader
 root = "your/path/to/root"
@@ -177,14 +177,14 @@ If you use this software, please consider cite it as "Labbe, E. (2013). aac-data
 
 ```
 @software{
-    Labbe_aac_datasets_2024,
+    Labbe_aac_datasets_2025,
     author = {Labbé, Étienne},
     license = {MIT},
-    month = {03},
+    month = {05},
     title = {{aac-datasets}},
     url = {https://github.com/Labbeti/aac-datasets/},
-    version = {0.5.2},
-    year = {2024}
+    version = {0.6.0},
+    year = {2025}
 }
 ```
 
