@@ -13,10 +13,10 @@ from typing_extensions import TypedDict
 from aac_datasets.datasets.base import AACDataset
 from aac_datasets.datasets.functional.macs import (
     MACSCard,
+    MACSSubset,
     _get_audio_dpath,
     download_macs_dataset,
     load_macs_dataset,
-    MACSSubset,
 )
 from aac_datasets.utils.globals import _get_root
 

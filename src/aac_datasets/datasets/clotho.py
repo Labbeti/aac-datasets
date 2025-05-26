@@ -12,11 +12,11 @@ from typing_extensions import NotRequired, TypedDict
 from aac_datasets.datasets.base import AACDataset
 from aac_datasets.datasets.functional.clotho import (
     ClothoCard,
+    ClothoSubset,
+    ClothoVersion,
     _get_audio_subset_dpath,
     download_clotho_dataset,
     load_clotho_dataset,
-    ClothoSubset,
-    ClothoVersion,
 )
 from aac_datasets.utils.globals import _get_root
 
