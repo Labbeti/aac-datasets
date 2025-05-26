@@ -3,7 +3,6 @@
 
 import platform
 import sys
-
 from pathlib import Path
 from typing import Dict
 
@@ -12,10 +11,9 @@ import torchaudio
 import yaml
 
 import aac_datasets
-
 from aac_datasets.utils.globals import (
-    get_default_root,
     get_default_ffmpeg_path,
+    get_default_root,
     get_default_ytdlp_path,
 )
 
