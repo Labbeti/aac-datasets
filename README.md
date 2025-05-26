@@ -45,7 +45,7 @@ audio, captions = item["audio"], item["captions"]
 ```python
 from torch.utils.data.dataloader import DataLoader
 from aac_datasets import Clotho
-from aac_datasets.utils import BasicCollate
+from aac_datasets.utils.collate import BasicCollate
 
 dataset = Clotho(root=".", download=True)
 dataloader = DataLoader(dataset, batch_size=4, collate_fn=BasicCollate())
@@ -78,14 +78,14 @@ aac-datasets-download --root "." clotho --subsets "dev"
 
 | Dataset | Sampling<br>rate (kHz) | Estimated<br>size (GB) | Source | Subsets |
 |:---:|:---:|:---:|:---:|:---:|
-| AudioCaps | 32 | 43 | AudioSet | `train`<br>`val`<br>`test`<br>`train_v2` |
+| AudioCaps | 32 | 43 | AudioSet | `train`<br>`val`<br>`test`<br>`train_fixed` |
 | Clotho | 44.1 | 53  | Freesound | `dev`<br>`val`<br>`eval`<br>`dcase_aac_test`<br>`dcase_aac_analysis`<br>`dcase_t2a_audio`<br>`dcase_t2a_captions` |
 | MACS | 48 | 13 | TAU Urban Acoustic Scenes 2019 | `full` |
-| WavCaps | 32 | 941 | AudioSet<br>BBC Sound Effects<br>Freesound<br>SoundBible | `audioset`<br>`audioset_no_audiocaps`<br>`bbc`<br>`freesound`<br>`freesound_no_clotho`<br>`freesound_no_clotho_v2`<br>`soundbible` |
+| WavCaps | 32 | 941 | AudioSet<br>BBC Sound Effects<br>Freesound<br>SoundBible | `audioset`<br>`audioset_no_audiocaps_v1`<br>`bbc`<br>`freesound`<br>`freesound_no_clotho_v2`<br>`soundbible` |
 
 For Clotho, the **dev** subset should be used for training, val for validation and eval for testing.
 
-Here is additional statistics on the train subset for AudioCaps, Clotho, MACS and WavCaps:
+Here is additional statistics of the train subsets from AudioCaps (v1), Clotho (v2.1), MACS and WavCaps:
 
 | | AudioCaps/train | Clotho/dev | MACS/full | WavCaps/full |
 |:---:|:---:|:---:|:---:|:---:|
@@ -107,6 +107,8 @@ Here is additional statistics on the train subset for AudioCaps, Clotho, MACS an
 ## Requirements
 
 This package has been developped for Ubuntu 20.04, and it is expected to work on most Linux-based distributions.
+It has been tested with Python versions 3.7 and 3.13.
+
 ### Python packages
 
 Python requirements are automatically installed when using pip on this repository.
@@ -123,8 +125,7 @@ numpy >= 1.21.2
 ### External requirements (AudioCaps only)
 
 The external requirements needed to download **AudioCaps** are **ffmpeg** and **yt-dlp**.
-**ffmpeg** can be install on Ubuntu using `sudo apt install ffmpeg` and **yt-dlp** from the [official repo](https://github.com/yt-dlp/yt-dlp).
-<!-- programs can be downloaded on Ubuntu using `sudo apt install ffmpeg`. -->
+**ffmpeg** can be installed on Ubuntu using `sudo apt install ffmpeg` and **yt-dlp** from the [official repo](https://github.com/yt-dlp/yt-dlp).
 
 You can also override their paths for AudioCaps:
 ```python
@@ -138,7 +139,7 @@ dataset = AudioCaps(
 
 ## Additional information
 ### Compatibility with audiocaps-download
-If you want to use [audiocaps-download 1.0](https://github.com/MorenoLaQuatra/audiocaps-download) package to download AudioCaps, you will have to respect the AudioCaps folder tree:
+If you want to use [audiocaps-download 1.0](https://github.com/MorenoLaQuatra/audiocaps-download) package to download AudioCaps (v1 only), you will have to respect the AudioCaps folder tree:
 ```python
 from audiocaps_download import Downloader
 root = "your/path/to/root"
@@ -176,16 +177,22 @@ If you use this software, please consider cite it as "Labbe, E. (2013). aac-data
 
 ```
 @software{
-    Labbe_aac_datasets_2024,
+    Labbe_aac_datasets_2025,
     author = {Labbé, Étienne},
     license = {MIT},
-    month = {03},
+    month = {05},
     title = {{aac-datasets}},
     url = {https://github.com/Labbeti/aac-datasets/},
-    version = {0.5.2},
-    year = {2024}
+    version = {0.6.0},
+    year = {2025}
 }
 ```
+
+## See also
+- [AudioCaps official data repository](https://github.com/cdjkim/audiocaps/tree/master)
+- [Clotho official data repository](https://zenodo.org/records/4783391)
+- [MACS official data repository](https://zenodo.org/records/5114771)
+- [WavCaps official data repository](https://huggingface.co/datasets/cvssp/WavCaps)
 
 ## Contact
 Maintainer:

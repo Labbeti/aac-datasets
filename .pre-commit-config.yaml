@@ -32,5 +32,4 @@ repos:
       - id: mixed-line-ending
         args: ['--fix=no']
       - id: flake8
-        # args: ['--ignore=E203,E501,F811,E712,W503']
         args: ['--config=.flake8']

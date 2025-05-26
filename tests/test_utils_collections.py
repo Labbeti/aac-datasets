@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import unittest
-
 from unittest import TestCase
 
 from aac_datasets.utils.collections import intersect_lists
@@ -14,7 +13,7 @@ class TestCollections(TestCase):
         expected = ["a", "b"]
 
         output = intersect_lists(input_)
-        self.assertListEqual(output, expected)
+        assert output == expected
 
 
 if __name__ == "__main__":

@@ -12,6 +12,8 @@ from typing_extensions import NotRequired, TypedDict
 from aac_datasets.datasets.base import AACDataset
 from aac_datasets.datasets.functional.clotho import (
     ClothoCard,
+    ClothoSubset,
+    ClothoVersion,
     _get_audio_subset_dpath,
     download_clotho_dataset,
     load_clotho_dataset,
@@ -30,7 +32,7 @@ class ClothoItem(TypedDict):
     dataset: str
     fname: NotRequired[str]
     index: int
-    subset: str
+    subset: ClothoSubset
     sr: NotRequired[int]
     duration: NotRequired[float]
     # Clotho-specific attributes
@@ -83,7 +85,6 @@ class Clotho(AACDataset[ClothoItem]):
                 ├── clotho_metadata_validation.csv
                 ├── retrieval_audio_metadata.csv
                 └── retrieval_captions.csv
-
     """
 
     # Common globals
@@ -99,7 +100,7 @@ class Clotho(AACDataset[ClothoItem]):
         self,
         # Common args
         root: Union[str, Path, None] = None,
-        subset: str = ClothoCard.DEFAULT_SUBSET,
+        subset: ClothoSubset = ClothoCard.DEFAULT_SUBSET,
         download: bool = False,
         transform: Optional[Callable[[ClothoItem], Any]] = None,
         verbose: int = 0,
@@ -109,7 +110,7 @@ class Clotho(AACDataset[ClothoItem]):
         # Clotho-specific args
         clean_archives: bool = True,
         flat_captions: bool = False,
-        version: str = ClothoCard.DEFAULT_VERSION,
+        version: ClothoVersion = ClothoCard.DEFAULT_VERSION,
     ) -> None:
         """
         :param root: The parent of the dataset root directory.
@@ -132,24 +133,23 @@ class Clotho(AACDataset[ClothoItem]):
             defaults to True.
         :param flat_captions: If True, map captions to audio instead of audio to caption.
             defaults to True.
-        :param version: The version of the dataset. Can be one of :attr:`~ClothoCard.versions`.
+        :param version: The version of the dataset. Can be one of :attr:`~ClothoCard.VERSIONS`.
             defaults to 'v2.1'.
         """
         if version not in ClothoCard.VERSIONS:
-            raise ValueError(
-                f"Invalid Clotho argument version={version}. Must be one of {ClothoCard.VERSIONS}."
-            )
+            msg = f"Invalid Clotho argument {version=}. Must be one of {ClothoCard.VERSIONS}."
+            raise ValueError(msg)
 
         if version == "v2":
-            pylog.warning(
+            msg = (
                 f"The version '{version}' of the Clotho dataset contains minor some errors in file names and few corrupted files."
                 f"Please consider using the fixed version 'v2.1'."
             )
+            pylog.warning(msg)
 
         if subset not in ClothoCard.SUBSETS:
-            raise ValueError(
-                f"Invalid Clotho argument subset={subset} for version={version}. Must be one of {ClothoCard.SUBSETS}."
-            )
+            msg = f"Invalid Clotho argument subset={subset} for {version=}. Must be one of {ClothoCard.SUBSETS}."
+            raise ValueError(msg)
 
         root = _get_root(root)
 
@@ -165,8 +165,8 @@ class Clotho(AACDataset[ClothoItem]):
             )
 
         # Exclude some columns containing empty values for several subsets
-        column_names = list(ClothoItem.__required_keys__) + list(
-            ClothoItem.__optional_keys__
+        column_names = list(ClothoItem.__required_keys__) + list(  # type: ignore
+            ClothoItem.__optional_keys__  # type: ignore
         )
         if subset == "dcase_aac_test":
             removed_columns = ("captions", "sound_id", "keywords", "sound_link")
@@ -231,9 +231,9 @@ class Clotho(AACDataset[ClothoItem]):
             verbose=verbose,
         )
         self._root = root
-        self._subset = subset
+        self._subset: ClothoSubset = subset
         self._download = download
-        self._version = version
+        self._version: ClothoVersion = version
 
         if "audio" not in removed_columns:
             self.add_online_columns(
@@ -261,11 +261,11 @@ class Clotho(AACDataset[ClothoItem]):
         return self._sr  # type: ignore
 
     @property
-    def subset(self) -> str:
+    def subset(self) -> ClothoSubset:
         return self._subset
 
     @property
-    def version(self) -> str:
+    def version(self) -> ClothoVersion:
         return self._version
 
     # Magic methods

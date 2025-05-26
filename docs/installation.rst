@@ -4,7 +4,7 @@ Installation
 Simply run:
 
 .. code-block:: bash
-    
+
     pip install aac-datasets
 
 
@@ -20,8 +20,8 @@ The python requirements are automatically installed when using pip on this repos
     py7zr >= 0.17.2
     pyyaml >= 6.0
     tqdm >= 4.64.0
-    huggingface-hub>=0.15.1
-    numpy>=1.21.2
+    huggingface-hub >= 0.15.1
+    numpy >= 1.21.2
 
 External requirements (AudioCaps only)
 ######################################

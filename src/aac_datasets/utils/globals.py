@@ -4,10 +4,8 @@
 import logging
 import os
 import os.path as osp
-
 from pathlib import Path
 from typing import Any, Union
-
 
 pylog = logging.getLogger(__name__)
 
@@ -106,7 +104,7 @@ def __get_default_value(value_name: str) -> str:
 
     pylog.error(f"Values: {values}")
     raise RuntimeError(
-        f"Invalid default value for value_name={value_name}. (all default values are None)"
+        f"Invalid default value for {value_name=}. (all default values are None)"
     )
 
 
