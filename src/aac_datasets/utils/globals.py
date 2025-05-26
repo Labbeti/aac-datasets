@@ -4,10 +4,8 @@
 import logging
 import os
 import os.path as osp
-
 from pathlib import Path
 from typing import Any, Union
-
 
 pylog = logging.getLogger(__name__)
 
