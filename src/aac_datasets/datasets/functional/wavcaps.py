@@ -24,7 +24,7 @@ from typing_extensions import Literal, TypedDict
 from aac_datasets.datasets.functional.common import DatasetCard, LinkInfo
 from aac_datasets.utils.collections import list_dict_to_dict_list
 from aac_datasets.utils.download import download_file, safe_rmdir
-from aac_datasets.utils.globals import _get_root, _get_zip_path
+from aac_datasets.utils.globals import _get_root
 
 pylog = logging.getLogger(__name__)
 
@@ -249,8 +249,35 @@ def download_wavcaps_dataset(
             pylog.warning(msg)
         subset = new_subset
 
-    root = _get_root(root)
-    zip_path = _get_zip_path(zip_path)
+    elif subset == "freesound_no_clotho":
+        _download_blacklist(root, hf_cache_dir, revision, "blacklist_clotho")
+
+        return download_wavcaps_dataset(
+            root=root,
+            subset="freesound",
+            revision=revision,
+            hf_cache_dir=hf_cache_dir,
+            force=force,
+            verify_files=verify_files,
+            clean_archives=clean_archives,
+            zip_path=zip_path,
+            verbose=verbose,
+        )
+
+    elif subset == "freesound_no_clotho_v2":
+        _download_blacklist(root, hf_cache_dir, revision, "blacklist_clotho_v2")
+
+        return download_wavcaps_dataset(
+            root=root,
+            subset="freesound",
+            revision=revision,
+            hf_cache_dir=hf_cache_dir,
+            force=force,
+            verify_files=verify_files,
+            clean_archives=clean_archives,
+            zip_path=zip_path,
+            verbose=verbose,
+        )
 
     if subset == "audioset_no_audiocaps_v1":
         _download_blacklist(root, hf_cache_dir, revision, "blacklist_audiocaps")
@@ -283,8 +310,9 @@ def download_wavcaps_dataset(
         )
 
     if subset not in WavCapsCard.SUBSETS:
-        msg = f"Invalid argument {subset=}. (expected one of {WavCapsCard.SUBSETS})"
-        raise ValueError(msg)
+        raise ValueError(
+            f"Invalid argument {subset=}. (expected one of {WavCapsCard.SUBSETS})"
+        )
 
     # note: verbose=-1 to disable warning triggered when dset is not prepared
     if not force and _is_prepared_wavcaps(
