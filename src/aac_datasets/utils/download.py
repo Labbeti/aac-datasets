@@ -1,18 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import hashlib
 import os
 import os.path as osp
 from pathlib import Path
 from typing import List, Union
 
 import tqdm
+from pythonwrench.hashlib import hash_file  # noqa: F401
 from torch.hub import download_url_to_file
-from typing_extensions import Literal
-
-HASH_TYPES = ("sha256", "md5")
-DEFAULT_CHUNK_SIZE = 256 * 1024**2  # 256 MiB
 
 
 def download_file(
@@ -25,7 +21,7 @@ def download_file(
         dpath = osp.dirname(fpath)
         os.makedirs(dpath, exist_ok=True)
 
-    download_url_to_file(url, fpath, progress=verbose > 0)
+    download_url_to_file(url, str(fpath), progress=verbose > 0)
 
 
 def safe_rmdir(
@@ -58,38 +54,10 @@ def safe_rmdir(
         ):
             to_delete.append(dpath)
         elif error_on_non_empty_dir:
-            raise RuntimeError(f"Cannot remove non-empty directory '{dpath}'.")
+            msg = f"Cannot remove non-empty directory '{dpath}'."
+            raise RuntimeError(msg)
 
     for dpath in to_delete:
         os.rmdir(dpath)
 
     return to_delete
-
-
-def hash_file(
-    fpath: Union[str, Path],
-    hash_type: Literal["sha256", "md5"],
-    chunk_size: int = DEFAULT_CHUNK_SIZE,
-) -> str:
-    """Return the hash value for a file.
-
-    BASED ON https://github.com/pytorch/audio/blob/v0.13.0/torchaudio/datasets/utils.py#L110
-    """
-    if hash_type == "sha256":
-        hasher = hashlib.sha256()
-    elif hash_type == "md5":
-        hasher = hashlib.md5()
-    else:
-        raise ValueError(
-            f"Invalid argument {hash_type=}. (expected one of {HASH_TYPES})"
-        )
-
-    with open(fpath, "rb") as file:
-        while True:
-            chunk = file.read(chunk_size)
-            if not chunk:
-                break
-            hasher.update(chunk)
-
-    hash_value = hasher.hexdigest()
-    return hash_value

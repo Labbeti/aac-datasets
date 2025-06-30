@@ -18,6 +18,7 @@ from typing import (
     overload,
 )
 
+import pythonwrench as pw
 import torchaudio
 import tqdm
 
@@ -31,15 +32,6 @@ from torch import Tensor
 from torch.utils.data.dataset import Dataset
 from typing_extensions import TypeAlias, TypeGuard
 
-from aac_datasets.utils.collections import dict_list_to_list_dict, union_dicts
-from aac_datasets.utils.type_guards import (
-    is_iterable_bool,
-    is_iterable_int,
-    is_iterable_str,
-    is_list_bool,
-    is_list_int,
-)
-
 pylog = logging.getLogger(__name__)
 
 ItemType = TypeVar("ItemType", covariant=True)
@@ -50,23 +42,18 @@ _INDEX_TYPES = ("int", "Iterable[int]", "Iterable[bool]", "Tensor", "slice", "No
 
 
 def _is_index(index: Any) -> TypeGuard[IndexType]:
-    return (
-        isinstance(index, int)
-        or is_iterable_int(index)
-        or is_iterable_bool(index)
-        or isinstance(index, slice)
-        or index is None
-        or (
-            isinstance(index, Tensor)
-            and not index.is_floating_point()
-            and not index.is_complex()
-            and index.ndim in (0, 1)
-        )
+    return pw.isinstance_generic(
+        index, (int, Iterable[int], Iterable[bool], slice, pw.NoneType)
+    ) or (
+        isinstance(index, Tensor)
+        and not index.is_floating_point()
+        and not index.is_complex()
+        and index.ndim in (0, 1)
     )
 
 
 def _is_column(column: Any) -> TypeGuard[ColumnType]:
-    return is_iterable_str(column, accept_str=True) or column is None
+    return pw.isinstance_generic(column, (Iterable[str], pw.NoneType))
 
 
 class AACDataset(Generic[ItemType], Dataset[ItemType]):
@@ -127,7 +114,7 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
     @property
     def all_columns(self) -> List[str]:
         """The name of all columns of the dataset."""
-        return list(union_dicts(self._raw_data, self._online_fns))
+        return list(pw.union_dicts([self._raw_data, self._online_fns]))
 
     @property
     def column_names(self) -> List[str]:
@@ -255,13 +242,13 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
 
         if isinstance(index, Iterable):
             index = list(index)
-            if is_list_bool(index):
+            if pw.isinstance_generic(index, Iterable[bool]):
                 if len(index) != len(self):
                     msg = f"The length of the mask ({len(index)}) does not match the length of the dataset ({len(self)})."
                     raise IndexError(msg)
                 index = [i for i, idx_i in enumerate(index) if idx_i]
 
-            elif __debug__ and not is_list_int(index):
+            elif __debug__ and not pw.isinstance_generic(index, Iterable[int]):
                 msg = f"Invalid input type for {index=}. (expected Iterable[int], not Iterable[{index[0].__class__.__name__}])"
                 raise TypeError(msg)
 
@@ -399,7 +386,7 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
         :param load_online_values: If True, load ALL online values (e.g. audio waveform). Otherwise load only the raw data of the dataset. defaults to False.
         """
         raw_data = self.to_dict(load_online_values)
-        return dict_list_to_list_dict(raw_data, key_mode="same")  # type: ignore
+        return pw.dict_list_to_list_dict(raw_data, key_mode="same")  # type: ignore
 
     # Magic methods
     @overload

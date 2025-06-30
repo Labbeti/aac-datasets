@@ -12,6 +12,7 @@ from pathlib import Path
 from subprocess import CalledProcessError
 from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
 
+import pythonwrench as pw
 import torchaudio
 import tqdm
 from typing_extensions import Literal
@@ -21,7 +22,6 @@ from aac_datasets.utils.audioset_mapping import (
     download_audioset_mapping,
     load_audioset_mapping,
 )
-from aac_datasets.utils.collections import union_dicts
 from aac_datasets.utils.download import download_file
 from aac_datasets.utils.globals import _get_ffmpeg_path, _get_root, _get_ytdlp_path
 
@@ -497,7 +497,7 @@ def _download_audio_files(
             start_time=start_time,
             audio_format=audio_format,
         )
-        line = union_dicts(line, {"start_time": start_time, "fname": fname})
+        line = pw.union_dicts([line, {"start_time": start_time, "fname": fname}])
         return line
 
     captions_data = [_cast_line(line, audio_format) for line in captions_data]

@@ -10,11 +10,11 @@ from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
 from zipfile import ZipFile
 
+import pythonwrench as pw
 from py7zr import SevenZipFile
 from typing_extensions import Literal
 
 from aac_datasets.datasets.functional.common import DatasetCard, LinkInfoHash
-from aac_datasets.utils.collections import union_dicts
 from aac_datasets.utils.download import download_file, hash_file
 from aac_datasets.utils.globals import _get_root
 
@@ -93,9 +93,8 @@ def load_clotho_dataset(
     """
     root = _get_root(root)
     if not _is_prepared_clotho(root, version, subset):
-        raise RuntimeError(
-            f"Cannot load data: clotho_{subset} is not prepared in data {root=}. Please use download=True in dataset constructor."
-        )
+        msg = f"Cannot load data: clotho_{subset} is not prepared in data {root=}. Please use download=True in dataset constructor."
+        raise RuntimeError(msg)
 
     # Read fpath of .wav audio files
     links = _CLOTHO_LINKS[version][subset]
@@ -113,7 +112,7 @@ def load_clotho_dataset(
 
         if subset == "dcase_t2a_captions":
             captions_data = [
-                union_dicts(data, {"file_name": f"no_fname_{i}"})
+                pw.union_dicts([data, {"file_name": f"no_fname_{i}"}])
                 for i, data in enumerate(captions_data)
             ]
 
@@ -148,9 +147,8 @@ def load_clotho_dataset(
         # note 2: force sorted list to have the same order on all OS
         audio_subset_dpath = _get_audio_subset_dpath(root, version, subset)
         if audio_subset_dpath is None:
-            raise RuntimeError(
-                f"INTERNAL ERROR: Invalid audio subset dirpath. (found audio_subset_dpath={audio_subset_dpath}, with {subset=})"
-            )
+            msg = f"INTERNAL ERROR: Invalid audio subset dirpath. (found audio_subset_dpath={audio_subset_dpath}, with {subset=})"
+            raise RuntimeError(msg)
         fnames_lst = list(sorted(os.listdir(audio_subset_dpath)))
 
     idx_to_fname = {i: fname for i, fname in enumerate(fnames_lst)}
@@ -181,9 +179,8 @@ def load_clotho_dataset(
     for line in metadata:
         fname = line["file_name"]
         if fname not in fname_to_idx:
-            raise KeyError(
-                f"Cannot find metadata fname={fname} in captions file. {subset=})"
-            )
+            msg = f"Cannot find metadata fname={fname} in captions file. {subset=})"
+            raise KeyError(msg)
         index = fname_to_idx[fname]
         for key in subset_metadata_keys:
             # The test subset does not have keywords in metadata, but has sound_id, sound_link, etc.
@@ -214,9 +211,8 @@ def load_clotho_dataset(
         raw_data["fname"] = [replaces.get(fname, fname) for fname in raw_data["fname"]]
 
     if verbose >= 1:
-        pylog.info(
-            f"Dataset {ClothoCard.PRETTY_NAME} ({subset}) has been loaded. {len(next(iter(raw_data.values())))=})"
-        )
+        msg = f"Dataset {ClothoCard.PRETTY_NAME} ({subset}) has been loaded. {len(next(iter(raw_data.values())))=})"
+        pylog.info(msg)
     return raw_data
 
 
@@ -287,9 +283,8 @@ def download_clotho_dataset(
         elif extension == "csv":
             dpath = csv_dpath
         else:
-            raise RuntimeError(
-                f"Found invalid {extension=}. Must be one of {EXTENSIONS}."
-            )
+            msg = f"Found invalid {extension=}. Must be one of {EXTENSIONS}."
+            raise RuntimeError(msg)
 
         fpath = osp.join(dpath, fname)
         if not osp.isfile(fpath) or force:
@@ -497,9 +492,8 @@ def _is_prepared_clotho(
     if "audio_archive" in links:
         audio_subset_dpath = _get_audio_subset_dpath(root, version, subset)
         if audio_subset_dpath is None:
-            raise RuntimeError(
-                f"INTERNAL ERROR: Invalid audio subset dirpath. (found audio_subset_dpath={audio_subset_dpath}, with {subset=})"
-            )
+            msg = f"INTERNAL ERROR: Invalid audio subset dirpath. (found audio_subset_dpath={audio_subset_dpath}, with {subset=})"
+            raise RuntimeError(msg)
         if not osp.isdir(audio_subset_dpath):
             return False
 

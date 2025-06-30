@@ -65,9 +65,8 @@ def load_audioset_mapping(
 
     if not osp.isfile(map_fpath):
         if offline:
-            raise FileNotFoundError(
-                f"Cannot find or download audioset mapping file in '{map_fpath}' with mode {offline=}."
-            )
+            msg = f"Cannot find or download audioset mapping file in '{map_fpath}' with mode {offline=}."
+            raise FileNotFoundError(msg)
 
         download_audioset_mapping(cache_path, verbose)
 

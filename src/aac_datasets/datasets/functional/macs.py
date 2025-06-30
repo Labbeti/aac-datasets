@@ -75,9 +75,8 @@ def load_macs_dataset(
 
     root = _get_root(root)
     if not _is_prepared_macs(root):
-        raise RuntimeError(
-            f"Cannot load data: macs is not prepared in data {root=}. Please use download=True in dataset constructor."
-        )
+        msg = f"Cannot load data: macs is not prepared in data {root=}. Please use download=True in dataset constructor."
+        raise RuntimeError(msg)
 
     macs_dpath = _get_macs_root(root)
     tau_meta_dpath = _get_tau_meta_dpath(root)
@@ -236,9 +235,8 @@ def download_macs_dataset(
 
         if not osp.isfile(zip_fpath) or force:
             if verbose >= 1:
-                pylog.info(
-                    f"Downloading audio zip file '{zip_fpath}'... ({i+1}/{len(MACS_ARCHIVES_FILES)})"
-                )
+                msg = f"Downloading audio zip file '{zip_fpath}'... ({i+1}/{len(MACS_ARCHIVES_FILES)})"
+                pylog.info(msg)
 
             url = file_info["url"]
             download_file(url, zip_fpath, verbose=verbose)
@@ -261,9 +259,8 @@ def download_macs_dataset(
         zip_fpath = osp.join(archives_dpath, zip_fname)
 
         if verbose >= 2:
-            pylog.debug(
-                f"Check to extract TAU Urban acoustic scenes archive {zip_fname=}..."
-            )
+            msg = f"Check to extract TAU Urban acoustic scenes archive {zip_fname=}..."
+            pylog.debug(msg)
 
         is_audio_archive = name.startswith("audio")
         if is_audio_archive:
@@ -283,9 +280,8 @@ def download_macs_dataset(
             ]
 
             if verbose >= 1:
-                pylog.info(
-                    f"Extracting {len(members_to_extract)}/{len(file.namelist())} audio files from ZIP file '{zip_fname}'... ({i+1}/{len(MACS_ARCHIVES_FILES)})"
-                )
+                msg = f"Extracting {len(members_to_extract)}/{len(file.namelist())} audio files from ZIP file '{zip_fname}'... ({i+1}/{len(MACS_ARCHIVES_FILES)})"
+                pylog.info(msg)
 
             if len(members_to_extract) > 0:
                 file.extractall(archives_dpath, members_to_extract)

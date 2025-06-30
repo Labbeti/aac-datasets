@@ -11,6 +11,7 @@ import zipfile
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
 
+import pythonwrench as pw
 import tqdm
 from huggingface_hub import snapshot_download
 from huggingface_hub.constants import HUGGINGFACE_HUB_CACHE
@@ -22,7 +23,6 @@ from huggingface_hub.utils.tqdm import (
 from typing_extensions import Literal, TypedDict
 
 from aac_datasets.datasets.functional.common import DatasetCard, LinkInfo
-from aac_datasets.utils.collections import list_dict_to_dict_list
 from aac_datasets.utils.download import download_file, safe_rmdir
 from aac_datasets.utils.globals import _get_root, _get_zip_path
 
@@ -702,7 +702,7 @@ def _load_json(fpath: str) -> Tuple[Dict[str, Any], int]:
         data = json.load(file)
     data = data["data"]
     size = len(data)
-    data = list_dict_to_dict_list(data, key_mode="same")
+    data = pw.list_dict_to_dict_list(data, key_mode="same")
     return data, size
 
 

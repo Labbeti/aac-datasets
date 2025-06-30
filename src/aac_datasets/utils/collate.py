@@ -3,11 +3,10 @@
 
 from typing import Any, Dict, List, Union
 
+import pythonwrench as pw
 import torch
 from torch import Tensor
 from torch.nn import functional as F
-
-from aac_datasets.utils.collections import list_dict_to_dict_list
 
 
 class BasicCollate:
@@ -17,7 +16,7 @@ class BasicCollate:
     """
 
     def __call__(self, batch_lst: List[Dict[str, Any]]) -> Dict[str, List[Any]]:
-        return list_dict_to_dict_list(batch_lst, key_mode="intersect")
+        return pw.list_dict_to_dict_list(batch_lst, key_mode="intersect")
 
 
 class AdvancedCollate:
@@ -41,7 +40,7 @@ class AdvancedCollate:
         self.fill_values = fill_values
 
     def __call__(self, batch_lst: List[Dict[str, Any]]) -> Dict[str, Any]:
-        batch_dic: Dict[str, Any] = list_dict_to_dict_list(
+        batch_dic: Dict[str, Any] = pw.list_dict_to_dict_list(
             batch_lst,
             key_mode="intersect",
         )
