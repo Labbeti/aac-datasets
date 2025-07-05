@@ -885,8 +885,10 @@ def _is_valid_audio_file(
         msg = f"Found file '{fpath}' already downloaded but it is invalid (invalid {metadata.num_channels=} != {sr})."
         msgs.append(msg)
 
-    for msg in msgs:
-        logger.error(msg)
+    if len(msgs) > 0:
+        logger.error(f"Found {len(msgs)} error(s) when validating audio file:")
+        for msg in msgs:
+            logger.error(msg)
 
     return len(msgs) == 0
 
