@@ -11,12 +11,16 @@ from pathlib import Path
 from typing import Any, Dict, Iterable, List, Tuple, Union
 
 import yaml
+from typing_extensions import Literal
 
-from aac_datasets.datasets.functional.common import DatasetCard
+from aac_datasets.datasets.functional.common import DatasetCard, LinkInfoHash
 from aac_datasets.utils.download import download_file, hash_file
 from aac_datasets.utils.globals import _get_root
 
 pylog = logging.getLogger(__name__)
+
+
+MACSSubset = Literal["full"]
 
 
 class MACSCard(DatasetCard):
@@ -36,7 +40,7 @@ class MACSCard(DatasetCard):
         doi.         = {10.5281/zenodo.5770113}
     }
     """
-    DEFAULT_SUBSET: str = "full"
+    DEFAULT_SUBSET: MACSSubset = "full"
     DESCRIPTION: str = "Multi-Annotator Captioned Soundscapes dataset."
     HOMEPAGE: str = "https://zenodo.org/record/5114771"
     LANGUAGE: Tuple[str, ...] = ("en",)
@@ -48,14 +52,14 @@ class MACSCard(DatasetCard):
     PRETTY_NAME: str = "MACS"
     SAMPLE_RATE: int = 48_000  # Hz
     SIZE_CATEGORIES: Tuple[str, ...] = ("1K<n<10K",)
-    SUBSETS: Tuple[str, ...] = ("full",)
+    SUBSETS: Tuple[MACSSubset, ...] = ("full",)
     TASK_CATEGORIES: Tuple[str, ...] = ("audio-to-text", "text-to-audio")
 
 
 def load_macs_dataset(
     # Common args
     root: Union[str, Path, None] = None,
-    subset: str = MACSCard.DEFAULT_SUBSET,
+    subset: MACSSubset = MACSCard.DEFAULT_SUBSET,
     verbose: int = 0,
 ) -> Tuple[Dict[str, List[Any]], Dict[int, float]]:
     """Load MACS metadata.
@@ -72,7 +76,7 @@ def load_macs_dataset(
     root = _get_root(root)
     if not _is_prepared_macs(root):
         raise RuntimeError(
-            f"Cannot load data: macs is not prepared in data root={root}. Please use download=True in dataset constructor."
+            f"Cannot load data: macs is not prepared in data {root=}. Please use download=True in dataset constructor."
         )
 
     macs_dpath = _get_macs_root(root)
@@ -151,9 +155,8 @@ def load_macs_dataset(
     assert all(len(values) == dataset_size for values in raw_data.values())
 
     if verbose >= 1:
-        pylog.info(
-            f"Dataset {MACSCard.PRETTY_NAME} ({subset}) has been loaded. (len={len(next(iter(raw_data.values())))})"
-        )
+        msg = f"Dataset {MACSCard.PRETTY_NAME} ({subset}) has been loaded. {len(next(iter(raw_data.values())))=})"
+        pylog.info(msg)
 
     return raw_data, annotator_id_to_competence
 
@@ -161,10 +164,11 @@ def load_macs_dataset(
 def download_macs_dataset(
     # Common args
     root: Union[str, Path, None] = None,
-    subset: str = MACSCard.DEFAULT_SUBSET,
+    subset: MACSSubset = MACSCard.DEFAULT_SUBSET,
     force: bool = False,
     verbose: int = 0,
     verify_files: bool = True,
+    *,
     # MACS-specific args
     clean_archives: bool = True,
 ) -> None:
@@ -258,7 +262,7 @@ def download_macs_dataset(
 
         if verbose >= 2:
             pylog.debug(
-                f"Check to extract TAU Urban acoustic scenes archive zip_fname={zip_fname}..."
+                f"Check to extract TAU Urban acoustic scenes archive {zip_fname=}..."
             )
 
         is_audio_archive = name.startswith("audio")
@@ -305,9 +309,10 @@ def download_macs_dataset(
 def download_macs_datasets(
     # Common args
     root: Union[str, Path, None] = None,
-    subsets: Union[str, Iterable[str]] = MACSCard.DEFAULT_SUBSET,
+    subsets: Union[MACSSubset, Iterable[MACSSubset]] = MACSCard.DEFAULT_SUBSET,
     force: bool = False,
     verbose: int = 0,
+    *,
     # MACS-specific args
     clean_archives: bool = True,
     verify_files: bool = True,
@@ -363,8 +368,11 @@ def _is_prepared_macs(root: str) -> bool:
     return len(data) == len(fnames)
 
 
+# Internal typing to make easier to add new links without error
+MACSLinkType = Literal["licence", "captions", "annotators_competences"]
+
 # MACS-specific files links.
-MACS_FILES = {
+MACS_FILES: Dict[MACSLinkType, LinkInfoHash] = {
     "licence": {
         "fname": "LICENSE.txt",
         "url": "https://zenodo.org/record/5114771/files/LICENSE.txt?download=1",

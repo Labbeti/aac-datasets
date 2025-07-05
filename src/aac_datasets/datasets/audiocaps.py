@@ -20,6 +20,8 @@ except ImportError:
 from aac_datasets.datasets.base import AACDataset
 from aac_datasets.datasets.functional.audiocaps import (
     AudioCapsCard,
+    AudioCapsSubset,
+    AudioCapsVersion,
     _get_audio_subset_dpath,
     download_audiocaps_dataset,
     load_audiocaps_dataset,
@@ -38,7 +40,7 @@ class AudioCapsItem(TypedDict):
     dataset: str
     fname: str
     index: int
-    subset: str
+    subset: AudioCapsSubset
     sr: int
     duration: float
     # AudioCaps-specific attributes
@@ -61,18 +63,19 @@ class AudioCaps(AACDataset[AudioCapsItem]):
     AudioCaps paper : https://www.aclweb.org/anthology/N19-1011.pdf
 
     .. code-block:: text
-        :caption:  Dataset folder tree
+        :caption:  Dataset folder tree (for version v1)
 
         {root}
         └── AUDIOCAPS
-            ├── train.csv
-            ├── val.csv
-            ├── test.csv
+            ├── csv_files_v1
+            │   ├── train.csv
+            │   ├── val.csv
+            │   └── test.csv
             └── audio_32000Hz
                 ├── train
-                │    └── (46231/49838 flac files, ~42G for 32kHz)
+                │   └── (46231/49838 flac files, ~42G for 32kHz)
                 ├── val
-                │    └── (465/495 flac files, ~425M for 32kHz)
+                │   └── (465/495 flac files, ~425M for 32kHz)
                 └── test
                     └── (913/975 flac files, ~832M for 32kHz)
 
@@ -86,7 +89,7 @@ class AudioCaps(AACDataset[AudioCapsItem]):
         self,
         # Common args
         root: Union[str, Path, None] = None,
-        subset: str = AudioCapsCard.DEFAULT_SUBSET,
+        subset: AudioCapsSubset = AudioCapsCard.DEFAULT_SUBSET,
         download: bool = False,
         transform: Optional[Callable[[AudioCapsItem], Any]] = None,
         verbose: int = 0,
@@ -105,6 +108,7 @@ class AudioCaps(AACDataset[AudioCapsItem]):
         sr: int = 32_000,
         with_tags: bool = False,
         ytdlp_path: Union[str, Path, None] = None,
+        version: AudioCapsVersion = AudioCapsCard.DEFAULT_VERSION,
     ) -> None:
         """
         :param root: Dataset root directory.
@@ -152,11 +156,12 @@ class AudioCaps(AACDataset[AudioCapsItem]):
             defaults to False.
         :param ytdlp_path: Path to yt-dlp or ytdlp executable.
             defaults to "yt-dlp".
+        :param version: The version of the dataset. Can be one of :attr:`~AudioCapsCard.VERSIONS`.
+            defaults to 'v1'.
         """
         if subset not in AudioCapsCard.SUBSETS:
-            raise ValueError(
-                f"Invalid argument subset={subset} for AudioCaps. (expected one of {AudioCapsCard.SUBSETS})"
-            )
+            msg = f"Invalid argument {subset=} for AudioCaps. (expected one of {AudioCapsCard.SUBSETS})"
+            raise ValueError(msg)
 
         root = _get_root(root)
         ytdlp_path = _get_ytdlp_path(ytdlp_path)
@@ -178,6 +183,7 @@ class AudioCaps(AACDataset[AudioCapsItem]):
                 sr=sr,
                 with_tags=with_tags,
                 ytdlp_path=ytdlp_path,
+                version=version,
             )
 
         raw_data, index_to_name = load_audiocaps_dataset(
@@ -189,7 +195,7 @@ class AudioCaps(AACDataset[AudioCapsItem]):
             sr=sr,
             with_tags=with_tags,
         )
-        audio_subset_dpath = _get_audio_subset_dpath(root, subset, sr)
+        audio_subset_dpath = _get_audio_subset_dpath(root, subset, sr, version)
         size = len(next(iter(raw_data.values())))
         raw_data["dataset"] = [AudioCapsCard.NAME] * size
         raw_data["subset"] = [subset] * size
@@ -198,8 +204,8 @@ class AudioCaps(AACDataset[AudioCapsItem]):
         ]
         raw_data["index"] = list(range(size))
 
-        column_names = list(AudioCapsItem.__required_keys__) + list(
-            AudioCapsItem.__optional_keys__
+        column_names = list(AudioCapsItem.__required_keys__) + list(  # type: ignore
+            AudioCapsItem.__optional_keys__  # type: ignore
         )
         if not with_tags:
             column_names.remove("tags")
@@ -215,10 +221,11 @@ class AudioCaps(AACDataset[AudioCapsItem]):
 
         # Attributes
         self._root = root
-        self._subset = subset
+        self._subset: AudioCapsSubset = subset
         self._download = download
         self._exclude_removed_audio = exclude_removed_audio
         self._with_tags = with_tags
+        self._version: AudioCapsVersion = version
         self._index_to_name = index_to_name
 
         self.add_online_columns(
@@ -254,8 +261,12 @@ class AudioCaps(AACDataset[AudioCapsItem]):
         return self._sr  # type: ignore
 
     @property
-    def subset(self) -> str:
+    def subset(self) -> AudioCapsSubset:
         return self._subset
+
+    @property
+    def version(self) -> AudioCapsVersion:
+        return self._version
 
     @property
     def with_tags(self) -> bool:
@@ -277,13 +288,14 @@ class AudioCaps(AACDataset[AudioCapsItem]):
     def _load_audio(self, index: int) -> Tensor:
         if not self._raw_data["is_on_disk"][index]:
             return torch.empty((0,))
+
         fpath = self.at(index, "fpath")
         audio, sr = torchaudio.load(fpath)  # type: ignore
 
         # Sanity check
         if audio.nelement() == 0:
             raise RuntimeError(
-                f"Invalid audio number of elements in {fpath}. (expected audio.nelement()={audio.nelement()} > 0)"
+                f"Invalid audio number of elements in {fpath}. (expected {audio.nelement()=} > 0)"
             )
 
         if self._sr is not None and (self._sr != sr):

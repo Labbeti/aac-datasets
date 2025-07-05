@@ -12,6 +12,8 @@ from typing_extensions import TypedDict
 from aac_datasets.datasets.base import AACDataset
 from aac_datasets.datasets.functional.wavcaps import (
     WavCapsCard,
+    WavCapsSource,
+    WavCapsSubset,
     _get_audio_subset_dpath,
     download_wavcaps_dataset,
     load_wavcaps_dataset,
@@ -28,7 +30,7 @@ class WavCapsItem(TypedDict):
     dataset: str
     fname: str
     index: int
-    subset: str
+    subset: WavCapsSubset
     sr: int
     duration: float
     # WavCaps-specific attributes
@@ -38,7 +40,7 @@ class WavCapsItem(TypedDict):
     download_link: Optional[str]  # BBC, FSD and SB only
     href: Optional[str]  # FSD and SB only
     id: str
-    source: str
+    source: WavCapsSource
     tags: List[str]  # FSD only
 
 
@@ -49,12 +51,14 @@ class WavCaps(AACDataset[WavCapsItem]):
     HuggingFace source : https://huggingface.co/datasets/cvssp/WavCaps
 
     This dataset contains 4 training subsets, extracted from different sources:
-    - AudioSet strongly labeled ("audioset")
-    - BBC Sound Effects ("bbc")
-    - FreeSound ("freesound")
-    - SoundBible ("soundbible")
-    - AudioSet strongly labeled without AudioCaps ("audioset_no_audiocaps")
-    - FreeSound without Clotho ("freesound_no_clotho")
+    - BBC Sound Effects "bbc"
+    - SoundBible "soundbible"
+    - AudioSet strongly labeled without AudioCaps V1 val and test subsets "audioset_no_audiocaps_v1"
+    - FreeSound without Clotho dev, val, eval and test subsets "freesound_no_clotho_v2"
+
+    Other subsets exists but they does not comply DCASE Challenge rules:
+    - AudioSet strongly labeled "audioset"
+    - FreeSound "freesound"
 
     .. warning::
         WavCaps download is experimental ; it requires a lot of disk space and can take very long time to download and extract, so you might expect errors.
@@ -107,7 +111,7 @@ class WavCaps(AACDataset[WavCapsItem]):
         self,
         # Common args
         root: Union[str, Path, None] = None,
-        subset: str = WavCapsCard.DEFAULT_SUBSET,
+        subset: WavCapsSubset = WavCapsCard.DEFAULT_SUBSET,
         download: bool = False,
         transform: Optional[Callable[[WavCapsItem], Any]] = None,
         verbose: int = 0,
@@ -150,9 +154,8 @@ class WavCaps(AACDataset[WavCapsItem]):
             defaults to "zip".
         """
         if subset not in WavCapsCard.SUBSETS:
-            raise ValueError(
-                f"Invalid argument subset={subset} for {WavCapsCard.PRETTY_NAME}. (expected one of {WavCapsCard.SUBSETS})"
-            )
+            msg = f"Invalid argument {subset=} for {WavCapsCard.PRETTY_NAME}. (expected one of {WavCapsCard.SUBSETS})"
+            raise ValueError(msg)
 
         root = _get_root(root)
         zip_path = _get_zip_path(zip_path)
@@ -193,16 +196,20 @@ class WavCaps(AACDataset[WavCapsItem]):
         ]
         raw_data["index"] = list(range(size))
 
+        column_names = list(WavCapsItem.__required_keys__) + list(  # type: ignore
+            WavCapsItem.__optional_keys__  # type: ignore
+        )
+
         super().__init__(
             raw_data=raw_data,
             transform=transform,
-            column_names=WavCapsItem.__required_keys__,
+            column_names=column_names,
             flat_captions=False,
             sr=WavCapsCard.SAMPLE_RATE,
             verbose=verbose,
         )
         self._root = root
-        self._subset = subset
+        self._subset: WavCapsSubset = subset
         self._download = download
         self._hf_cache_dir = hf_cache_dir
         self._revision = revision
@@ -232,5 +239,5 @@ class WavCaps(AACDataset[WavCapsItem]):
         return self._sr  # type: ignore
 
     @property
-    def subset(self) -> str:
+    def subset(self) -> WavCapsSubset:
         return self._subset

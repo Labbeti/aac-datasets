@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.6.0] 2025-05-26
+### Added
+- AudioCaps support for version `v2`.
+- Methods `to_dict` and `to_list` to datasets classes.
+
+### Changed
+- Rename AudioCaps v1 `train_v2` subset to `train_fixed` to avoid confusion with AudioCaps v2 `train` subset.
+- Rename WavCaps `audioset_no_audiocaps` subset to `audioset_no_audiocaps_v1` to specify which AudioCaps version is excluded.
+
+### Fixed
+- Remove invalid warning when using WavCaps subset `freesound_no_clotho_v2`.
+- Download link for AudioCaps V1 subset `train_fixed`.
+
+### Removed
+- Remove subset `freesound_no_clotho` for WavCaps since it is confusing with `freesound_no_clotho_v2` and should not be used.
+
 ## [0.5.2] 2024-03-23
 ### Added
 - `freesound_no_clotho_v2` subset to WavCaps to avoid all bias with Clotho test and analysis subsets.

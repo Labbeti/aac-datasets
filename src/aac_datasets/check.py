@@ -9,13 +9,12 @@ from typing import Dict, Iterable, Union
 
 import yaml
 
-import aac_datasets
 from aac_datasets.datasets.audiocaps import AudioCaps, AudioCapsCard
 from aac_datasets.datasets.clotho import Clotho, ClothoCard
 from aac_datasets.datasets.macs import MACS, MACSCard
 from aac_datasets.datasets.wavcaps import WavCaps, WavCapsCard
-from aac_datasets.download import _setup_logging
 from aac_datasets.utils.globals import get_default_root
+from aac_datasets.utils.log_utils import setup_logging_verbose
 
 DATASETS_NAMES = (AudioCapsCard.NAME, ClothoCard.NAME, MACSCard.NAME, WavCapsCard.NAME)
 
@@ -124,7 +123,7 @@ def _get_main_check_args() -> Namespace:
 
 def _main_check() -> None:
     args = _get_main_check_args()
-    _setup_logging(aac_datasets.__package__, args.verbose)
+    setup_logging_verbose("aac_datasets", args.verbose)
 
     if args.verbose >= 2:
         pylog.debug(yaml.dump({"Arguments": args.__dict__}, sort_keys=False))

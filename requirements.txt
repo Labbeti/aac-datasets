@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 
-torch>=1.10.1
-torchaudio>=0.10.1
-py7zr>=0.17.2
-pyyaml>=6.0
-tqdm>=4.64.0
 huggingface-hub>=0.15.1
 numpy>=1.21.2
+py7zr>=0.17.2
+pyyaml>=6.0
+soundfile; sys_platform == 'win32'
+torch>=1.10.1
+torchaudio>=0.10.1
+tqdm>=4.64.0
+typing-extensions>=4.6.0

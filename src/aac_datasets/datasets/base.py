@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import copy
 import logging
 import os.path as osp
 from typing import (
@@ -28,19 +29,24 @@ except ImportError:
 
 from torch import Tensor
 from torch.utils.data.dataset import Dataset
-from typing_extensions import TypeGuard
+from typing_extensions import TypeAlias, TypeGuard
 
-from aac_datasets.utils.type_checks import (
+from aac_datasets.utils.collections import dict_list_to_list_dict, union_dicts
+from aac_datasets.utils.type_guards import (
     is_iterable_bool,
     is_iterable_int,
     is_iterable_str,
+    is_list_bool,
+    is_list_int,
 )
 
 pylog = logging.getLogger(__name__)
 
 ItemType = TypeVar("ItemType", covariant=True)
-IndexType = Union[int, Iterable[int], Iterable[bool], Tensor, slice, None]
-ColumnType = Union[str, Iterable[str], None]
+IndexType: TypeAlias = Union[int, Iterable[int], Iterable[bool], Tensor, slice, None]
+ColumnType: TypeAlias = Union[str, Iterable[str], None]
+
+_INDEX_TYPES = ("int", "Iterable[int]", "Iterable[bool]", "Tensor", "slice", "None")
 
 
 def _is_index(index: Any) -> TypeGuard[IndexType]:
@@ -50,12 +56,17 @@ def _is_index(index: Any) -> TypeGuard[IndexType]:
         or is_iterable_bool(index)
         or isinstance(index, slice)
         or index is None
-        or (isinstance(index, Tensor) and not index.is_floating_point())
+        or (
+            isinstance(index, Tensor)
+            and not index.is_floating_point()
+            and not index.is_complex()
+            and index.ndim in (0, 1)
+        )
     )
 
 
 def _is_column(column: Any) -> TypeGuard[ColumnType]:
-    return isinstance(column, str) or is_iterable_str(column) or column is None
+    return is_iterable_str(column, accept_str=True) or column is None
 
 
 class AACDataset(Generic[ItemType], Dataset[ItemType]):
@@ -68,7 +79,7 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
         transform: Optional[Callable[[ItemType], Any]] = None,
         column_names: Optional[Iterable[str]] = None,
         flat_captions: bool = False,
-        sr: Optional[int] = None,
+        sr: Union[int, Iterable[int], None] = None,
         verbose: int = 0,
     ) -> None:
         if raw_data is None:
@@ -76,14 +87,15 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
         if column_names is None:
             column_names = raw_data.keys()
         column_names = list(column_names)
+        if isinstance(sr, Iterable):
+            sr = list(sr)
 
         if len(raw_data) > 1:
             size = len(next(iter(raw_data.values())))
             invalid_columns = [col for col, lst in raw_data.items() if len(lst) != size]
             if len(invalid_columns) > 0:
-                raise ValueError(
-                    f"Invalid raw_data number of items in the following columns: {tuple(invalid_columns)}."
-                )
+                msg = f"Invalid raw_data number of items in the following columns: {tuple(invalid_columns)}."
+                raise ValueError(msg)
 
         super().__init__()
         self._raw_data = raw_data
@@ -115,7 +127,7 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
     @property
     def all_columns(self) -> List[str]:
         """The name of all columns of the dataset."""
-        return list(self._raw_data | self._online_fns)
+        return list(union_dicts(self._raw_data, self._online_fns))
 
     @property
     def column_names(self) -> List[str]:
@@ -147,7 +159,7 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
         return len(self), len(self.column_names)
 
     @property
-    def sr(self) -> Optional[int]:
+    def sr(self) -> Union[int, List[int], None]:
         return self._sr
 
     @property
@@ -171,28 +183,28 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
     def transform(self, transform: Optional[Callable[[ItemType], Any]]) -> None:
         self._transform = transform
 
+    @verbose.setter
+    def verbose(self, verbose: int) -> None:
+        self._verbose = verbose
+
     # Public methods
     @overload
     def at(self, index: int) -> ItemType:
         ...
 
     @overload
-    def at(
-        self, index: Union[Iterable[int], Iterable[bool], slice, None], column: str
+    def at(  # type: ignore
+        self,
+        index: Union[Iterable[int], Iterable[bool], slice, None],
+        column: str,
     ) -> List:
-        ...
-
-    @overload
-    def at(
-        self, index: Union[Iterable[int], Iterable[bool], slice, None]
-    ) -> Dict[str, List]:
         ...
 
     @overload
     def at(
         self,
         index: Union[Iterable[int], Iterable[bool], slice, None],
-        column: Union[Iterable[str], None],
+        column: Union[Iterable[str], None] = None,
     ) -> Dict[str, List]:
         ...
 
@@ -213,15 +225,18 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
         """
         if index is None:
             index = slice(None)
+
         elif isinstance(index, Tensor):
-            if index.ndim not in (0, 1):
-                raise ValueError(
-                    f"Invalid number of dimensions for index argument. (found index.ndim={index.ndim} but expected 0 or 1)"
-                )
-            elif index.is_floating_point():
-                raise TypeError(
-                    "Invalid tensor dtype. (found floating-point tensor but expected integer tensor)"
-                )
+            if __debug__:
+                if index.ndim not in (0, 1):
+                    msg = f"Invalid number of dimensions for index argument. (found {index.ndim=} but expected 0 or 1)"
+                    raise ValueError(msg)
+                elif index.is_floating_point():
+                    msg = "Invalid tensor dtype. (found floating-point tensor but expected integer or bool tensor)"
+                    raise TypeError(msg)
+                elif index.is_complex():
+                    msg = "Invalid tensor dtype. (found complex tensor but expected integer or bool tensor)"
+                    raise TypeError(msg)
             index = index.tolist()
 
         if column is None:
@@ -240,17 +255,15 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
 
         if isinstance(index, Iterable):
             index = list(index)
-            if all(isinstance(idx_i, bool) for idx_i in index):
+            if is_list_bool(index):
                 if len(index) != len(self):
-                    raise IndexError(
-                        f"The length of the mask ({len(index)}) does not match the length of the dataset ({len(self)})."
-                    )
+                    msg = f"The length of the mask ({len(index)}) does not match the length of the dataset ({len(self)})."
+                    raise IndexError(msg)
                 index = [i for i, idx_i in enumerate(index) if idx_i]
 
-            elif not all(isinstance(idx_i, int) for idx_i in index):
-                raise TypeError(
-                    f"Invalid input type for index={index}. (expected Iterable[int], not Iterable[{index[0].__class__.__name__}])"
-                )
+            elif __debug__ and not is_list_int(index):
+                msg = f"Invalid input type for {index=}. (expected Iterable[int], not Iterable[{index[0].__class__.__name__}])"
+                raise TypeError(msg)
 
             values = [
                 self.at(idx_i, column)
@@ -262,13 +275,13 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
             ]
             return values
 
-        if isinstance(index, int):
-            return self._load_online_value(column, index)
-        else:
-            IDX_TYPES = ("int", "Iterable[int]", "None", "slice", "Tensor")
-            raise TypeError(
-                f"Invalid argument type {type(index)}. (expected one of {IDX_TYPES})"
+        if __debug__ and not isinstance(index, int):
+            msg = (
+                f"Invalid argument type {type(index)}. (expected one of {_INDEX_TYPES})"
             )
+            raise TypeError(msg)
+
+        return self._load_online_value(column, index)
 
     def has_raw_column(self, column: str) -> bool:
         """Returns True if column name exists in raw data."""
@@ -307,24 +320,23 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
         elif isinstance(column_data_or_fn, Callable):
             self.add_online_column(new_column, column_data_or_fn, allow_replace)
         else:
-            raise TypeError(
-                f"Invalid type {type(column_data_or_fn)}. (expected List or Callable)"
-            )
+            msg = f"Invalid type {type(column_data_or_fn)}. (expected List or Callable)"
+            raise TypeError(msg)
 
     def add_raw_column(
         self,
-        column: str,
+        column_name: str,
         column_data: List[Any],
         allow_replace: bool = False,
     ) -> None:
         """Add a new raw column to this dataset."""
-        if not allow_replace and column in self._raw_data:
-            raise ValueError(
-                f"Column '{column}' already exists. Please choose another name or set allow_replace arg to True."
-            )
+        if not allow_replace and column_name in self._raw_data:
+            msg = f"Column '{column_name}' already exists. Please choose another name or set allow_replace arg to True."
+            raise ValueError(msg)
         if len(self._raw_data) > 0 and len(column_data) != len(self):
-            raise ValueError(f"Invalid number of rows in column '{column}'.")
-        self._raw_data[column] = column_data
+            msg = f"Invalid number of rows in column '{column_name}'."
+            raise ValueError(msg)
+        self._raw_data[column_name] = column_data
 
     def add_online_column(
         self,
@@ -334,9 +346,8 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
     ) -> None:
         """Add a new post-processed column to this dataset."""
         if not allow_replace and column in self._online_fns:
-            raise ValueError(
-                f"Column '{column}' already exists in {self} and found argument allow_replace={allow_replace}."
-            )
+            msg = f"Column '{column}' already exists in {self} and found argument {allow_replace=}."
+            raise ValueError(msg)
         self._online_fns[column] = load_fn
 
     def add_online_columns(
@@ -355,7 +366,8 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
     ) -> Callable[[Any, int], Any]:
         """Load all data from a post-column data into raw data."""
         if column not in self._online_fns:
-            raise ValueError(f"Invalid argument column={column}.")
+            msg = f"Invalid argument {column=}."
+            raise ValueError(msg)
 
         column_data = [
             self._load_online_value(column, i)
@@ -369,13 +381,33 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
         self.add_raw_column(column, column_data, allow_replace=allow_replace)
         return fn
 
+    def to_dict(self, load_online_values: bool = False) -> Dict[str, List[Any]]:
+        """Convert dataset to dictionary.
+
+        :param load_online_values: If True, load ALL online values (e.g. audio waveform). Otherwise load only the raw data of the dataset. defaults to False.
+        """
+        raw_data = copy.copy(self._raw_data)
+        if load_online_values:
+            for column_name in self._online_fns.keys():
+                column_data = self.at(None, column_name)
+                raw_data[column_name] = column_data
+        return raw_data
+
+    def to_list(self, load_online_values: bool = False) -> List[ItemType]:
+        """Convert dataset to list.
+
+        :param load_online_values: If True, load ALL online values (e.g. audio waveform). Otherwise load only the raw data of the dataset. defaults to False.
+        """
+        raw_data = self.to_dict(load_online_values)
+        return dict_list_to_list_dict(raw_data, key_mode="same")  # type: ignore
+
     # Magic methods
     @overload
     def __getitem__(self, index: int) -> ItemType:
         ...
 
     @overload
-    def __getitem__(self, index: Tuple[Union[Iterable[int], slice, None], str]) -> List:
+    def __getitem__(self, index: Tuple[Union[Iterable[int], slice, None], str]) -> List:  # type: ignore
         ...
 
     @overload
@@ -443,12 +475,12 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
         expected_columns = dict.fromkeys(self.all_columns)
         invalid_columns = [name for name in columns if name not in expected_columns]
         if len(invalid_columns) > 0:
-            msg = f"Invalid argument columns={columns}. (found {len(invalid_columns)} invalids column names for {self.__class__.__name__}: {invalid_columns})"
+            msg = f"Invalid argument {columns=}. (found {len(invalid_columns)} invalids column names for {self.__class__.__name__}: {invalid_columns})"
             raise ValueError(msg)
 
         invalid_columns = [name for name in columns if not self.has_column(name)]
         if len(invalid_columns) > 0:
-            msg = f"Invalid argument columns={columns}. (found {len(invalid_columns)} invalids column names for {self.__class__.__name__}: {invalid_columns})"
+            msg = f"Invalid argument {columns=}. (found {len(invalid_columns)} invalids column names for {self.__class__.__name__}: {invalid_columns})"
             raise ValueError(msg)
 
     def _flat_raw_data(self) -> None:
@@ -466,7 +498,7 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
             return fn(self, index)
         else:
             raise ValueError(
-                f"Invalid argument column={column} at index={index}. (expected one of {self.all_columns})"
+                f"Invalid argument column={column} at {index=}. (expected one of {self.all_columns})"
             )
 
     def _load_audio(self, index: int) -> Tensor:
@@ -474,16 +506,19 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
         audio_and_sr: Tuple[Tensor, int] = torchaudio.load(fpath)  # type: ignore
         audio, sr = audio_and_sr
 
+        if not __debug__:
+            return audio
+
         # Sanity check
         if audio.nelement() == 0:
-            raise RuntimeError(
-                f"Invalid audio number of elements in {fpath}. (expected audio.nelement()={audio.nelement()} > 0)"
-            )
+            msg = f"Invalid audio number of elements in {fpath}. (expected {audio.nelement()=} > 0)"
+            raise RuntimeError(msg)
 
         if self._sr is not None and (self._sr != sr):
-            raise RuntimeError(
+            msg = (
                 f"Invalid sample rate {sr}Hz for audio {fpath}. (expected {self._sr}Hz)"
             )
+            raise RuntimeError(msg)
         return audio
 
     def _load_audio_metadata(self, index: int) -> AudioMetaData:
@@ -522,9 +557,8 @@ def _flat_raw_data(
     caps_column: str = "captions",
 ) -> Tuple[Dict[str, List[Any]], List[int]]:
     if caps_column not in raw_data:
-        raise ValueError(
-            f"Cannot flat raw data without '{caps_column}' column. (found only columns {tuple(raw_data.keys())})"
-        )
+        msg = f"Cannot flat raw data without '{caps_column}' column. (found only columns {tuple(raw_data.keys())})"
+        raise ValueError(msg)
 
     mcaps: List[List[str]] = raw_data[caps_column]
     raw_data_flat = {key: [] for key in raw_data.keys()}
@@ -553,9 +587,8 @@ def _unflat_raw_data(
     caps_column: str = "captions",
 ) -> Dict[str, List[Any]]:
     if caps_column not in raw_data_flat:
-        raise ValueError(
-            f"Cannot flat raw data without '{caps_column}' column. (found only columns {tuple(raw_data_flat.keys())})"
-        )
+        msg = f"Cannot flat raw data without '{caps_column}' column. (found only columns {tuple(raw_data_flat.keys())})"
+        raise ValueError(msg)
 
     raw_data = {key: [] for key in raw_data_flat.keys()}
 

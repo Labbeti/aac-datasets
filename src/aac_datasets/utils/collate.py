@@ -4,7 +4,6 @@
 from typing import Any, Dict, List, Union
 
 import torch
-
 from torch import Tensor
 from torch.nn import functional as F
 
@@ -18,7 +17,7 @@ class BasicCollate:
     """
 
     def __call__(self, batch_lst: List[Dict[str, Any]]) -> Dict[str, List[Any]]:
-        return list_dict_to_dict_list(batch_lst)
+        return list_dict_to_dict_list(batch_lst, key_mode="intersect")
 
 
 class AdvancedCollate:
@@ -42,7 +41,10 @@ class AdvancedCollate:
         self.fill_values = fill_values
 
     def __call__(self, batch_lst: List[Dict[str, Any]]) -> Dict[str, Any]:
-        batch_dic: Dict[str, Any] = list_dict_to_dict_list(batch_lst)
+        batch_dic: Dict[str, Any] = list_dict_to_dict_list(
+            batch_lst,
+            key_mode="intersect",
+        )
         keys = list(batch_dic.keys())
 
         for key in keys:

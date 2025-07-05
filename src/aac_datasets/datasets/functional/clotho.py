@@ -11,17 +11,31 @@ from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
 from zipfile import ZipFile
 
 from py7zr import SevenZipFile
+from typing_extensions import Literal
 
-from aac_datasets.datasets.functional.common import DatasetCard
+from aac_datasets.datasets.functional.common import DatasetCard, LinkInfoHash
+from aac_datasets.utils.collections import union_dicts
 from aac_datasets.utils.download import download_file, hash_file
 from aac_datasets.utils.globals import _get_root
 
 pylog = logging.getLogger(__name__)
 
 
+ClothoSubset = Literal[
+    "dev",
+    "val",
+    "eval",
+    "dcase_aac_test",
+    "dcase_aac_analysis",
+    "dcase_t2a_audio",
+    "dcase_t2a_captions",
+]
+ClothoVersion = Literal["v1", "v2", "v2.1"]
+
+
 class ClothoCard(DatasetCard):
     ANNOTATIONS_CREATORS: Tuple[str, ...] = ("crowdsourced",)
-    CAPTIONS_PER_AUDIO: Dict[str, int] = {
+    CAPTIONS_PER_AUDIO: Dict[ClothoSubset, int] = {
         "dev": 5,
         "val": 5,
         "eval": 5,
@@ -40,28 +54,29 @@ class ClothoCard(DatasetCard):
         abstract     = {Audio captioning is the novel task of general audio content description using free text. It is an intermodal translation task (not speech-to-text), where a system accepts as an input an audio signal and outputs the textual description (i.e. the caption) of that signal. In this paper we present Clotho, a dataset for audio captioning consisting of 4981 audio samples of 15 to 30 seconds duration and 24 905 captions of eight to 20 words length, and a baseline method to provide initial results. Clotho is built with focus on audio content and caption diversity, and the splits of the data are not hampering the training or evaluation of methods. All sounds are from the Freesound platform, and captions are crowdsourced using Amazon Mechanical Turk and annotators from English speaking countries. Unique words, named entities, and speech transcription are removed with post-processing. Clotho is freely available online (https://zenodo.org/record/3490684).}
     }
     """
-    DEFAULT_SUBSET: str = "dev"
+    DEFAULT_SUBSET: ClothoSubset = "dev"
+    DEFAULT_VERSION: ClothoVersion = "v2.1"
     HOMEPAGE: str = "https://zenodo.org/record/3490684"
     LANGUAGE: Tuple[str, ...] = ("en",)
     LANGUAGE_DETAILS: Tuple[str, ...] = ("en-US",)
-    DEFAULT_VERSION: str = "v2.1"
     NAME: str = "clotho"
     N_CHANNELS: int = 1
     PRETTY_NAME: str = "Clotho"
     SAMPLE_RATE: int = 44_100  # Hz
     SIZE_CATEGORIES: Tuple[str, ...] = ("1K<n<10K",)
-    SUBSETS: Tuple[str, ...] = tuple(CAPTIONS_PER_AUDIO.keys())
+    SUBSETS: Tuple[ClothoSubset, ...] = tuple(CAPTIONS_PER_AUDIO.keys())
     TASK_CATEGORIES: Tuple[str, ...] = ("audio-to-text", "text-to-audio")
-    VERSIONS: Tuple[str, ...] = ("v1", "v2", "v2.1")
+    VERSIONS: Tuple[ClothoVersion, ...] = ("v1", "v2", "v2.1")
 
 
 def load_clotho_dataset(
     # Common args
     root: Union[str, Path, None] = None,
-    subset: str = ClothoCard.DEFAULT_SUBSET,
+    subset: ClothoSubset = ClothoCard.DEFAULT_SUBSET,
     verbose: int = 0,
+    *,
     # Clotho-specific args
-    version: str = ClothoCard.DEFAULT_VERSION,
+    version: ClothoVersion = ClothoCard.DEFAULT_VERSION,
 ) -> Dict[str, List[Any]]:
     """Load Clotho metadata.
 
@@ -72,14 +87,14 @@ def load_clotho_dataset(
     :param verbose: Verbose level.
         defaults to 0.
 
-    :param version: The version of the dataset. Can be one of :attr:`~ClothoCard.versions`.
+    :param version: The version of the dataset. Can be one of :attr:`~ClothoCard.VERSIONS`.
         defaults to 'v2.1'.
     :returns: A dictionnary of lists containing each metadata.
     """
     root = _get_root(root)
     if not _is_prepared_clotho(root, version, subset):
         raise RuntimeError(
-            f"Cannot load data: clotho_{subset} is not prepared in data root={root}. Please use download=True in dataset constructor."
+            f"Cannot load data: clotho_{subset} is not prepared in data {root=}. Please use download=True in dataset constructor."
         )
 
     # Read fpath of .wav audio files
@@ -98,7 +113,7 @@ def load_clotho_dataset(
 
         if subset == "dcase_t2a_captions":
             captions_data = [
-                data | {"file_name": f"no_fname_{i}"}
+                union_dicts(data, {"file_name": f"no_fname_{i}"})
                 for i, data in enumerate(captions_data)
             ]
 
@@ -134,7 +149,7 @@ def load_clotho_dataset(
         audio_subset_dpath = _get_audio_subset_dpath(root, version, subset)
         if audio_subset_dpath is None:
             raise RuntimeError(
-                f"INTERNAL ERROR: Invalid audio subset dirpath. (found audio_subset_dpath={audio_subset_dpath}, with subset={subset})"
+                f"INTERNAL ERROR: Invalid audio subset dirpath. (found audio_subset_dpath={audio_subset_dpath}, with {subset=})"
             )
         fnames_lst = list(sorted(os.listdir(audio_subset_dpath)))
 
@@ -167,7 +182,7 @@ def load_clotho_dataset(
         fname = line["file_name"]
         if fname not in fname_to_idx:
             raise KeyError(
-                f"Cannot find metadata fname={fname} in captions file. (subset={subset})"
+                f"Cannot find metadata fname={fname} in captions file. {subset=})"
             )
         index = fname_to_idx[fname]
         for key in subset_metadata_keys:
@@ -200,7 +215,7 @@ def load_clotho_dataset(
 
     if verbose >= 1:
         pylog.info(
-            f"Dataset {ClothoCard.PRETTY_NAME} ({subset}) has been loaded. (size={len(next(iter(raw_data.values())))})"
+            f"Dataset {ClothoCard.PRETTY_NAME} ({subset}) has been loaded. {len(next(iter(raw_data.values())))=})"
         )
     return raw_data
 
@@ -208,13 +223,14 @@ def load_clotho_dataset(
 def download_clotho_dataset(
     # Common args
     root: Union[str, Path, None] = None,
-    subset: str = ClothoCard.DEFAULT_SUBSET,
+    subset: ClothoSubset = ClothoCard.DEFAULT_SUBSET,
     force: bool = False,
     verbose: int = 0,
     verify_files: bool = True,
+    *,
     # Clotho-specific args
     clean_archives: bool = True,
-    version: str = ClothoCard.DEFAULT_VERSION,
+    version: ClothoVersion = ClothoCard.DEFAULT_VERSION,
 ) -> None:
     """Prepare Clotho data.
 
@@ -231,7 +247,7 @@ def download_clotho_dataset(
 
     :param clean_archives: If True, remove the compressed archives from disk to save space.
         defaults to True.
-    :param version: The version of the dataset. Can be one of :attr:`~ClothoCard.versions`.
+    :param version: The version of the dataset. Can be one of :attr:`~ClothoCard.VERSIONS`.
         defaults to 'v2.1'.
     """
     if subset == "val" and version == "v1":
@@ -272,13 +288,13 @@ def download_clotho_dataset(
             dpath = csv_dpath
         else:
             raise RuntimeError(
-                f"Found invalid extension={extension}. Must be one of {EXTENSIONS}."
+                f"Found invalid {extension=}. Must be one of {EXTENSIONS}."
             )
 
         fpath = osp.join(dpath, fname)
         if not osp.isfile(fpath) or force:
             if verbose >= 1:
-                pylog.info(f"Download and check file '{fname}' from url={url}...")
+                pylog.info(f"Download and check file '{fname}' from {url=}...")
 
             download_file(url, fpath, verbose=verbose)
 
@@ -308,14 +324,14 @@ def download_clotho_dataset(
 
             if extension not in ("7z", "zip"):
                 pylog.error(
-                    f"Found unexpected extension={extension} for downloaded file '{fname}'. Expected one of {EXTENSIONS}."
+                    f"Found unexpected {extension=} for downloaded file '{fname}'. Expected one of {EXTENSIONS}."
                 )
                 continue
 
             fpath = osp.join(archives_dpath, fname)
 
             if verbose >= 1:
-                pylog.info(f"Extract archive file fname={fname}...")
+                pylog.info(f"Extract archive file {fname=}...")
 
             if extension == "7z":
                 archive_file = SevenZipFile(fpath)
@@ -369,7 +385,7 @@ def download_clotho_dataset(
 
                     raise RuntimeError(
                         f"Invalid number of audios extracted, found {len(extracted_fnames)} files but expected the same {len(compressed_fnames)} files. "
-                        f"(with found_but_not_expected={found_but_not_expected} and expected_but_not_found={expected_but_not_found})"
+                        f"(with found_but_not_expected={found_but_not_expected} and {expected_but_not_found=})"
                     )
 
             archive_file.close()
@@ -393,13 +409,14 @@ def download_clotho_dataset(
 def download_clotho_datasets(
     # Common args
     root: Union[str, Path, None] = None,
-    subsets: Union[str, Iterable[str]] = ClothoCard.DEFAULT_SUBSET,
+    subsets: Union[ClothoSubset, Iterable[ClothoSubset]] = ClothoCard.DEFAULT_SUBSET,
     force: bool = False,
     verbose: int = 0,
+    *,
     # Clotho-specific args
     clean_archives: bool = True,
     verify_files: bool = True,
-    version: str = ClothoCard.DEFAULT_VERSION,
+    version: ClothoVersion = ClothoCard.DEFAULT_VERSION,
 ) -> None:
     """Function helper to download a list of subsets. See :func:`~aac_datasets.datasets.functional.clotho.download_clotho_dataset` for details."""
     if isinstance(subsets, str):
@@ -422,23 +439,25 @@ def download_clotho_datasets(
         )
 
 
-def _get_clotho_root(root: str, version: str) -> str:
+def _get_clotho_root(root: str, version: ClothoVersion) -> str:
     return osp.join(root, f"CLOTHO_{version}")
 
 
-def _get_archives_dpath(root: str, version: str) -> str:
+def _get_archives_dpath(root: str, version: ClothoVersion) -> str:
     return osp.join(_get_clotho_root(root, version), "archives")
 
 
-def _get_audio_dpath(root: str, version: str) -> str:
+def _get_audio_dpath(root: str, version: ClothoVersion) -> str:
     return osp.join(_get_clotho_root(root, version), "clotho_audio_files")
 
 
-def _get_csv_dpath(root: str, version: str) -> str:
+def _get_csv_dpath(root: str, version: ClothoVersion) -> str:
     return osp.join(_get_clotho_root(root, version), "clotho_csv_files")
 
 
-def _get_audio_subset_dpath(root: str, version: str, subset: str) -> Optional[str]:
+def _get_audio_subset_dpath(
+    root: str, version: ClothoVersion, subset: ClothoSubset
+) -> Optional[str]:
     dname = _CLOTHO_AUDIO_DNAMES[subset]
     if dname is None:
         return None
@@ -450,7 +469,11 @@ def _get_audio_subset_dpath(root: str, version: str, subset: str) -> Optional[st
     )
 
 
-def _is_prepared_clotho(root: str, version: str, subset: str) -> bool:
+def _is_prepared_clotho(
+    root: str,
+    version: ClothoVersion,
+    subset: ClothoSubset,
+) -> bool:
     audio_dpath = _get_audio_dpath(root, version)
     csv_dpath = _get_csv_dpath(root, version)
     if not all(map(osp.isdir, (audio_dpath, csv_dpath))):
@@ -475,7 +498,7 @@ def _is_prepared_clotho(root: str, version: str, subset: str) -> bool:
         audio_subset_dpath = _get_audio_subset_dpath(root, version, subset)
         if audio_subset_dpath is None:
             raise RuntimeError(
-                f"INTERNAL ERROR: Invalid audio subset dirpath. (found audio_subset_dpath={audio_subset_dpath}, with subset={subset})"
+                f"INTERNAL ERROR: Invalid audio subset dirpath. (found audio_subset_dpath={audio_subset_dpath}, with {subset=})"
             )
         if not osp.isdir(audio_subset_dpath):
             return False
@@ -496,7 +519,7 @@ def _is_prepared_clotho(root: str, version: str, subset: str) -> bool:
 
 
 # Audio directory names per subset
-_CLOTHO_AUDIO_DNAMES = {
+_CLOTHO_AUDIO_DNAMES: Dict[ClothoSubset, Optional[str]] = {
     "dev": "development",
     "val": "validation",
     "eval": "evaluation",
@@ -506,8 +529,15 @@ _CLOTHO_AUDIO_DNAMES = {
     "dcase_t2a_captions": None,
 }
 
+
+# Internal typing to make easier to add new links without error
+_ClothoLinkType = Literal["audio_archive", "captions", "metadata"]
+
+
 # Archives and file links used to download Clotho
-_CLOTHO_LINKS = {
+_CLOTHO_LINKS: Dict[
+    ClothoVersion, Dict[ClothoSubset, Dict[_ClothoLinkType, LinkInfoHash]]
+] = {
     "v1": {
         "dev": {
             "audio_archive": {
@@ -543,7 +573,7 @@ _CLOTHO_LINKS = {
                 "hash_value": "13946f054d4e1bf48079813aac61bf77",
             },
         },
-        "test": {
+        "dcase_aac_test": {
             "audio_archive": {
                 "fname": "clotho_audio_test.7z",
                 "url": "https://zenodo.org/record/3865658/files/clotho_audio_test.7z?download=1",
