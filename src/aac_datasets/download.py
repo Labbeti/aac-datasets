@@ -71,6 +71,13 @@ def _get_main_download_args() -> Namespace:
         help="Path to yt-dl program used to extract metadata from a youtube video.",
     )
     audiocaps_subparser.add_argument(
+        "--ytdlp_opts",
+        type=str,
+        nargs="+",
+        default=[],
+        help="yt-dlp optional arguments.",
+    )
+    audiocaps_subparser.add_argument(
         "--with_tags",
         type=pw.str_to_bool,
         default=True,
@@ -191,6 +198,7 @@ def _main_download() -> None:
             max_workers=args.max_workers,
             with_tags=args.with_tags,
             ytdlp_path=args.ytdlp_path,
+            ytdlp_opts=args.ytdlp_opts,
             version=args.version,
         )
 

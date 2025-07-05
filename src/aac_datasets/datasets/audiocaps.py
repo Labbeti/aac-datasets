@@ -4,7 +4,7 @@
 import logging
 import os.path as osp
 from pathlib import Path
-from typing import Any, Callable, ClassVar, Dict, List, Optional, Union
+from typing import Any, Callable, ClassVar, Dict, Iterable, List, Optional, Union
 
 import torch
 import torchaudio
@@ -108,6 +108,7 @@ class AudioCaps(AACDataset[AudioCapsItem]):
         sr: int = 32_000,
         with_tags: bool = False,
         ytdlp_path: Union[str, Path, None] = None,
+        ytdlp_opts: Iterable[str] = (),
         version: AudioCapsVersion = AudioCapsCard.DEFAULT_VERSION,
     ) -> None:
         """
@@ -156,6 +157,8 @@ class AudioCaps(AACDataset[AudioCapsItem]):
             defaults to False.
         :param ytdlp_path: Path to yt-dlp or ytdlp executable.
             defaults to "yt-dlp".
+        :param ytdlp_opts: yt-dlp optional arguments.
+            defaults to ().
         :param version: The version of the dataset. Can be one of :attr:`~AudioCapsCard.VERSIONS`.
             defaults to 'v1'.
         """
@@ -183,6 +186,7 @@ class AudioCaps(AACDataset[AudioCapsItem]):
                 sr=sr,
                 with_tags=with_tags,
                 ytdlp_path=ytdlp_path,
+                ytdlp_opts=ytdlp_opts,
                 version=version,
             )
 

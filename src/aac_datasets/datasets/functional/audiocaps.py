@@ -303,6 +303,7 @@ def download_audiocaps_dataset(
     ytdlp_path: Union[str, Path, None] = None,
     with_tags: bool = False,
     version: AudioCapsVersion = AudioCapsCard.DEFAULT_VERSION,
+    ytdlp_opts: Iterable[str] = (),
 ) -> None:
     """Prepare AudioCaps data (audio, labels, metadata).
 
@@ -341,6 +342,8 @@ def download_audiocaps_dataset(
         defaults to "yt-dlp".
     :param version: The version of the dataset. Can be one of :attr:`~AudioCapsCard.VERSIONS`.
         defaults to 'v1'.
+    :param ytdlp_opts: yt-dlp options.
+        defaults to ().
     """
 
     root = _get_root(root)
@@ -384,6 +387,7 @@ def download_audiocaps_dataset(
         if url is None:
             msg = f"AudioCaps subset '{subset}' cannot be automatically downloaded. (found {url=})"
             raise ValueError(msg)
+
         download_file(url, captions_fpath, verbose=verbose)
 
     if download_audio:
@@ -400,6 +404,7 @@ def download_audiocaps_dataset(
             max_workers=max_workers,
             sr=sr,
             ytdlp_path=ytdlp_path,
+            ytdlp_opts=ytdlp_opts,
         )
 
     if verbose >= 2:
@@ -428,6 +433,7 @@ def download_audiocaps_datasets(
     with_tags: bool = False,
     ytdlp_path: Union[str, Path, None] = None,
     version: AudioCapsVersion = AudioCapsCard.DEFAULT_VERSION,
+    ytdlp_opts: Iterable[str] = (),
 ) -> None:
     """Function helper to download a list of subsets. See :func:`~aac_datasets.datasets.functional.audiocaps.download_audiocaps_dataset` for details."""
     if isinstance(subsets, str):
@@ -450,6 +456,7 @@ def download_audiocaps_datasets(
         with_tags=with_tags,
         ytdlp_path=ytdlp_path,
         version=version,
+        ytdlp_opts=ytdlp_opts,
     )
     for subset in subsets:
         download_audiocaps_dataset(
@@ -472,6 +479,7 @@ def _download_audio_files(
     max_workers: Optional[int],
     sr: int,
     ytdlp_path: str,
+    ytdlp_opts: Iterable[str],
 ) -> None:
     start = time.perf_counter()
     if verbose >= 1:
@@ -523,6 +531,7 @@ def _download_audio_files(
         ffmpeg_path=ffmpeg_path,
         ytdlp_path=ytdlp_path,
         verbose=verbose,
+        ytdlp_opts=ytdlp_opts,
     )
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
         if verbose >= 2:
@@ -686,6 +695,7 @@ def _download_from_youtube_and_verify(
     ffmpeg_path: str,
     ytdlp_path: str,
     verbose: int,
+    ytdlp_opts: Iterable[str],
 ) -> Tuple[bool, bool, bool]:
     fpath = osp.join(audio_subset_dpath, fname)
 
@@ -704,6 +714,7 @@ def _download_from_youtube_and_verify(
             ffmpeg_path=ffmpeg_path,
             ytdlp_path=ytdlp_path,
             verbose=verbose,
+            ytdlp_opts=ytdlp_opts,
         )
 
     if verify_files and (download_success or file_exists):
@@ -732,10 +743,12 @@ def _download_from_youtube(
     ytdlp_path: Union[str, Path, None] = None,
     ffmpeg_path: Union[str, Path, None] = None,
     verbose: int = 0,
+    ytdlp_opts: Iterable[str] = (),
 ) -> bool:
     """Download audio from youtube with yt-dlp and ffmpeg."""
     ytdlp_path = _get_ytdlp_path(ytdlp_path)
     ffmpeg_path = _get_ffmpeg_path(ffmpeg_path)
+    ytdlp_opts = list(ytdlp_opts)
 
     # Get audio download link with yt-dlp, without start time
     link = _get_youtube_link(youtube_id, None)
@@ -744,7 +757,7 @@ def _download_from_youtube(
         "--youtube-skip-dash-manifest",
         "-g",
         link,
-    ]
+    ] + ytdlp_opts
     try:
         output = subprocess.check_output(get_url_command)
     except (CalledProcessError, PermissionError) as err:
@@ -761,9 +774,8 @@ def _download_from_youtube(
     # if yt-dlp only returns one link, it is a combined video audio
     if len(audio_link) == 0:
         if verbose >= 2:
-            pylog.debug(
-                f"youtube_id={youtube_id} is combined video audio only (cant download)"
-            )
+            msg = f"Video with youtube_id={youtube_id} is a combined video audio only that cannot be downloaded."
+            pylog.debug(msg)
         # audio_link = video_link # this does not work, not sure why. probably requires changes to ffmpeg command
         return False
 
