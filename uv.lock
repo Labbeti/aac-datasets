@@ -33,7 +33,7 @@ dependencies = [
     { name = "typing-extensions", version = "4.14.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.9'" },
 ]
 
-[package.dev-dependencies]
+[package.optional-dependencies]
 dev = [
     { name = "black" },
     { name = "click", version = "8.1.8", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10'" },
@@ -64,34 +64,31 @@ dev = [
 
 [package.metadata]
 requires-dist = [
+    { name = "black", marker = "extra == 'dev'", specifier = "==23.3.0" },
+    { name = "click", marker = "extra == 'dev'", specifier = ">=8.0.4" },
+    { name = "coverage", extras = ["toml"], marker = "extra == 'dev'", specifier = ">=7.6.1" },
+    { name = "flake8", marker = "extra == 'dev'", specifier = ">=4.0.1" },
     { name = "huggingface-hub", specifier = ">=0.15.1" },
+    { name = "ipykernel", marker = "extra == 'dev'", specifier = ">=6.9.1" },
+    { name = "ipython", marker = "extra == 'dev'", specifier = ">=8.12.3" },
+    { name = "isort", marker = "extra == 'dev'", specifier = "==5.12.0" },
+    { name = "jupyter", marker = "extra == 'dev'", specifier = ">=1.1.1" },
     { name = "numpy", specifier = ">=1.21.2" },
+    { name = "pre-commit", marker = "extra == 'dev'", specifier = ">=3.5.0" },
     { name = "py7zr", specifier = ">=0.17.2" },
+    { name = "pytest", marker = "extra == 'dev'", specifier = ">=6.2.5" },
     { name = "pythonwrench", specifier = ">=0.3.0,<0.4.0" },
     { name = "pyyaml", specifier = ">=6.0" },
     { name = "soundfile", marker = "sys_platform == 'win32'", specifier = ">=0.13.1" },
+    { name = "sphinx", marker = "extra == 'dev'", specifier = ">=7.1.2" },
+    { name = "sphinx-press-theme", marker = "extra == 'dev'", specifier = ">=0.8.0" },
     { name = "torch", specifier = ">=1.10.1" },
     { name = "torchaudio", specifier = ">=0.10.1" },
     { name = "tqdm", specifier = ">=4.64.0" },
+    { name = "twine", marker = "extra == 'dev'", specifier = ">=4.0.0" },
     { name = "typing-extensions", specifier = ">=4.6.0" },
 ]
-
-[package.metadata.requires-dev]
-dev = [
-    { name = "black", specifier = "==23.3.0" },
-    { name = "click", specifier = ">=8.0.4" },
-    { name = "coverage", extras = ["toml"], specifier = ">=7.6.1" },
-    { name = "flake8", specifier = ">=4.0.1" },
-    { name = "ipykernel", specifier = ">=6.9.1" },
-    { name = "ipython", specifier = ">=8.12.3" },
-    { name = "isort", specifier = "==5.12.0" },
-    { name = "jupyter", specifier = ">=1.1.1" },
-    { name = "pre-commit", specifier = ">=3.5.0" },
-    { name = "pytest", specifier = ">=6.2.5" },
-    { name = "sphinx", specifier = ">=7.1.2" },
-    { name = "sphinx-press-theme", specifier = ">=0.8.0" },
-    { name = "twine", specifier = ">=4.0.0" },
-]
+provides-extras = ["dev"]
 
 [[package]]
 name = "alabaster"

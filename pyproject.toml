@@ -78,7 +78,7 @@ filterwarnings = ["ignore::FutureWarning", "ignore::DeprecationWarning"]
 [tool.coverage.run]
 source = ["src"]
 
-[dependency-groups]
+[project.optional-dependencies]
 dev = [
     "black==23.3.0",
     "click>=8.0.4",
