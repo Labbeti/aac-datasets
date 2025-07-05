@@ -81,14 +81,16 @@ source = ["src"]
 [dependency-groups]
 dev = [
     "black==23.3.0",
-    "click==8.0.4",
+    "click>=8.0.4",
     "coverage[toml]>=7.6.1",
     "flake8>=4.0.1",
-    "ipykernel==6.9.1",
+    "ipykernel>=6.9.1",
+    "ipython>=8.12.3",
     "isort==5.12.0",
+    "jupyter>=1.1.1",
     "pre-commit>=3.5.0",
     "pytest>=6.2.5",
     "sphinx>=7.1.2",
-    "sphinx-press-theme==0.8.0",
-    "twine==4.0.0",
+    "sphinx-press-theme>=0.8.0",
+    "twine>=4.0.0",
 ]
