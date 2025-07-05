@@ -26,7 +26,7 @@ from aac_datasets.datasets.functional.common import DatasetCard, LinkInfo
 from aac_datasets.utils.download import download_file, safe_rmdir
 from aac_datasets.utils.globals import _get_root, _get_zip_path
 
-pylog = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 WavCapsSource = Literal["AudioSet_SL", "BBC_Sound_Effects", "FreeSound", "SoundBible"]
 WavCapsSubset = Literal[
@@ -110,7 +110,7 @@ def load_wavcaps_dataset(
         new_subset = _WAVCAPS_OLD_SUBSETS_NAMES[subset]
         if verbose >= 0:
             msg = f"Deprecated subset name '{subset}', use '{new_subset}' instead."
-            pylog.warning(msg)
+            logger.warning(msg)
         subset = new_subset
 
     root = _get_root(root)
@@ -126,7 +126,7 @@ def load_wavcaps_dataset(
             f"You selected WavCaps subset '{subset}', be careful to not use these data as training when evaluating on {overlapped_ds} {overlapped_subsets} subsets. "
             f"You can use {recommanded} subset for to avoid this bias with {overlapped_ds}."
         )
-        pylog.warning(msg)
+        logger.warning(msg)
 
     elif subset == "freesound":
         overlapped_ds = "Clotho"
@@ -143,7 +143,7 @@ def load_wavcaps_dataset(
             f"You selected WavCaps subset '{subset}', be careful to not use these data as training when evaluating on {overlapped_ds} {overlapped_subsets} subsets. "
             f"You can use {recommanded} subset for to avoid this bias for Clotho val, eval, dcase_t2a_audio and dcase_t2a_captions subsets. Data could still overlap with Clotho dcase_aac_test and dcase_aac_analysis subsets."
         )
-        pylog.warning(msg)
+        logger.warning(msg)
 
     if subset in (
         "audioset_no_audiocaps_v1",
@@ -184,7 +184,7 @@ def load_wavcaps_dataset(
 
         if verbose >= 1:
             msg = f"Getting {len(indexes)}/{len(wavcaps_ids)} items from '{target_subset}' for subset '{subset}'."
-            pylog.info(msg)
+            logger.info(msg)
 
         raw_data = {
             column: [column_data[index] for index in indexes]
@@ -246,7 +246,7 @@ def download_wavcaps_dataset(
         new_subset = _WAVCAPS_OLD_SUBSETS_NAMES[subset]
         if verbose >= 0:
             msg = f"Deprecated subset name '{subset}', use '{new_subset}' instead."
-            pylog.warning(msg)
+            logger.warning(msg)
         subset = new_subset
 
     root = _get_root(root)
@@ -307,8 +307,8 @@ def download_wavcaps_dataset(
         for pattern in (f"json_files/{source}/*.json", f"Zip_files/{source}/*")
     ]
     if verbose >= 2:
-        pylog.debug(f"ign_sources={ign_sources}")
-        pylog.debug(f"ign_patterns={ign_patterns}")
+        logger.debug(f"ign_sources={ign_sources}")
+        logger.debug(f"ign_patterns={ign_patterns}")
 
     pbar_enabled = are_progress_bars_disabled()
     if pbar_enabled and verbose <= 0:
@@ -331,9 +331,9 @@ def download_wavcaps_dataset(
     snapshot_abs_dpath = osp.abspath(snapshot_dpath)
     wavcaps_root = _get_wavcaps_root(root, hf_cache_dir, revision)
     if verbose >= 2:
-        pylog.debug(f"snapshot_dpath={snapshot_dpath}")
-        pylog.debug(f"snapshot_absdpath={snapshot_abs_dpath}")
-        pylog.debug(f"wavcaps_dpath={wavcaps_root}")
+        logger.debug(f"snapshot_dpath={snapshot_dpath}")
+        logger.debug(f"snapshot_absdpath={snapshot_abs_dpath}")
+        logger.debug(f"wavcaps_dpath={wavcaps_root}")
     del snapshot_dpath
 
     # Build symlink to hf cache
@@ -342,7 +342,7 @@ def download_wavcaps_dataset(
             raise RuntimeError("WavCaps root exists but it is not a symlink.")
         link_target_abspath = osp.abspath(osp.realpath(wavcaps_root))
         if link_target_abspath != snapshot_abs_dpath:
-            pylog.error(
+            logger.error(
                 "Target link is not pointing to current snapshot path. It will be automatically replaced."
             )
             os.remove(wavcaps_root)
@@ -384,8 +384,8 @@ def download_wavcaps_dataset(
                 merged_zip_fpath,
             ]
             if verbose >= 2:
-                pylog.debug(f"Merging ZIP files for {source}...")
-                pylog.debug(f"Using command: {' '.join(cmd)}")
+                logger.debug(f"Merging ZIP files for {source}...")
+                logger.debug(f"Using command: {' '.join(cmd)}")
 
             if verbose >= 2:
                 stdout = None
@@ -426,12 +426,12 @@ def download_wavcaps_dataset(
                 and osp.basename(subname) not in tgt_fnames_found
             ]
             if verbose >= 2:
-                pylog.debug(
+                logger.debug(
                     f"Extracting {len(missing_subnames)}/{len(flac_subnames)} audio files from {merged_zip_fpath}..."
                 )
             file.extractall(audio_subset_dpath, missing_subnames)
             if verbose >= 2:
-                pylog.debug("Extraction done.")
+                logger.debug("Extraction done.")
 
         src_fnames_found = (
             dict.fromkeys(name for name in os.listdir(src_root))
@@ -444,12 +444,12 @@ def download_wavcaps_dataset(
             if osp.basename(subname) in src_fnames_found
         ]
         if verbose >= 2:
-            pylog.debug(f"Moving {len(src_fpaths_to_move)} files...")
+            logger.debug(f"Moving {len(src_fpaths_to_move)} files...")
         for src_fpath in tqdm.tqdm(src_fpaths_to_move):
             tgt_fpath = osp.join(audio_subset_dpath, osp.basename(src_fpath))
             os.rename(src_fpath, tgt_fpath)
         if verbose >= 2:
-            pylog.debug("Move done.")
+            logger.debug("Move done.")
 
         if verify_files:
             tgt_fnames_expected = [osp.basename(subname) for subname in flac_subnames]
@@ -457,7 +457,7 @@ def download_wavcaps_dataset(
                 fname for fname in os.listdir(audio_subset_dpath)
             )
             if verbose >= 2:
-                pylog.debug(f"Checking {len(tgt_fnames_expected)} files...")
+                logger.debug(f"Checking {len(tgt_fnames_expected)} files...")
             tgt_fnames_invalids = [
                 fname for fname in tgt_fnames_expected if fname not in tgt_fnames_found
             ]
@@ -480,7 +480,7 @@ def download_wavcaps_dataset(
                     continue
                 fpath = osp.join(archive_source_dpath, name)
                 if verbose >= 1:
-                    pylog.info(f"Removing archive file {name} for {source=}...")
+                    logger.info(f"Removing archive file {name} for {source=}...")
                 os.remove(fpath)
 
 
@@ -555,7 +555,7 @@ def _load_wavcaps_dataset_impl(
     raw_data = {k: [] for k in _WAVCAPS_RAW_COLUMNS + ("source", "fname")}
     for source, json_path in json_paths:
         if verbose >= 2:
-            pylog.debug(f"Loading metadata in JSON '{json_path}'...")
+            logger.debug(f"Loading metadata in JSON '{json_path}'...")
         json_data, size = _load_json(json_path)
 
         sources = [source] * size
@@ -672,7 +672,7 @@ def _is_prepared_wavcaps(
         if not osp.isdir(audio_subset_dpath):
             if verbose >= 0:
                 msg = f"Cannot find directory {audio_subset_dpath=}."
-                pylog.error(msg)
+                logger.error(msg)
             return False
 
         audio_fnames = os.listdir(audio_subset_dpath)
@@ -680,7 +680,7 @@ def _is_prepared_wavcaps(
         if expected_size != len(audio_fnames):
             if verbose >= 0:
                 msg = f"Invalid number of files for {source=}. (expected {expected_size} but found {len(audio_fnames)} files)"
-                pylog.error(msg)
+                logger.error(msg)
             return False
     return True
 

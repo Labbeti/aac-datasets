@@ -28,7 +28,7 @@ from aac_datasets.datasets.functional.audiocaps import (
 )
 from aac_datasets.utils.globals import _get_ffmpeg_path, _get_root, _get_ytdlp_path
 
-pylog = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class AudioCapsItem(TypedDict):
@@ -110,6 +110,7 @@ class AudioCaps(AACDataset[AudioCapsItem]):
         ytdlp_path: Union[str, Path, None] = None,
         ytdlp_opts: Iterable[str] = (),
         version: AudioCapsVersion = AudioCapsCard.DEFAULT_VERSION,
+        num_dl_attempts: int = 3,
     ) -> None:
         """
         :param root: Dataset root directory.
@@ -161,6 +162,8 @@ class AudioCaps(AACDataset[AudioCapsItem]):
             defaults to ().
         :param version: The version of the dataset. Can be one of :attr:`~AudioCapsCard.VERSIONS`.
             defaults to 'v1'.
+        :param num_dl_attempts: Number of download attempts.
+            defaults to 3.
         """
         if subset not in AudioCapsCard.SUBSETS:
             msg = f"Invalid argument {subset=} for AudioCaps. (expected one of {AudioCapsCard.SUBSETS})"

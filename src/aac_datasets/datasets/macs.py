@@ -20,7 +20,7 @@ from aac_datasets.datasets.functional.macs import (
 )
 from aac_datasets.utils.globals import _get_root
 
-pylog = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class MACSItem(TypedDict):

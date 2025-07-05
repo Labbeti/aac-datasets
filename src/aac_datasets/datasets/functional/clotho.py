@@ -18,7 +18,7 @@ from aac_datasets.datasets.functional.common import DatasetCard, LinkInfoHash
 from aac_datasets.utils.download import download_file, hash_file
 from aac_datasets.utils.globals import _get_root
 
-pylog = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 ClothoSubset = Literal[
@@ -212,7 +212,7 @@ def load_clotho_dataset(
 
     if verbose >= 1:
         msg = f"Dataset {ClothoCard.PRETTY_NAME} ({subset}) has been loaded. {len(next(iter(raw_data.values())))=})"
-        pylog.info(msg)
+        logger.info(msg)
     return raw_data
 
 
@@ -247,7 +247,7 @@ def download_clotho_dataset(
         defaults to 'v2.1'.
     """
     if subset == "val" and version == "v1":
-        pylog.error(
+        logger.error(
             f"Clotho version '{version}' does not have '{subset}' subset. It will be ignored."
         )
         return None
@@ -264,7 +264,7 @@ def download_clotho_dataset(
         os.makedirs(dpath, exist_ok=True)
 
     if verbose >= 1:
-        pylog.info(f"Start to download files for clotho_{subset}...")
+        logger.info(f"Start to download files for clotho_{subset}...")
 
     links = copy.deepcopy(_CLOTHO_LINKS[version][subset])
     EXTENSIONS = ("7z", "csv", "zip")
@@ -289,12 +289,12 @@ def download_clotho_dataset(
         fpath = osp.join(dpath, fname)
         if not osp.isfile(fpath) or force:
             if verbose >= 1:
-                pylog.info(f"Download and check file '{fname}' from {url=}...")
+                logger.info(f"Download and check file '{fname}' from {url=}...")
 
             download_file(url, fpath, verbose=verbose)
 
         elif verbose >= 1:
-            pylog.info(f"File '{fname}' is already downloaded.")
+            logger.info(f"File '{fname}' is already downloaded.")
 
         if verify_files:
             hash_value = file_info["hash_value"]
@@ -305,7 +305,7 @@ def download_clotho_dataset(
                     f"Please try to remove manually the file '{fpath}' and rerun {ClothoCard.PRETTY_NAME} download."
                 )
             elif verbose >= 2:
-                pylog.debug(f"File '{fname}' has a valid checksum.")
+                logger.debug(f"File '{fname}' has a valid checksum.")
 
     # Extract audio files from archives
     audio_subset_dpath = _get_audio_subset_dpath(root, version, subset)
@@ -318,7 +318,7 @@ def download_clotho_dataset(
                 continue
 
             if extension not in ("7z", "zip"):
-                pylog.error(
+                logger.error(
                     f"Found unexpected {extension=} for downloaded file '{fname}'. Expected one of {EXTENSIONS}."
                 )
                 continue
@@ -326,7 +326,7 @@ def download_clotho_dataset(
             fpath = osp.join(archives_dpath, fname)
 
             if verbose >= 1:
-                pylog.info(f"Extract archive file {fname=}...")
+                logger.info(f"Extract archive file {fname=}...")
 
             if extension == "7z":
                 archive_file = SevenZipFile(fpath)
@@ -394,11 +394,11 @@ def download_clotho_dataset(
 
             fpath = osp.join(archives_dpath, fname)
             if verbose >= 1:
-                pylog.info(f"Removing archive file {osp.basename(fpath)}...")
+                logger.info(f"Removing archive file {osp.basename(fpath)}...")
             os.remove(fpath)
 
     if verbose >= 2:
-        pylog.debug(f"Dataset {ClothoCard.PRETTY_NAME} ({subset}) has been prepared.")
+        logger.debug(f"Dataset {ClothoCard.PRETTY_NAME} ({subset}) has been prepared.")
 
 
 def download_clotho_datasets(

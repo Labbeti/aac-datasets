@@ -7,7 +7,7 @@ import os.path as osp
 from pathlib import Path
 from typing import Any, Union
 
-pylog = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 # Public functions
@@ -102,7 +102,7 @@ def __get_default_value(value_name: str) -> str:
             value = process_func(value)
             return value
 
-    pylog.error(f"Values: {values}")
+    logger.error(f"Values: {values}")
     raise RuntimeError(
         f"Invalid default value for {value_name=}. (all default values are None)"
     )

@@ -24,7 +24,7 @@ from aac_datasets.utils.globals import (
     get_default_zip_path,
 )
 
-pylog = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 def _get_main_download_args() -> Namespace:
@@ -103,6 +103,12 @@ def _get_main_download_args() -> Namespace:
         default=AudioCapsCard.DEFAULT_VERSION,
         choices=AudioCapsCard.VERSIONS,
         help="The version of the AudioCaps dataset.",
+    )
+    audiocaps_subparser.add_argument(
+        "--num_dl_attempts",
+        type=int,
+        default=3,
+        help="Number of download attempts.",
     )
 
     clotho_subparser = subparsers.add_parser(ClothoCard.NAME)
@@ -186,7 +192,7 @@ def _main_download() -> None:
     pw.setup_logging_verbose("aac_datasets", args.verbose)
 
     if args.verbose >= 2:
-        pylog.debug(yaml.dump({"Arguments": args.__dict__}, sort_keys=False))
+        logger.debug(yaml.dump({"Arguments": args.__dict__}, sort_keys=False))
 
     if args.dataset == AudioCapsCard.NAME:
         download_audiocaps_datasets(
@@ -200,6 +206,7 @@ def _main_download() -> None:
             ytdlp_path=args.ytdlp_path,
             ytdlp_opts=args.ytdlp_opts,
             version=args.version,
+            num_dl_attempts=args.num_dl_attempts,
         )
 
     elif args.dataset == ClothoCard.NAME:
@@ -233,15 +240,14 @@ def _main_download() -> None:
         )
 
     else:
-        DATASETS = (
+        DATASET_NAMES = (
             AudioCapsCard.NAME,
             ClothoCard.NAME,
             MACSCard.NAME,
             WavCapsCard.NAME,
         )
-        raise ValueError(
-            f"Invalid argument {args.dataset}. (expected one of {DATASETS})"
-        )
+        msg = f"Invalid argument {args.dataset}. (expected one of {DATASET_NAMES})"
+        raise ValueError(msg)
 
 
 if __name__ == "__main__":

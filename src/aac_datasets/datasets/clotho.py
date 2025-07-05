@@ -20,7 +20,7 @@ from aac_datasets.datasets.functional.clotho import (
 )
 from aac_datasets.utils.globals import _get_root
 
-pylog = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class ClothoItem(TypedDict):
@@ -145,7 +145,7 @@ class Clotho(AACDataset[ClothoItem]):
                 f"The version '{version}' of the Clotho dataset contains minor some errors in file names and few corrupted files."
                 f"Please consider using the fixed version 'v2.1'."
             )
-            pylog.warning(msg)
+            logger.warning(msg)
 
         if subset not in ClothoCard.SUBSETS:
             msg = f"Invalid Clotho argument subset={subset} for {version=}. Must be one of {ClothoCard.SUBSETS}."

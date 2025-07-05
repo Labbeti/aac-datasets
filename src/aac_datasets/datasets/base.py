@@ -32,7 +32,7 @@ from torch import Tensor
 from torch.utils.data.dataset import Dataset
 from typing_extensions import TypeAlias, TypeGuard
 
-pylog = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 ItemType = TypeVar("ItemType", covariant=True)
 IndexType: TypeAlias = Union[int, Iterable[int], Iterable[bool], Tensor, slice, None]

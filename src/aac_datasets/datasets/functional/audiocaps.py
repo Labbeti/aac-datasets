@@ -25,7 +25,7 @@ from aac_datasets.utils.audioset_mapping import (
 from aac_datasets.utils.download import download_file
 from aac_datasets.utils.globals import _get_ffmpeg_path, _get_root, _get_ytdlp_path
 
-pylog = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 AudioCapsSubset = Literal["train", "val", "test", "train_fixed"]
 AudioCapsVersion = Literal["v1", "v2"]
@@ -110,7 +110,7 @@ def load_audiocaps_dataset(
         new_subset = _AUDIOCAPS_OLD_SUBSETS_NAMES[subset]
         if verbose >= 0:
             msg = f"Deprecated subset name '{subset}', use '{new_subset}' instead."
-            pylog.warning(msg)
+            logger.warning(msg)
         subset = new_subset
 
     root = _get_root(root)
@@ -279,7 +279,7 @@ def load_audiocaps_dataset(
 
     if verbose >= 1:
         msg = f"{AudioCapsCard.PRETTY_NAME}(subset={subset}) has been loaded. {len(fnames_lst)=})"
-        pylog.info(msg)
+        logger.info(msg)
 
     return raw_data, index_to_name
 
@@ -304,6 +304,7 @@ def download_audiocaps_dataset(
     with_tags: bool = False,
     version: AudioCapsVersion = AudioCapsCard.DEFAULT_VERSION,
     ytdlp_opts: Iterable[str] = (),
+    num_dl_attempts: int = 3,
 ) -> None:
     """Prepare AudioCaps data (audio, labels, metadata).
 
@@ -344,6 +345,8 @@ def download_audiocaps_dataset(
         defaults to 'v1'.
     :param ytdlp_opts: yt-dlp options.
         defaults to ().
+    :param num_dl_attempts: Number of download attempts.
+        defaults to 3.
     """
 
     root = _get_root(root)
@@ -405,11 +408,12 @@ def download_audiocaps_dataset(
             sr=sr,
             ytdlp_path=ytdlp_path,
             ytdlp_opts=ytdlp_opts,
+            num_dl_attempts=num_dl_attempts,
         )
 
     if verbose >= 2:
         msg = f"Dataset {AudioCapsCard.PRETTY_NAME} {subset=}) has been prepared."
-        pylog.debug(msg)
+        logger.debug(msg)
 
 
 def download_audiocaps_datasets(
@@ -434,6 +438,7 @@ def download_audiocaps_datasets(
     ytdlp_path: Union[str, Path, None] = None,
     version: AudioCapsVersion = AudioCapsCard.DEFAULT_VERSION,
     ytdlp_opts: Iterable[str] = (),
+    num_dl_attempts: int = 3,
 ) -> None:
     """Function helper to download a list of subsets. See :func:`~aac_datasets.datasets.functional.audiocaps.download_audiocaps_dataset` for details."""
     if isinstance(subsets, str):
@@ -457,6 +462,7 @@ def download_audiocaps_datasets(
         ytdlp_path=ytdlp_path,
         version=version,
         ytdlp_opts=ytdlp_opts,
+        num_dl_attempts=num_dl_attempts,
     )
     for subset in subsets:
         download_audiocaps_dataset(
@@ -480,10 +486,11 @@ def _download_audio_files(
     sr: int,
     ytdlp_path: str,
     ytdlp_opts: Iterable[str],
+    num_dl_attempts: int = 3,
 ) -> None:
     start = time.perf_counter()
     if verbose >= 1:
-        pylog.info(f"Start downloading audio files for AudioCaps {subset} split...")
+        logger.info(f"Start downloading audio files for AudioCaps {subset} split...")
 
     with open(captions_fpath, "r") as file:
         # Download audio files
@@ -532,10 +539,11 @@ def _download_audio_files(
         ytdlp_path=ytdlp_path,
         verbose=verbose,
         ytdlp_opts=ytdlp_opts,
+        num_dl_attempts=num_dl_attempts,
     )
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
         if verbose >= 2:
-            pylog.debug(f"Using {executor._max_workers} workers.")
+            logger.debug(f"Using {executor._max_workers} workers.")
 
         submitted_dict = {
             fname: executor.submit(
@@ -572,7 +580,7 @@ def _download_audio_files(
                 else:
                     msg_end = f"File '{fname}' is already downloaded."
 
-            pylog.debug(f"[{i+1:5d}/{len(download_kwds)}] {msg_end}")
+            logger.debug(f"[{i+1:5d}/{len(download_kwds)}] {msg_end}")
 
     if verbose >= 1:
         duration_s = int(time.perf_counter() - start)
@@ -580,7 +588,7 @@ def _download_audio_files(
             f"Download and preparation of AudioCaps for subset '{subset}' done in {duration_s}s.",
             f"- {len(download_kwds)} total samples.",
         )
-        pylog.info("\n".join(msgs))
+        logger.info("\n".join(msgs))
 
 
 def _download_tags_files(
@@ -599,7 +607,7 @@ def _download_tags_files(
     fpath = osp.join(audiocaps_root, fname)
     if not osp.isfile(fpath):
         if verbose >= 1:
-            pylog.info(f"Downloading file '{fname}'...")
+            logger.info(f"Downloading file '{fname}'...")
         download_file(url, fpath, verbose=verbose)
 
     download_audioset_mapping(audiocaps_root, verbose=verbose)
@@ -677,7 +685,7 @@ def _is_prepared_audiocaps(
 
     if verbose >= 0:
         for msg in msgs:
-            pylog.warning(msg)
+            logger.warning(msg)
 
     return len(msgs) == 0
 
@@ -696,6 +704,7 @@ def _download_from_youtube_and_verify(
     ytdlp_path: str,
     verbose: int,
     ytdlp_opts: Iterable[str],
+    num_dl_attempts: int = 3,
 ) -> Tuple[bool, bool, bool]:
     fpath = osp.join(audio_subset_dpath, fname)
 
@@ -704,18 +713,23 @@ def _download_from_youtube_and_verify(
     valid_file = False
 
     if not file_exists:
-        download_success = _download_from_youtube(
-            youtube_id=youtube_id,
-            fpath_out=fpath,
-            start_time=start_time,
-            audio_duration=audio_duration,
-            sr=sr,
-            audio_n_channels=audio_n_channels,
-            ffmpeg_path=ffmpeg_path,
-            ytdlp_path=ytdlp_path,
-            verbose=verbose,
-            ytdlp_opts=ytdlp_opts,
-        )
+        download_success = False
+
+        for _ in range(num_dl_attempts):
+            download_success = _download_from_youtube(
+                youtube_id=youtube_id,
+                fpath_out=fpath,
+                start_time=start_time,
+                audio_duration=audio_duration,
+                sr=sr,
+                audio_n_channels=audio_n_channels,
+                ffmpeg_path=ffmpeg_path,
+                ytdlp_path=ytdlp_path,
+                verbose=verbose,
+                ytdlp_opts=ytdlp_opts,
+            )
+            if download_success:
+                break
 
     if verify_files and (download_success or file_exists):
         valid_file = _is_valid_audio_file(
@@ -762,7 +776,7 @@ def _download_from_youtube(
         output = subprocess.check_output(get_url_command)
     except (CalledProcessError, PermissionError) as err:
         if verbose >= 2:
-            pylog.debug(err)
+            logger.debug(err)
         return False
 
     output = output.decode()
@@ -775,7 +789,7 @@ def _download_from_youtube(
     if len(audio_link) == 0:
         if verbose >= 2:
             msg = f"Video with youtube_id={youtube_id} is a combined video audio only that cannot be downloaded."
-            pylog.debug(msg)
+            logger.debug(msg)
         # audio_link = video_link # this does not work, not sure why. probably requires changes to ffmpeg command
         return False
 
@@ -818,7 +832,7 @@ def _download_from_youtube(
 
     except (CalledProcessError, PermissionError) as err:
         if verbose >= 2:
-            pylog.debug(err)
+            logger.debug(err)
         return False
 
 
@@ -835,7 +849,7 @@ def _check_subprog_help(
             stderr=stderr,
         )
     except (CalledProcessError, PermissionError, FileNotFoundError) as err:
-        pylog.error(f"Invalid {name} path '{path}'. ({err})")
+        logger.error(f"Invalid {name} path '{path}'. ({err})")
         raise err
 
 
@@ -851,7 +865,7 @@ def _is_valid_audio_file(
         metadata = torchaudio.info(fpath)  # type: ignore
     except RuntimeError:
         msg = f"Found file '{fpath}' already downloaded but it is invalid (cannot load metadata)."
-        pylog.error(msg)
+        logger.error(msg)
         return False
 
     msgs = []
@@ -872,7 +886,7 @@ def _is_valid_audio_file(
         msgs.append(msg)
 
     for msg in msgs:
-        pylog.error(msg)
+        logger.error(msg)
 
     return len(msgs) == 0
 

@@ -18,7 +18,7 @@ from aac_datasets.utils.globals import get_default_root
 
 DATASETS_NAMES = (AudioCapsCard.NAME, ClothoCard.NAME, MACSCard.NAME, WavCapsCard.NAME)
 
-pylog = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 def check_directory(
@@ -49,12 +49,12 @@ def check_directory(
     ]
 
     if verbose >= 1:
-        pylog.info(f"Start searching datasets in root='{root}'.")
+        logger.info(f"Start searching datasets in root='{root}'.")
 
     all_found_dsets = {}
     for ds_name, ds_class in data_infos:
         if verbose >= 1:
-            pylog.info(f"Searching for {ds_name}...")
+            logger.info(f"Searching for {ds_name}...")
 
         found_dsets = {}
         for subset in ds_class.CARD.SUBSETS:
@@ -68,24 +68,23 @@ def check_directory(
 
             except RuntimeError:
                 if verbose >= 2:
-                    pylog.info(f"Cannot find {ds_name}_{subset}.")
+                    logger.info(f"Cannot find {ds_name}_{subset}.")
 
         if len(found_dsets) > 0:
             all_found_dsets[ds_name] = found_dsets
 
     if verbose >= 1:
-        pylog.info(
-            f"Checking if audio files exists for {len(all_found_dsets)} datasets..."
-        )
+        msg = f"Checking if audio files exists for {len(all_found_dsets)} datasets..."
+        logger.info(msg)
 
     for ds_name, dsets in all_found_dsets.items():
         for subset, ds in dsets.items():
             fpaths = ds[:, "fpath"]
             is_valid = [osp.isfile(fpath) for fpath in fpaths]
             if not all(is_valid):
-                pylog.error(f"Cannot find all audio files for {ds_name}.{subset}.")
+                logger.error(f"Cannot find all audio files for {ds_name}.{subset}.")
             else:
-                pylog.info(f"Dataset {ds_name}.{subset} is valid.")
+                logger.info(f"Dataset {ds_name}.{subset} is valid.")
 
     all_valids_lens = {
         ds_name: {subset: len(ds) for subset, ds in dsets.items()}
@@ -126,14 +125,13 @@ def _main_check() -> None:
     pw.setup_logging_verbose("aac_datasets", args.verbose)
 
     if args.verbose >= 2:
-        pylog.debug(yaml.dump({"Arguments": args.__dict__}, sort_keys=False))
+        logger.debug(yaml.dump({"Arguments": args.__dict__}, sort_keys=False))
 
     valid_datasubsets = check_directory(args.root, args.verbose, args.datasets)
 
     if args.verbose >= 1:
-        print(
-            f"Found {len(valid_datasubsets)}/{len(args.datasets)} dataset(s) in root='{args.root}':"
-        )
+        msg = f"Found {len(valid_datasubsets)}/{len(args.datasets)} dataset(s) in root='{args.root}':"
+        print(msg)
         if len(valid_datasubsets) > 0:
             print(yaml.dump(valid_datasubsets, sort_keys=False))
 

@@ -8,7 +8,7 @@ from logging import Logger
 from types import ModuleType
 from typing import List, Optional, Sequence, Union
 
-pylog = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 DEFAULT_FMT = "[%(asctime)s][%(name)s][%(levelname)s] - %(message)s"
 
@@ -16,13 +16,13 @@ DEFAULT_FMT = "[%(asctime)s][%(name)s][%(levelname)s] - %(message)s"
 @lru_cache(maxsize=None)
 def warn_once(msg: str, logger: Union[Logger, ModuleType, None]) -> None:
     if logger is None:
-        pylog = logging.root
+        logger = logging.root
     elif isinstance(logger, ModuleType):
-        pylog: Logger = logger.root
+        logger: Logger = logger.root
     else:
-        pylog = logger
+        logger = logger
 
-    pylog.warning(msg)
+    logger.warning(msg)
 
 
 def setup_logging_verbose(

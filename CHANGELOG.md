@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 ## [0.6.1] UNRELEASED
 ### Added
 - `ytdlp_opts` argument to AudioCaps download.
+- `num_dl_attempts` argument to AudioCaps download.
 
 ## [0.6.0] 2025-05-26
 ### Added
