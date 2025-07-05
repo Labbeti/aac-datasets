@@ -191,6 +191,7 @@ class AudioCaps(AACDataset[AudioCapsItem]):
                 ytdlp_path=ytdlp_path,
                 ytdlp_opts=ytdlp_opts,
                 version=version,
+                num_dl_attempts=num_dl_attempts,
             )
 
         raw_data, index_to_name = load_audiocaps_dataset(
