@@ -301,14 +301,12 @@ class AudioCaps(AACDataset[AudioCapsItem]):
 
         # Sanity check
         if audio.nelement() == 0:
-            raise RuntimeError(
-                f"Invalid audio number of elements in {fpath}. (expected {audio.nelement()=} > 0)"
-            )
+            msg = f"Invalid number of elements ({audio.nelement()}) for audio '{fpath}'. (expected > 0)"
+            raise RuntimeError(msg)
 
         if self._sr is not None and (self._sr != sr):
-            raise RuntimeError(
-                f"Invalid sample rate {sr}Hz for audio {fpath}. (expected {self._sr}Hz)"
-            )
+            msg = f"Invalid sample rate {sr}Hz for audio '{fpath}'. (expected {self._sr}Hz)"
+            raise RuntimeError(msg)
         return audio
 
     def _load_audio_metadata(self, index: int) -> AudioMetaData:
