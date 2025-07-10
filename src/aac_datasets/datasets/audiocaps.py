@@ -58,9 +58,16 @@ class AudioCaps(AACDataset[AudioCapsItem]):
     Audio is a waveform tensor of shape (1, n_times) of 10 seconds max, sampled at 32kHz by default.
     Target is a list of strings containing the captions.
     The 'train' subset has only 1 caption per sample and 'val' and 'test' have 5 captions.
-    Download requires 'yt-dlp' and 'ffmpeg' commands.
+    Download from YouTube requires 'yt-dlp' and 'ffmpeg' commands.
 
-    AudioCaps paper : https://www.aclweb.org/anthology/N19-1011.pdf
+    /!\ YouTube website can sometimes block your IP when downloading audio with the error:
+        Sign in to confirm you’re not a bot. Use --cookies-from-browser or --cookies for the authentication.
+        See https://github.com/yt-dlp/yt-dlp/wiki/FAQ#how-do-i-pass-cookies-to-yt-dlp for how to manually pass cookies.
+        Also see https://github.com/yt-dlp/yt-dlp/wiki/Extractors#exporting-youtube-cookies for tips on effectively exporting YouTube cookies.
+
+    You can pass yt-dlp args with `ytdlp_opts` argument, e.g. `AudioCaps(ytdlp_opts=["--cookies-from-browser", "firefox"])`.
+
+    See also: AudioCaps paper : https://www.aclweb.org/anthology/N19-1011.pdf
 
     .. code-block:: text
         :caption:  Dataset folder tree (for version v1)

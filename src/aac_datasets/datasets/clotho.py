@@ -53,7 +53,7 @@ class Clotho(AACDataset[ClothoItem]):
     Target is a list of 5 different sentences strings describing an audio sample.
     The maximal number of words in captions is 20.
 
-    Clotho V1 Paper : https://arxiv.org/pdf/1910.09387.pdf
+    Clotho V1 Paper: https://arxiv.org/pdf/1910.09387.pdf
 
     .. code-block:: text
         :caption:  Dataset folder tree for version 'v2.1', with all subsets

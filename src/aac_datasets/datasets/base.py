@@ -42,25 +42,6 @@ ColumnType: TypeAlias = Union[str, Iterable[str], None]
 _INDEX_TYPES = ("int", "Iterable[int]", "Iterable[bool]", "Tensor", "slice", "None")
 
 
-def _is_index(index: Any) -> TypeGuard[IndexType]:
-    return pw.isinstance_generic(
-        index,
-        (
-            int,
-            Iterable[int],
-            Iterable[bool],
-            slice,
-            pw.NoneType,
-            IntegralTensor0D,
-            IntegralTensor1D,
-        ),
-    )
-
-
-def _is_column(column: Any) -> TypeGuard[ColumnType]:
-    return pw.isinstance_generic(column, (Iterable[str], pw.NoneType))
-
-
 class AACDataset(Generic[ItemType], DatasetSlicer[ItemType]):
     """Base class for AAC datasets."""
 
@@ -552,6 +533,25 @@ class AACDataset(Generic[ItemType], DatasetSlicer[ItemType]):
         audio_metadata = self.get_item(index, "audio_metadata")
         sr = audio_metadata.sample_rate
         return sr
+
+
+def _is_index(index: Any) -> TypeGuard[IndexType]:
+    return pw.isinstance_generic(
+        index,
+        (
+            int,
+            Iterable[int],
+            Iterable[bool],
+            slice,
+            pw.NoneType,
+            IntegralTensor0D,
+            IntegralTensor1D,
+        ),
+    )
+
+
+def _is_column(column: Any) -> TypeGuard[ColumnType]:
+    return pw.isinstance_generic(column, (Iterable[str], pw.NoneType))
 
 
 def _flat_raw_data(

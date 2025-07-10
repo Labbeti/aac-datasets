@@ -16,6 +16,7 @@ __version__ = "0.6.0"
 
 from .datasets.audiocaps import AudioCaps
 from .datasets.clotho import Clotho
+from .datasets.interface import list_datasets_names, load_dataset
 from .datasets.macs import MACS
 from .datasets.wavcaps import WavCaps
 from .utils.globals import (
@@ -38,4 +39,6 @@ __all__ = [
     "set_default_ffmpeg_path",
     "set_default_root",
     "set_default_ytdlp_path",
+    "list_datasets_names",
+    "load_dataset",
 ]

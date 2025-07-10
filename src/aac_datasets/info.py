@@ -8,7 +8,7 @@ from typing import Dict
 
 import torch
 import torchaudio
-import yaml
+from pythonwrench.json import dump_json
 
 import aac_datasets
 from aac_datasets.utils.globals import (
@@ -42,7 +42,7 @@ def get_install_info() -> Dict[str, str]:
 def print_install_info() -> None:
     """Show main packages versions."""
     install_info = get_install_info()
-    print(yaml.dump(install_info, sort_keys=False))
+    print(dump_json(install_info))
 
 
 if __name__ == "__main__":
