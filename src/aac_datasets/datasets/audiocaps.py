@@ -304,7 +304,7 @@ class AudioCaps(AACDataset[AudioCapsItem]):
         if not self._raw_data["is_on_disk"][index]:
             return torch.empty((0,))
 
-        fpath = self.at(index, "fpath")
+        fpath = self.get_item(index, "fpath")
         audio, sr = torchaudio.load(fpath)  # type: ignore
 
         # Sanity check
@@ -320,6 +320,6 @@ class AudioCaps(AACDataset[AudioCapsItem]):
     def _load_audio_metadata(self, index: int) -> AudioMetaData:
         if not self._raw_data["is_on_disk"][index]:
             return AudioMetaData(-1, -1, -1, -1, "unknown_encoding")
-        fpath = self.at(index, "fpath")
+        fpath = self.get_item(index, "fpath")
         audio_metadata = torchaudio.info(fpath)  # type: ignore
         return audio_metadata

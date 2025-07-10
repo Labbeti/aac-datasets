@@ -195,7 +195,7 @@ class MACS(AACDataset[MACSItem]):
         return self._annotator_id_to_competence[annotator_id]
 
     def _load_competences(self, index: int) -> List[float]:
-        annotators_ids: List[int] = self.at(index, "annotators_ids")
+        annotators_ids: List[int] = self.get_item(index, "annotators_ids")
         competences = [self.get_competence(id_) for id_ in annotators_ids]
         return competences
 
