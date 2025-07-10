@@ -29,7 +29,8 @@ except ImportError:
     from torchaudio.backend.common import AudioMetaData
 
 from torch import Tensor
-from torch.utils.data.dataset import Dataset
+from torchwrench import IntegralTensor0D, IntegralTensor1D
+from torchwrench.utils.data.slicer import DatasetSlicer
 from typing_extensions import TypeAlias, TypeGuard
 
 logger = logging.getLogger(__name__)
@@ -43,12 +44,16 @@ _INDEX_TYPES = ("int", "Iterable[int]", "Iterable[bool]", "Tensor", "slice", "No
 
 def _is_index(index: Any) -> TypeGuard[IndexType]:
     return pw.isinstance_generic(
-        index, (int, Iterable[int], Iterable[bool], slice, pw.NoneType)
-    ) or (
-        isinstance(index, Tensor)
-        and not index.is_floating_point()
-        and not index.is_complex()
-        and index.ndim in (0, 1)
+        index,
+        (
+            int,
+            Iterable[int],
+            Iterable[bool],
+            slice,
+            pw.NoneType,
+            IntegralTensor0D,
+            IntegralTensor1D,
+        ),
     )
 
 
@@ -56,7 +61,7 @@ def _is_column(column: Any) -> TypeGuard[ColumnType]:
     return pw.isinstance_generic(column, (Iterable[str], pw.NoneType))
 
 
-class AACDataset(Generic[ItemType], Dataset[ItemType]):
+class AACDataset(Generic[ItemType], DatasetSlicer[ItemType]):
     """Base class for AAC datasets."""
 
     # Initialization
@@ -84,7 +89,12 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
                 msg = f"Invalid raw_data number of items in the following columns: {tuple(invalid_columns)}."
                 raise ValueError(msg)
 
-        super().__init__()
+        super().__init__(
+            add_indices_support=False,
+            add_mask_support=False,
+            add_none_support=False,
+            add_slice_support=False,
+        )
         self._raw_data = raw_data
         self._transform = transform
         self._columns = column_names
@@ -175,12 +185,17 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
         self._verbose = verbose
 
     # Public methods
+    @pw.deprecated_function()
+    def at(self, *args, **kwargs) -> Any:
+        """Deprecated: Use get_item method instead."""
+        return self.get_item(*args, **kwargs)
+
     @overload
-    def at(self, index: int) -> ItemType:
+    def get_item(self, index: int) -> ItemType:
         ...
 
     @overload
-    def at(  # type: ignore
+    def get_item(  # type: ignore
         self,
         index: Union[Iterable[int], Iterable[bool], slice, None],
         column: str,
@@ -188,7 +203,7 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
         ...
 
     @overload
-    def at(
+    def get_item(
         self,
         index: Union[Iterable[int], Iterable[bool], slice, None],
         column: Union[Iterable[str], None] = None,
@@ -196,10 +211,10 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
         ...
 
     @overload
-    def at(self, index: IndexType, column: ColumnType) -> Any:
+    def get_item(self, index: IndexType, column: ColumnType) -> Any:
         ...
 
-    def at(
+    def get_item(
         self,
         index: IndexType = None,
         column: ColumnType = None,
@@ -230,7 +245,7 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
             column = self.column_names
 
         if not isinstance(column, str) and isinstance(column, Iterable):
-            return {column_i: self.at(index, column_i) for column_i in column}
+            return {column_i: self.get_item(index, column_i) for column_i in column}
 
         if isinstance(index, (int, slice)) and (
             column in self._raw_data.keys() and column not in self._online_fns
@@ -253,7 +268,7 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
                 raise TypeError(msg)
 
             values = [
-                self.at(idx_i, column)
+                self.get_item(idx_i, column)
                 for idx_i in tqdm.tqdm(
                     index,
                     desc=f"Loading column '{column}'...",
@@ -376,7 +391,7 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
         raw_data = copy.copy(self._raw_data)
         if load_online_values:
             for column_name in self._online_fns.keys():
-                column_data = self.at(None, column_name)
+                column_data = self.get_item(None, column_name)
                 raw_data[column_name] = column_data
         return raw_data
 
@@ -412,7 +427,7 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
     def __getitem__(self, index: Any) -> Any:
         ...
 
-    def __getitem__(self, index: Union[IndexType, Tuple[IndexType, ColumnType]]) -> Any:
+    def __getitem__(self, index: Union[IndexType, Tuple[IndexType, ColumnType]]) -> Any:  # type: ignore
         if (
             isinstance(index, tuple)
             and len(index) == 2
@@ -423,7 +438,7 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
         else:
             column = None
 
-        item = self.at(index, column)  # type: ignore
+        item = self.get_item(index, column)  # type: ignore
 
         if (
             isinstance(index, int)
@@ -489,7 +504,7 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
             )
 
     def _load_audio(self, index: int) -> Tensor:
-        fpath = self.at(index, "fpath")
+        fpath = self.get_item(index, "fpath")
         audio_and_sr: Tuple[Tensor, int] = torchaudio.load(fpath)  # type: ignore
         audio, sr = audio_and_sr
 
@@ -509,32 +524,32 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
         return audio
 
     def _load_audio_metadata(self, index: int) -> AudioMetaData:
-        fpath = self.at(index, "fpath")
+        fpath = self.get_item(index, "fpath")
         audio_metadata = torchaudio.info(fpath)  # type: ignore
         return audio_metadata
 
     def _load_duration(self, index: int) -> float:
-        audio_metadata: AudioMetaData = self.at(index, "audio_metadata")
+        audio_metadata: AudioMetaData = self.get_item(index, "audio_metadata")
         duration = audio_metadata.num_frames / audio_metadata.sample_rate
         return duration
 
     def _load_fname(self, index: int) -> str:
-        fpath = self.at(index, "fpath")
+        fpath = self.get_item(index, "fpath")
         fname = osp.basename(fpath)
         return fname
 
     def _load_num_channels(self, index: int) -> int:
-        audio_metadata = self.at(index, "audio_metadata")
+        audio_metadata = self.get_item(index, "audio_metadata")
         num_channels = audio_metadata.num_channels
         return num_channels
 
     def _load_num_frames(self, index: int) -> int:
-        audio_metadata = self.at(index, "audio_metadata")
+        audio_metadata = self.get_item(index, "audio_metadata")
         num_frames = audio_metadata.num_frames
         return num_frames
 
     def _load_sr(self, index: int) -> int:
-        audio_metadata = self.at(index, "audio_metadata")
+        audio_metadata = self.get_item(index, "audio_metadata")
         sr = audio_metadata.sample_rate
         return sr
 
