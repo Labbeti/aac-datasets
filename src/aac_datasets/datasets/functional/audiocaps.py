@@ -580,7 +580,7 @@ def _download_audio_files(
                 else:
                     msg_end = f"File '{fname}' is already downloaded."
 
-            logger.debug(f"[{i+1:5d}/{len(download_kwds)}] {msg_end}")
+            logger.debug(f"[{i + 1:5d}/{len(download_kwds)}] {msg_end}")
 
     if verbose >= 1:
         duration_s = int(time.perf_counter() - start)

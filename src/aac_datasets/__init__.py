@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""Audio Captioning datasets for PyTorch.  """
-
+"""Audio Captioning datasets for PyTorch."""
 
 __author__ = "Étienne Labbé (Labbeti)"
 __author_email__ = "labbeti.pub@gmail.com"

@@ -235,7 +235,7 @@ def download_macs_dataset(
 
         if not osp.isfile(zip_fpath) or force:
             if verbose >= 1:
-                msg = f"Downloading audio zip file '{zip_fpath}'... ({i+1}/{len(MACS_ARCHIVES_FILES)})"
+                msg = f"Downloading audio zip file '{zip_fpath}'... ({i + 1}/{len(MACS_ARCHIVES_FILES)})"
                 logger.info(msg)
 
             url = file_info["url"]
@@ -280,7 +280,7 @@ def download_macs_dataset(
             ]
 
             if verbose >= 1:
-                msg = f"Extracting {len(members_to_extract)}/{len(file.namelist())} audio files from ZIP file '{zip_fname}'... ({i+1}/{len(MACS_ARCHIVES_FILES)})"
+                msg = f"Extracting {len(members_to_extract)}/{len(file.namelist())} audio files from ZIP file '{zip_fname}'... ({i + 1}/{len(MACS_ARCHIVES_FILES)})"
                 logger.info(msg)
 
             if len(members_to_extract) > 0:
