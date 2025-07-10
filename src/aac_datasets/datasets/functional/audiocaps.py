@@ -10,7 +10,7 @@ import time
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from subprocess import CalledProcessError
-from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
+from typing import Any, Dict, Iterable, List, Optional, Tuple, Union, get_args
 
 import pythonwrench as pw
 import torchaudio
@@ -61,9 +61,9 @@ class AudioCapsCard(DatasetCard):
     NAME: str = "audiocaps"
     PRETTY_NAME: str = "AudioCaps"
     SIZE_CATEGORIES: Tuple[str, ...] = ("10K<n<100K",)
-    SUBSETS: Tuple[AudioCapsSubset, ...] = tuple(CAPTIONS_PER_AUDIO.keys())
+    SUBSETS: Tuple[AudioCapsSubset, ...] = get_args(AudioCapsSubset)
     TASK_CATEGORIES: Tuple[str, ...] = ("audio-to-text", "text-to-audio")
-    VERSIONS: Tuple[AudioCapsVersion, ...] = ("v1", "v2")
+    VERSIONS: Tuple[AudioCapsVersion, ...] = get_args(AudioCapsVersion)
 
 
 def load_audiocaps_dataset(
@@ -153,10 +153,11 @@ def load_audiocaps_dataset(
         )
 
         if not all(map(osp.isfile, (class_labels_indices_fpath, unbal_tags_fpath))):
-            raise FileNotFoundError(
+            msg = (
                 f"Cannot load tags without tags files '{osp.basename(class_labels_indices_fpath)}' and '{osp.basename(unbal_tags_fpath)}'."
-                f"Please use download=True and with_tags=True in dataset constructor."
+                + "Please use download=True and with_tags=True in dataset constructor."
             )
+            raise FileNotFoundError(msg)
 
         mid_to_index: Dict[str, int] = load_audioset_mapping(
             "mid",

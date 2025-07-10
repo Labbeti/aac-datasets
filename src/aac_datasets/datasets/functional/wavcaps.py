@@ -9,7 +9,7 @@ import os.path as osp
 import subprocess
 import zipfile
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
+from typing import Any, Dict, Iterable, List, Optional, Tuple, Union, get_args
 
 import pythonwrench as pw
 import tqdm
@@ -73,8 +73,8 @@ class WavCapsCard(DatasetCard):
     NAME: str = "wavcaps"
     PRETTY_NAME: str = "WavCaps"
     REPO_ID: str = "cvssp/WavCaps"
-    SOURCES: Tuple[WavCapsSource, ...] = tuple(EXPECTED_SIZES.keys())
-    SUBSETS: Tuple[WavCapsSubset, ...] = tuple(CAPTIONS_PER_AUDIO.keys())
+    SOURCES: Tuple[WavCapsSource, ...] = get_args(WavCapsSource)
+    SUBSETS: Tuple[WavCapsSubset, ...] = get_args(WavCapsSubset)
     SAMPLE_RATE: int = 32_000  # Hz
     SIZE_CATEGORIES: Tuple[str, ...] = ("100K<n<1M",)
     TASK_CATEGORIES: Tuple[str, ...] = ("audio-to-text", "text-to-audio")

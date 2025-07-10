@@ -8,7 +8,7 @@ import os.path as osp
 import shutil
 import zipfile
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Tuple, Union
+from typing import Any, Dict, Iterable, List, Tuple, Union, get_args
 
 import yaml
 from typing_extensions import Literal
@@ -52,7 +52,7 @@ class MACSCard(DatasetCard):
     PRETTY_NAME: str = "MACS"
     SAMPLE_RATE: int = 48_000  # Hz
     SIZE_CATEGORIES: Tuple[str, ...] = ("1K<n<10K",)
-    SUBSETS: Tuple[MACSSubset, ...] = ("full",)
+    SUBSETS: Tuple[MACSSubset, ...] = get_args(MACSSubset)
     TASK_CATEGORIES: Tuple[str, ...] = ("audio-to-text", "text-to-audio")
 
 
