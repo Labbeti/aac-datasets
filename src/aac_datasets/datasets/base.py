@@ -21,20 +21,14 @@ from typing import (
 import pythonwrench as pw
 import torchaudio
 import tqdm
-
-try:
-    # To support torchaudio >= 2.1.0
-    from torchaudio import AudioMetaData  # type: ignore
-except ImportError:
-    from torchaudio.backend.common import AudioMetaData
-
 from datasets import Dataset as HFDataset
 from torch import Tensor
 from torch.utils.data.dataset import Dataset
 from torchwrench import IntegralTensor0D, IntegralTensor1D
 from typing_extensions import TypeAlias, TypeGuard
 
-from .functional.common import DatasetCard
+from aac_datasets.datasets.functional.common import DatasetCard
+from aac_datasets.utils.typing import AudioMetaData
 
 logger = logging.getLogger(__name__)
 
