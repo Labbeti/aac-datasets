@@ -28,6 +28,7 @@ dependencies = [
     { name = "torch", version = "2.7.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.9'" },
     { name = "torchaudio", version = "2.5.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.9'" },
     { name = "torchaudio", version = "2.7.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.9'" },
+    { name = "torchwrench" },
     { name = "tqdm" },
     { name = "typing-extensions", version = "4.13.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.9'" },
     { name = "typing-extensions", version = "4.14.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.9'" },
@@ -84,6 +85,7 @@ requires-dist = [
     { name = "sphinx-press-theme", marker = "extra == 'dev'", specifier = ">=0.8.0" },
     { name = "torch", specifier = ">=1.10.1" },
     { name = "torchaudio", specifier = ">=0.10.1" },
+    { name = "torchwrench", specifier = ">=0.7.2" },
     { name = "tqdm", specifier = ">=4.64.0" },
     { name = "twine", marker = "extra == 'dev'", specifier = ">=4.0.0" },
     { name = "typing-extensions", specifier = ">=4.6.0" },
@@ -5642,6 +5644,19 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/37/7b/0bf5da00d883b241bd4986e2d26dc1aabd16cc860c4c5d4bc9237e6350c3/torchaudio-2.7.1-cp39-cp39-manylinux_2_28_x86_64.whl", hash = "sha256:9ce8aed225d5ce65705d30f6ef8e457d329fe6ea0b8729ad953ba99e87da264e", size = 3502377, upload_time = "2025-06-04T17:43:44.992Z" },
     { url = "https://files.pythonhosted.org/packages/26/99/00764e98c82d0b48a1e1fd059a0f10cf1bec741013a7e9c05077bd1fd481/torchaudio-2.7.1-cp39-cp39-win_amd64.whl", hash = "sha256:30e21f043f5cc50f703c2cf0de75633e2c720227f9bf848ffc9b8b987871b3fc", size = 2477692, upload_time = "2025-06-04T17:43:43.799Z" },
 ]
+
+[[package]]
+name = "torchwrench"
+version = "0.7.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "pythonwrench" },
+    { name = "torch", version = "2.5.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.9'" },
+    { name = "torch", version = "2.7.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.9'" },
+    { name = "typing-extensions", version = "4.13.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.9'" },
+    { name = "typing-extensions", version = "4.14.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.9'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/f8/ed/952b0d97367f2e88ad7a882e640c326960a0b13ff3dfb4032120866bafc0/torchwrench-0.7.2.tar.gz", hash = "sha256:7a03655b3621b89faa499d473f593f43a868e42dedb7daf034e85cd57e5921b0", size = 114507, upload_time = "2025-06-29T16:50:22.409Z" }
 
 [[package]]
 name = "tornado"

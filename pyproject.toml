@@ -36,6 +36,7 @@ dependencies = [
     "soundfile>=0.13.1 ; sys_platform == 'win32'",
     "torch>=1.10.1",
     "torchaudio>=0.10.1",
+    "torchwrench>=0.7.2",
     "tqdm>=4.64.0",
     "typing-extensions>=4.6.0",
 ]
@@ -63,8 +64,6 @@ include = ["aac_datasets*"]  # package names should match these glob patterns ([
 
 [tool.setuptools.dynamic]
 version = {attr = "aac_datasets.__version__"}
-# dependencies = {file = ["requirements.txt"]}
-# optional-dependencies = {dev = { file = ["requirements-dev.txt"] }}
 
 [tool.pyright]
 include = ["src"]
