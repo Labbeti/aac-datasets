@@ -74,14 +74,6 @@ jobs:
         ffmpeg -version
         yt-dlp --version
 
-    - name: Test with coverage + pytest
-      run: |
-        python -m coverage run -m pytest -v
-
-    - name: Show coverage results
-      run: |
-        python -m coverage report -m
-
     - name: Build data root
       run: |
         dataroot=`eval echo $AAC_DATASETS_ROOT`
@@ -103,3 +95,11 @@ jobs:
     - name: Check data root
       run: |
         aac-datasets-check --verbose 2 --datasets clotho audiocaps
+
+    - name: Test with coverage + pytest
+      run: |
+        python -m coverage run -m pytest -v
+
+    - name: Show coverage results
+      run: |
+        python -m coverage report -m
