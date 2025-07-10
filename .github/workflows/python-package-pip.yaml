@@ -56,17 +56,9 @@ jobs:
         sudo apt-get install yt-dlp
 
     # --- TESTS ---
-    - name: Compile Python files
+    - name: Check format with Ruff
       run: |
-        python -m compileall src
-
-    - name: Lint with flake8
-      run: |
-        python -m flake8 --config .flake8 --show-source --statistics src
-
-    - name: Check format with Black
-      run: |
-        python -m black --check --diff src
+        ruff format
 
     - name: Print install info
       run: |
