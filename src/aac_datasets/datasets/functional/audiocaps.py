@@ -733,7 +733,7 @@ def _download_from_youtube_and_verify(
                 break
 
             if verbose >= 2:
-                sleep_duration = 5.0
+                sleep_duration = 1.0
                 logger.debug(f"Download failed, retrying in {sleep_duration:.1f}s...")
                 time.sleep(sleep_duration)
 
