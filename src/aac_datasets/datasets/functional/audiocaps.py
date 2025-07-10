@@ -732,6 +732,11 @@ def _download_from_youtube_and_verify(
             if download_success:
                 break
 
+            if verbose >= 2:
+                sleep_duration = 5.0
+                logger.debug(f"Download failed, retrying in {sleep_duration:.1f}s...")
+                time.sleep(sleep_duration)
+
     if verify_files and (download_success or file_exists):
         valid_file = _is_valid_audio_file(
             fpath,
