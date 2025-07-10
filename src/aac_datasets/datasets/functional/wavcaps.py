@@ -20,10 +20,10 @@ from huggingface_hub.utils.tqdm import (
     disable_progress_bars,
     enable_progress_bars,
 )
+from torchwrench.hub.download import download_file, safe_rmdir
 from typing_extensions import Literal, TypedDict
 
 from aac_datasets.datasets.functional.common import DatasetCard, LinkInfo
-from aac_datasets.utils.download import download_file, safe_rmdir
 from aac_datasets.utils.globals import _get_root, _get_zip_path
 
 logger = logging.getLogger(__name__)

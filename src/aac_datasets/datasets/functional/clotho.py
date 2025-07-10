@@ -12,10 +12,10 @@ from zipfile import ZipFile
 
 import pythonwrench as pw
 from py7zr import SevenZipFile
+from torchwrench.hub.download import download_file, hash_file
 from typing_extensions import Literal
 
 from aac_datasets.datasets.functional.common import DatasetCard, LinkInfoHash
-from aac_datasets.utils.download import download_file, hash_file
 from aac_datasets.utils.globals import _get_root
 
 logger = logging.getLogger(__name__)

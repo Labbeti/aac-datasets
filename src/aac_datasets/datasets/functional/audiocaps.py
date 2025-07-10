@@ -15,6 +15,7 @@ from typing import Any, Dict, Iterable, List, Optional, Tuple, Union, get_args
 import pythonwrench as pw
 import torchaudio
 import tqdm
+from torchwrench.hub.download import download_file
 from typing_extensions import Literal
 
 from aac_datasets.datasets.functional.common import DatasetCard, LinkInfo
@@ -22,7 +23,6 @@ from aac_datasets.utils.audioset_mapping import (
     download_audioset_mapping,
     load_audioset_mapping,
 )
-from aac_datasets.utils.download import download_file
 from aac_datasets.utils.globals import _get_ffmpeg_path, _get_root, _get_ytdlp_path
 
 logger = logging.getLogger(__name__)
