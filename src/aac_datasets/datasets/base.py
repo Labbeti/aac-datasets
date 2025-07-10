@@ -28,10 +28,13 @@ try:
 except ImportError:
     from torchaudio.backend.common import AudioMetaData
 
+from datasets import Dataset as HFDataset
 from torch import Tensor
+from torch.utils.data.dataset import Dataset
 from torchwrench import IntegralTensor0D, IntegralTensor1D
-from torchwrench.utils.data.slicer import DatasetSlicer
 from typing_extensions import TypeAlias, TypeGuard
+
+from .functional.common import DatasetCard
 
 logger = logging.getLogger(__name__)
 
@@ -42,7 +45,7 @@ ColumnType: TypeAlias = Union[str, Iterable[str], None]
 _INDEX_TYPES = ("int", "Iterable[int]", "Iterable[bool]", "Tensor", "slice", "None")
 
 
-class AACDataset(Generic[ItemType], DatasetSlicer[ItemType]):
+class AACDataset(Generic[ItemType], Dataset[ItemType]):
     """Base class for AAC datasets."""
 
     # Initialization
@@ -70,12 +73,7 @@ class AACDataset(Generic[ItemType], DatasetSlicer[ItemType]):
                 msg = f"Invalid raw_data number of items in the following columns: {tuple(invalid_columns)}."
                 raise ValueError(msg)
 
-        super().__init__(
-            add_indices_support=False,
-            add_mask_support=False,
-            add_none_support=False,
-            add_slice_support=False,
-        )
+        super().__init__()
         self._raw_data = raw_data
         self._transform = transform
         self._columns = column_names
@@ -210,16 +208,10 @@ class AACDataset(Generic[ItemType], DatasetSlicer[ItemType]):
             index = slice(None)
 
         elif isinstance(index, Tensor):
-            if __debug__:
-                if index.ndim not in (0, 1):
-                    msg = f"Invalid number of dimensions for index argument. (found {index.ndim=} but expected 0 or 1)"
-                    raise ValueError(msg)
-                elif index.is_floating_point():
-                    msg = "Invalid tensor dtype. (found floating-point tensor but expected integer or bool tensor)"
-                    raise TypeError(msg)
-                elif index.is_complex():
-                    msg = "Invalid tensor dtype. (found complex tensor but expected integer or bool tensor)"
-                    raise TypeError(msg)
+            if not pw.isinstance_generic(index, (IntegralTensor0D, IntegralTensor0D)):
+                msg = "Invalid tensor dtype. (expected integral 0d or 1d tensor)"
+                raise TypeError(msg)
+
             index = index.tolist()
 
         if column is None:
@@ -244,7 +236,7 @@ class AACDataset(Generic[ItemType], DatasetSlicer[ItemType]):
                     raise IndexError(msg)
                 index = [i for i, idx_i in enumerate(index) if idx_i]
 
-            elif __debug__ and not pw.isinstance_generic(index, Iterable[int]):
+            elif not pw.isinstance_generic(index, Iterable[int]):
                 msg = f"Invalid input type for {index=}. (expected Iterable[int], not Iterable[{index[0].__class__.__name__}])"
                 raise TypeError(msg)
 
@@ -258,7 +250,7 @@ class AACDataset(Generic[ItemType], DatasetSlicer[ItemType]):
             ]
             return values
 
-        if __debug__ and not isinstance(index, int):
+        if not isinstance(index, int):
             msg = (
                 f"Invalid argument type {type(index)}. (expected one of {_INDEX_TYPES})"
             )
@@ -384,6 +376,35 @@ class AACDataset(Generic[ItemType], DatasetSlicer[ItemType]):
         raw_data = self.to_dict(load_online_values)
         return pw.dict_list_to_list_dict(raw_data, key_mode="same")  # type: ignore
 
+    def to_hf_dataset(self, load_online_values: bool = False) -> HFDataset:
+        datadict = self.to_dict(load_online_values=False)
+
+        dataset_info = None
+        if hasattr(self.__class__, "CARD"):
+            card = self.__class__.CARD  # type: ignore
+            if isinstance(card, DatasetCard):
+                dataset_info = card.to_dataset_info()
+
+        split = getattr(self, "subset", None)
+
+        hf_dataset = HFDataset.from_dict(datadict, info=dataset_info, split=split)
+        del datadict
+
+        if load_online_values:
+            for colname, fn in self._online_fns.items():
+
+                def wrapped_fn(index: int) -> Any:
+                    return {colname: fn(self, index)}
+
+                hf_dataset = hf_dataset.map(
+                    wrapped_fn,
+                    input_columns="index",
+                    load_from_cache_file=False,
+                    keep_in_memory=False,
+                )
+
+        return hf_dataset
+
     # Magic methods
     @overload
     def __getitem__(self, index: int) -> ItemType:
@@ -480,17 +501,13 @@ class AACDataset(Generic[ItemType], DatasetSlicer[ItemType]):
             fn = self._online_fns[column]
             return fn(self, index)
         else:
-            raise ValueError(
-                f"Invalid argument column={column} at {index=}. (expected one of {self.all_columns})"
-            )
+            msg = f"Invalid argument column={column} at {index=}. (expected one of {self.all_columns})"
+            raise ValueError(msg)
 
     def _load_audio(self, index: int) -> Tensor:
         fpath = self.get_item(index, "fpath")
         audio_and_sr: Tuple[Tensor, int] = torchaudio.load(fpath)  # type: ignore
         audio, sr = audio_and_sr
-
-        if not __debug__:
-            return audio
 
         # Sanity check
         if audio.nelement() == 0:
