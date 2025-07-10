@@ -79,7 +79,6 @@ source = ["src"]
 
 [project.optional-dependencies]
 dev = [
-    "black==23.3.0",
     "click>=8.0.4",
     "coverage[toml]>=7.6.1",
     "flake8>=4.0.1",
@@ -92,4 +91,5 @@ dev = [
     "sphinx>=7.1.2",
     "sphinx-press-theme>=0.8.0",
     "twine>=4.0.0",
+    "ruff>=0.12.2",
 ]
