@@ -305,7 +305,7 @@ def download_audiocaps_dataset(
     with_tags: bool = False,
     version: AudioCapsVersion = AudioCapsCard.DEFAULT_VERSION,
     ytdlp_opts: Iterable[str] = (),
-    num_dl_attempts: int = 3,
+    num_dl_attempts: int = 2,
 ) -> None:
     """Prepare AudioCaps data (audio, labels, metadata).
 
@@ -347,7 +347,7 @@ def download_audiocaps_dataset(
     :param ytdlp_opts: yt-dlp options.
         defaults to ().
     :param num_dl_attempts: Number of download attempts.
-        defaults to 3.
+        defaults to 2.
     """
 
     root = _get_root(root)
@@ -439,7 +439,7 @@ def download_audiocaps_datasets(
     ytdlp_path: Union[str, Path, None] = None,
     version: AudioCapsVersion = AudioCapsCard.DEFAULT_VERSION,
     ytdlp_opts: Iterable[str] = (),
-    num_dl_attempts: int = 3,
+    num_dl_attempts: int = 2,
 ) -> None:
     """Function helper to download a list of subsets. See :func:`~aac_datasets.datasets.functional.audiocaps.download_audiocaps_dataset` for details."""
     if isinstance(subsets, str):
@@ -487,7 +487,7 @@ def _download_audio_files(
     sr: int,
     ytdlp_path: str,
     ytdlp_opts: Iterable[str],
-    num_dl_attempts: int = 3,
+    num_dl_attempts: int = 2,
 ) -> None:
     start = time.perf_counter()
     if verbose >= 1:
@@ -705,7 +705,7 @@ def _download_from_youtube_and_verify(
     ytdlp_path: str,
     verbose: int,
     ytdlp_opts: Iterable[str],
-    num_dl_attempts: int = 3,
+    num_dl_attempts: int,
 ) -> Tuple[bool, bool, bool]:
     fpath = osp.join(audio_subset_dpath, fname)
 
@@ -732,10 +732,10 @@ def _download_from_youtube_and_verify(
             if download_success:
                 break
 
-            if verbose >= 2:
-                sleep_duration = 1.0
+            sleep_duration = 0.5
+            if sleep_duration > 0.0 and verbose >= 2:
                 logger.debug(f"Download failed, retrying in {sleep_duration:.1f}s...")
-                time.sleep(sleep_duration)
+            time.sleep(sleep_duration)
 
     if verify_files and (download_success or file_exists):
         valid_file = _is_valid_audio_file(

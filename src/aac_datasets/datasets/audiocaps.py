@@ -112,7 +112,7 @@ class AudioCaps(AACDataset[AudioCapsItem]):
         ytdlp_path: Union[str, Path, None] = None,
         ytdlp_opts: Iterable[str] = (),
         version: AudioCapsVersion = AudioCapsCard.DEFAULT_VERSION,
-        num_dl_attempts: int = 3,
+        num_dl_attempts: int = 2,
     ) -> None:
         """
         :param root: Dataset root directory.
@@ -165,7 +165,7 @@ class AudioCaps(AACDataset[AudioCapsItem]):
         :param version: The version of the dataset. Can be one of :attr:`~AudioCapsCard.VERSIONS`.
             defaults to 'v1'.
         :param num_dl_attempts: Number of download attempts.
-            defaults to 3.
+            defaults to 2.
         """
         if subset not in AudioCapsCard.SUBSETS:
             msg = f"Invalid argument {subset=} for AudioCaps. (expected one of {AudioCapsCard.SUBSETS})"

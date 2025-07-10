@@ -107,7 +107,7 @@ def _get_main_download_args() -> Namespace:
     audiocaps_subparser.add_argument(
         "--num_dl_attempts",
         type=int,
-        default=3,
+        default=2,
         help="Number of download attempts.",
     )
 
