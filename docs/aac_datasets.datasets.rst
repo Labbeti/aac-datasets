@@ -23,5 +23,6 @@ Submodules
    aac_datasets.datasets.audiocaps
    aac_datasets.datasets.base
    aac_datasets.datasets.clotho
+   aac_datasets.datasets.interface
    aac_datasets.datasets.macs
    aac_datasets.datasets.wavcaps

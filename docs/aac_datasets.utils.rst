@@ -14,5 +14,5 @@ Submodules
 
    aac_datasets.utils.audioset_mapping
    aac_datasets.utils.collate
-   aac_datasets.utils.download
    aac_datasets.utils.globals
+   aac_datasets.utils.typing
