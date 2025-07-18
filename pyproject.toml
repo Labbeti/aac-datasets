@@ -78,6 +78,9 @@ filterwarnings = ["ignore::FutureWarning", "ignore::DeprecationWarning"]
 [tool.coverage.run]
 source = ["src"]
 
+[tool.ruff.lint.extend-per-file-ignores]
+"__init__.py" = ["F401", "F403"]
+
 [project.optional-dependencies]
 dev = [
     "click>=8.0.4",
