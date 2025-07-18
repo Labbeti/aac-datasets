@@ -85,7 +85,6 @@ source = ["src"]
 dev = [
     "click>=8.0.4",
     "coverage[toml]>=7.6.1",
-    "flake8>=4.0.1",
     "ipykernel>=6.9.1",
     "ipython>=8.12.3",
     "jupyter>=1.1.1",
