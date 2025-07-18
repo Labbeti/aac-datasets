@@ -4,7 +4,7 @@
 
 # Audio Captioning datasets for PyTorch
 
-<a href="https://www.python.org/"><img alt="Python" src="https://img.shields.io/badge/-Python 3.7+-blue?style=for-the-badge&logo=python&logoColor=white"></a>
+<a href="https://www.python.org/"><img alt="Python" src="https://img.shields.io/badge/-Python 3.8+-blue?style=for-the-badge&logo=python&logoColor=white"></a>
 <a href="https://pytorch.org/get-started/locally/"><img alt="PyTorch" src="https://img.shields.io/badge/-PyTorch 1.10.1+-ee4c2c?style=for-the-badge&logo=pytorch&logoColor=white"></a>
 <a href="https://black.readthedocs.io/en/stable/"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-black.svg?style=for-the-badge&labelColor=gray"></a>
 <a href="https://github.com/Labbeti/aac-datasets/actions"><img alt="Build" src="https://img.shields.io/github/actions/workflow/status/Labbeti/aac-datasets/python-package-pip.yaml?branch=main&style=for-the-badge&logo=github"></a>
@@ -137,6 +137,8 @@ dataset = AudioCaps(
 )
 ```
 
+Since YouTube prevents bots to download videos, you might want to use `ytdlp_opts` argument to use cookies to overcome failed downloads, e.g. `AudioCaps(ytdlp_opts=["--cookies-from-browser", "firefox"])`. See more information [on the documentation of yt-dlp](https://github.com/yt-dlp/yt-dlp/wiki/FAQ#how-do-i-pass-cookies-to-yt-dlp).
+
 ## Additional information
 ### Compatibility with audiocaps-download
 If you want to use [audiocaps-download 1.0](https://github.com/MorenoLaQuatra/audiocaps-download) package to download AudioCaps (v1 only), you will have to respect the AudioCaps folder tree:
@@ -173,17 +175,17 @@ dataset = AudioCaps(
 [4] X. Mei et al., “WavCaps: A ChatGPT-Assisted Weakly-Labelled Audio Captioning Dataset for Audio-Language Multimodal Research,” arXiv preprint arXiv:2303.17395, 2023, [Online]. Available: https://arxiv.org/pdf/2303.17395.pdf
 
 ## Cite the aac-datasets package
-If you use this software, please consider cite it as "Labbe, E. (2013). aac-datasets: Audio Captioning datasets for PyTorch.", or use the following BibTeX citation:
+If you use this software, please consider cite it as "Labbe, E. (2025). aac-datasets: Audio Captioning datasets for PyTorch.", or use the following BibTeX citation:
 
 ```
 @software{
     Labbe_aac_datasets_2025,
     author = {Labbé, Étienne},
     license = {MIT},
-    month = {05},
+    month = {07},
     title = {{aac-datasets}},
     url = {https://github.com/Labbeti/aac-datasets/},
-    version = {0.6.0},
+    version = {0.7.0},
     year = {2025}
 }
 ```
