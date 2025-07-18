@@ -8,6 +8,7 @@ readme = "README.md"
 requires-python = ">=3.8"
 keywords = ["audio", "deep-learning", "pytorch", "dataset", "caption", "datasets", "captioning", "audio-captioning"]
 license = {file = "LICENSE"}
+# license-files = ["LICENSE"]  # unsupported by python 3.8, but will be required in 2026
 classifiers = [
     "Intended Audience :: Developers",
     "Intended Audience :: Science/Research",
@@ -25,7 +26,6 @@ classifiers = [
 maintainers = [
     {name = "Étienne Labbé (Labbeti)", email = "labbeti.pub@gmail.com"},
 ]
-# dynamic = ["version", "dependencies", "optional-dependencies"]
 dynamic = ["version"]
 dependencies = [
     "datasets>=3.1.0",
@@ -88,7 +88,6 @@ dev = [
     "flake8>=4.0.1",
     "ipykernel>=6.9.1",
     "ipython>=8.12.3",
-    "isort==5.12.0",
     "jupyter>=1.1.1",
     "pre-commit>=3.5.0",
     "pytest>=6.2.5",
