@@ -164,28 +164,24 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
         return self.get_item(*args, **kwargs)
 
     @overload
-    def get_item(self, index: int) -> ItemType:
-        ...
+    def get_item(self, index: int) -> ItemType: ...
 
     @overload
     def get_item(  # type: ignore
         self,
         index: Union[Iterable[int], Iterable[bool], slice, None],
         column: str,
-    ) -> List:
-        ...
+    ) -> List: ...
 
     @overload
     def get_item(
         self,
         index: Union[Iterable[int], Iterable[bool], slice, None],
         column: Union[Iterable[str], None] = None,
-    ) -> Dict[str, List]:
-        ...
+    ) -> Dict[str, List]: ...
 
     @overload
-    def get_item(self, index: IndexType, column: ColumnType) -> Any:
-        ...
+    def get_item(self, index: IndexType, column: ColumnType) -> Any: ...
 
     def get_item(
         self,
@@ -401,27 +397,25 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
 
     # Magic methods
     @overload
-    def __getitem__(self, index: int) -> ItemType:
-        ...
+    def __getitem__(self, index: int) -> ItemType: ...
 
     @overload
     def __getitem__(self, index: Tuple[Union[Iterable[int], slice, None], str]) -> List:  # type: ignore
         ...
 
     @overload
-    def __getitem__(self, index: Union[Iterable[int], slice, None]) -> Dict[str, List]:
-        ...
+    def __getitem__(
+        self, index: Union[Iterable[int], slice, None]
+    ) -> Dict[str, List]: ...
 
     @overload
     def __getitem__(
         self,
         index: Tuple[Union[Iterable[int], slice, None], Union[Iterable[str], None]],
-    ) -> Dict[str, List]:
-        ...
+    ) -> Dict[str, List]: ...
 
     @overload
-    def __getitem__(self, index: Any) -> Any:
-        ...
+    def __getitem__(self, index: Any) -> Any: ...
 
     def __getitem__(self, index: Union[IndexType, Tuple[IndexType, ColumnType]]) -> Any:  # type: ignore
         if (

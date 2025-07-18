@@ -53,5 +53,4 @@ def pad_last_dim(tensor: Tensor, target_length: int, pad_value: float) -> Tensor
 
 
 @deprecated_alias(is_stackable)
-def can_be_stacked(*args, **kwargs):
-    ...
+def can_be_stacked(*args, **kwargs): ...

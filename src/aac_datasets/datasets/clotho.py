@@ -209,8 +209,7 @@ class Clotho(Generic[T_ClothoItem], AACDataset[T_ClothoItem]):
         clean_archives: bool = True,
         flat_captions: bool = False,
         version: ClothoVersion = ClothoCard.DEFAULT_VERSION,
-    ) -> None:
-        ...
+    ) -> None: ...
 
     @overload
     def __init__(
@@ -228,8 +227,7 @@ class Clotho(Generic[T_ClothoItem], AACDataset[T_ClothoItem]):
         clean_archives: bool = True,
         flat_captions: bool = False,
         version: ClothoVersion = ClothoCard.DEFAULT_VERSION,
-    ) -> None:
-        ...
+    ) -> None: ...
 
     @overload
     def __init__(
@@ -247,8 +245,7 @@ class Clotho(Generic[T_ClothoItem], AACDataset[T_ClothoItem]):
         clean_archives: bool = True,
         flat_captions: bool = False,
         version: ClothoVersion = ClothoCard.DEFAULT_VERSION,
-    ) -> None:
-        ...
+    ) -> None: ...
 
     @overload
     def __init__(
@@ -266,8 +263,7 @@ class Clotho(Generic[T_ClothoItem], AACDataset[T_ClothoItem]):
         clean_archives: bool = True,
         flat_captions: bool = False,
         version: ClothoVersion = ClothoCard.DEFAULT_VERSION,
-    ) -> None:
-        ...
+    ) -> None: ...
 
     @overload
     def __init__(
@@ -285,8 +281,7 @@ class Clotho(Generic[T_ClothoItem], AACDataset[T_ClothoItem]):
         clean_archives: bool = True,
         flat_captions: bool = False,
         version: ClothoVersion = ClothoCard.DEFAULT_VERSION,
-    ) -> None:
-        ...
+    ) -> None: ...
 
     def __init__(
         self: "Clotho[ClothoItem]",
@@ -407,9 +402,9 @@ class Clotho(Generic[T_ClothoItem], AACDataset[T_ClothoItem]):
 
         if "audio" not in removed_columns:
             audio_subset_dpath = _get_audio_subset_dpath(root, version, subset)
-            assert (
-                audio_subset_dpath is not None
-            ), "Internal error. (expected audio column but audio dname is None)"
+            assert audio_subset_dpath is not None, (
+                "Internal error. (expected audio column but audio dname is None)"
+            )
             raw_data["fpath"] = [
                 osp.join(audio_subset_dpath, fname) for fname in raw_data["fname"]
             ]

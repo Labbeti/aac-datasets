@@ -17,23 +17,19 @@ def list_datasets_names() -> Tuple[DatasetName, ...]:
 
 
 @overload
-def load_dataset(name: Literal["AudioCaps"], *args, **kwargs) -> AudioCaps:
-    ...
+def load_dataset(name: Literal["AudioCaps"], *args, **kwargs) -> AudioCaps: ...
 
 
 @overload
-def load_dataset(name: Literal["Clotho"], *args, **kwargs) -> Clotho:
-    ...
+def load_dataset(name: Literal["Clotho"], *args, **kwargs) -> Clotho: ...
 
 
 @overload
-def load_dataset(name: Literal["MACS"], *args, **kwargs) -> MACS:
-    ...
+def load_dataset(name: Literal["MACS"], *args, **kwargs) -> MACS: ...
 
 
 @overload
-def load_dataset(name: Literal["WavCaps"], *args, **kwargs) -> WavCaps:
-    ...
+def load_dataset(name: Literal["WavCaps"], *args, **kwargs) -> WavCaps: ...
 
 
 def load_dataset(name: DatasetName, *args, **kwargs) -> AACDataset:
