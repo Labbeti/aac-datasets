@@ -100,3 +100,13 @@ PyTorch DataLoader can be easely created for AAC datasets if you override the `c
     for batch in loader:
         # batch is a dictionary of lists, containing audio, captions, metadata...
         ...
+
+
+About AudioCaps download
+########################
+
+AudioCaps is a dataset where the audio files are downloaded from YouTube using `yt-dlp` command.
+
+However, you should expect a lot of errors during download:
+- some videos are removed by users or by YouTube moderation itself, which explains why a lot of data can be missing,
+- you can also expect YouTube website to refuse download due to the number of connections. You can tweak the number of connections asked in parallel with `max_workers` option or the number of attempts to download each file with `num_dl_attempts` option.

@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""Audio Captioning datasets for PyTorch.  """
-
+"""Audio Captioning datasets for PyTorch."""
 
 __author__ = "Étienne Labbé (Labbeti)"
 __author_email__ = "labbeti.pub@gmail.com"
@@ -12,11 +11,12 @@ __license__ = "MIT"
 __maintainer__ = "Étienne Labbé (Labbeti)"
 __name__ = "aac-datasets"
 __status__ = "Development"
-__version__ = "0.6.0"
+__version__ = "0.7.0"
 
 
 from .datasets.audiocaps import AudioCaps
 from .datasets.clotho import Clotho
+from .datasets.interface import list_datasets_names, load_dataset
 from .datasets.macs import MACS
 from .datasets.wavcaps import WavCaps
 from .utils.globals import (
@@ -39,4 +39,6 @@ __all__ = [
     "set_default_ffmpeg_path",
     "set_default_root",
     "set_default_ytdlp_path",
+    "list_datasets_names",
+    "load_dataset",
 ]

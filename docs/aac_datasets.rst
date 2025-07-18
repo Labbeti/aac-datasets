@@ -3,8 +3,8 @@ aac\_datasets package
 
 .. automodule:: aac_datasets
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 Subpackages
 -----------

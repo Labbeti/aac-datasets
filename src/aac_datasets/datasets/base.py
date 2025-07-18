@@ -18,55 +18,25 @@ from typing import (
     overload,
 )
 
+import pythonwrench as pw
 import torchaudio
 import tqdm
-
-try:
-    # To support torchaudio >= 2.1.0
-    from torchaudio import AudioMetaData  # type: ignore
-except ImportError:
-    from torchaudio.backend.common import AudioMetaData
-
+from datasets import Dataset as HFDataset
 from torch import Tensor
 from torch.utils.data.dataset import Dataset
+from torchwrench import IntegralTensor0D, IntegralTensor1D
 from typing_extensions import TypeAlias, TypeGuard
 
-from aac_datasets.utils.collections import dict_list_to_list_dict, union_dicts
-from aac_datasets.utils.type_guards import (
-    is_iterable_bool,
-    is_iterable_int,
-    is_iterable_str,
-    is_list_bool,
-    is_list_int,
-)
+from aac_datasets.datasets.functional.common import DatasetCard
+from aac_datasets.utils.typing import AudioMetaData
 
-pylog = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 ItemType = TypeVar("ItemType", covariant=True)
 IndexType: TypeAlias = Union[int, Iterable[int], Iterable[bool], Tensor, slice, None]
 ColumnType: TypeAlias = Union[str, Iterable[str], None]
 
 _INDEX_TYPES = ("int", "Iterable[int]", "Iterable[bool]", "Tensor", "slice", "None")
-
-
-def _is_index(index: Any) -> TypeGuard[IndexType]:
-    return (
-        isinstance(index, int)
-        or is_iterable_int(index)
-        or is_iterable_bool(index)
-        or isinstance(index, slice)
-        or index is None
-        or (
-            isinstance(index, Tensor)
-            and not index.is_floating_point()
-            and not index.is_complex()
-            and index.ndim in (0, 1)
-        )
-    )
-
-
-def _is_column(column: Any) -> TypeGuard[ColumnType]:
-    return is_iterable_str(column, accept_str=True) or column is None
 
 
 class AACDataset(Generic[ItemType], Dataset[ItemType]):
@@ -127,7 +97,7 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
     @property
     def all_columns(self) -> List[str]:
         """The name of all columns of the dataset."""
-        return list(union_dicts(self._raw_data, self._online_fns))
+        return list(pw.union_dicts([self._raw_data, self._online_fns]))
 
     @property
     def column_names(self) -> List[str]:
@@ -188,31 +158,32 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
         self._verbose = verbose
 
     # Public methods
-    @overload
-    def at(self, index: int) -> ItemType:
-        ...
+    @pw.deprecated_function()
+    def at(self, *args, **kwargs) -> Any:
+        """Deprecated: Use get_item method instead."""
+        return self.get_item(*args, **kwargs)
 
     @overload
-    def at(  # type: ignore
+    def get_item(self, index: int) -> ItemType: ...
+
+    @overload
+    def get_item(  # type: ignore
         self,
         index: Union[Iterable[int], Iterable[bool], slice, None],
         column: str,
-    ) -> List:
-        ...
+    ) -> List: ...
 
     @overload
-    def at(
+    def get_item(
         self,
         index: Union[Iterable[int], Iterable[bool], slice, None],
         column: Union[Iterable[str], None] = None,
-    ) -> Dict[str, List]:
-        ...
+    ) -> Dict[str, List]: ...
 
     @overload
-    def at(self, index: IndexType, column: ColumnType) -> Any:
-        ...
+    def get_item(self, index: IndexType, column: ColumnType) -> Any: ...
 
-    def at(
+    def get_item(
         self,
         index: IndexType = None,
         column: ColumnType = None,
@@ -227,23 +198,17 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
             index = slice(None)
 
         elif isinstance(index, Tensor):
-            if __debug__:
-                if index.ndim not in (0, 1):
-                    msg = f"Invalid number of dimensions for index argument. (found {index.ndim=} but expected 0 or 1)"
-                    raise ValueError(msg)
-                elif index.is_floating_point():
-                    msg = "Invalid tensor dtype. (found floating-point tensor but expected integer or bool tensor)"
-                    raise TypeError(msg)
-                elif index.is_complex():
-                    msg = "Invalid tensor dtype. (found complex tensor but expected integer or bool tensor)"
-                    raise TypeError(msg)
+            if not pw.isinstance_generic(index, (IntegralTensor0D, IntegralTensor0D)):
+                msg = "Invalid tensor dtype. (expected integral 0d or 1d tensor)"
+                raise TypeError(msg)
+
             index = index.tolist()
 
         if column is None:
             column = self.column_names
 
         if not isinstance(column, str) and isinstance(column, Iterable):
-            return {column_i: self.at(index, column_i) for column_i in column}
+            return {column_i: self.get_item(index, column_i) for column_i in column}
 
         if isinstance(index, (int, slice)) and (
             column in self._raw_data.keys() and column not in self._online_fns
@@ -255,18 +220,18 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
 
         if isinstance(index, Iterable):
             index = list(index)
-            if is_list_bool(index):
+            if pw.isinstance_generic(index, Iterable[bool]):
                 if len(index) != len(self):
                     msg = f"The length of the mask ({len(index)}) does not match the length of the dataset ({len(self)})."
                     raise IndexError(msg)
                 index = [i for i, idx_i in enumerate(index) if idx_i]
 
-            elif __debug__ and not is_list_int(index):
+            elif not pw.isinstance_generic(index, Iterable[int]):
                 msg = f"Invalid input type for {index=}. (expected Iterable[int], not Iterable[{index[0].__class__.__name__}])"
                 raise TypeError(msg)
 
             values = [
-                self.at(idx_i, column)
+                self.get_item(idx_i, column)
                 for idx_i in tqdm.tqdm(
                     index,
                     desc=f"Loading column '{column}'...",
@@ -275,7 +240,7 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
             ]
             return values
 
-        if __debug__ and not isinstance(index, int):
+        if not isinstance(index, int):
             msg = (
                 f"Invalid argument type {type(index)}. (expected one of {_INDEX_TYPES})"
             )
@@ -389,7 +354,7 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
         raw_data = copy.copy(self._raw_data)
         if load_online_values:
             for column_name in self._online_fns.keys():
-                column_data = self.at(None, column_name)
+                column_data = self.get_item(None, column_name)
                 raw_data[column_name] = column_data
         return raw_data
 
@@ -399,33 +364,60 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
         :param load_online_values: If True, load ALL online values (e.g. audio waveform). Otherwise load only the raw data of the dataset. defaults to False.
         """
         raw_data = self.to_dict(load_online_values)
-        return dict_list_to_list_dict(raw_data, key_mode="same")  # type: ignore
+        return pw.dict_list_to_list_dict(raw_data, key_mode="same")  # type: ignore
+
+    def to_hf_dataset(self, load_online_values: bool = False) -> HFDataset:
+        datadict = self.to_dict(load_online_values=False)
+
+        dataset_info = None
+        if hasattr(self.__class__, "CARD"):
+            card = self.__class__.CARD  # type: ignore
+            if isinstance(card, DatasetCard):
+                dataset_info = card.to_dataset_info()
+
+        split = getattr(self, "subset", None)
+
+        hf_dataset = HFDataset.from_dict(datadict, info=dataset_info, split=split)
+        del datadict
+
+        if load_online_values:
+            for colname, fn in self._online_fns.items():
+
+                def wrapped_fn(index: int) -> Any:
+                    return {colname: fn(self, index)}
+
+                hf_dataset = hf_dataset.map(
+                    wrapped_fn,
+                    input_columns="index",
+                    load_from_cache_file=False,
+                    keep_in_memory=False,
+                )
+
+        return hf_dataset
 
     # Magic methods
     @overload
-    def __getitem__(self, index: int) -> ItemType:
-        ...
+    def __getitem__(self, index: int) -> ItemType: ...
 
     @overload
     def __getitem__(self, index: Tuple[Union[Iterable[int], slice, None], str]) -> List:  # type: ignore
         ...
 
     @overload
-    def __getitem__(self, index: Union[Iterable[int], slice, None]) -> Dict[str, List]:
-        ...
+    def __getitem__(
+        self, index: Union[Iterable[int], slice, None]
+    ) -> Dict[str, List]: ...
 
     @overload
     def __getitem__(
         self,
         index: Tuple[Union[Iterable[int], slice, None], Union[Iterable[str], None]],
-    ) -> Dict[str, List]:
-        ...
+    ) -> Dict[str, List]: ...
 
     @overload
-    def __getitem__(self, index: Any) -> Any:
-        ...
+    def __getitem__(self, index: Any) -> Any: ...
 
-    def __getitem__(self, index: Union[IndexType, Tuple[IndexType, ColumnType]]) -> Any:
+    def __getitem__(self, index: Union[IndexType, Tuple[IndexType, ColumnType]]) -> Any:  # type: ignore
         if (
             isinstance(index, tuple)
             and len(index) == 2
@@ -436,7 +428,7 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
         else:
             column = None
 
-        item = self.at(index, column)  # type: ignore
+        item = self.get_item(index, column)  # type: ignore
 
         if (
             isinstance(index, int)
@@ -497,17 +489,13 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
             fn = self._online_fns[column]
             return fn(self, index)
         else:
-            raise ValueError(
-                f"Invalid argument column={column} at {index=}. (expected one of {self.all_columns})"
-            )
+            msg = f"Invalid argument column={column} at {index=}. (expected one of {self.all_columns})"
+            raise ValueError(msg)
 
     def _load_audio(self, index: int) -> Tensor:
-        fpath = self.at(index, "fpath")
+        fpath = self.get_item(index, "fpath")
         audio_and_sr: Tuple[Tensor, int] = torchaudio.load(fpath)  # type: ignore
         audio, sr = audio_and_sr
-
-        if not __debug__:
-            return audio
 
         # Sanity check
         if audio.nelement() == 0:
@@ -522,34 +510,53 @@ class AACDataset(Generic[ItemType], Dataset[ItemType]):
         return audio
 
     def _load_audio_metadata(self, index: int) -> AudioMetaData:
-        fpath = self.at(index, "fpath")
+        fpath = self.get_item(index, "fpath")
         audio_metadata = torchaudio.info(fpath)  # type: ignore
         return audio_metadata
 
     def _load_duration(self, index: int) -> float:
-        audio_metadata: AudioMetaData = self.at(index, "audio_metadata")
+        audio_metadata: AudioMetaData = self.get_item(index, "audio_metadata")
         duration = audio_metadata.num_frames / audio_metadata.sample_rate
         return duration
 
     def _load_fname(self, index: int) -> str:
-        fpath = self.at(index, "fpath")
+        fpath = self.get_item(index, "fpath")
         fname = osp.basename(fpath)
         return fname
 
     def _load_num_channels(self, index: int) -> int:
-        audio_metadata = self.at(index, "audio_metadata")
+        audio_metadata = self.get_item(index, "audio_metadata")
         num_channels = audio_metadata.num_channels
         return num_channels
 
     def _load_num_frames(self, index: int) -> int:
-        audio_metadata = self.at(index, "audio_metadata")
+        audio_metadata = self.get_item(index, "audio_metadata")
         num_frames = audio_metadata.num_frames
         return num_frames
 
     def _load_sr(self, index: int) -> int:
-        audio_metadata = self.at(index, "audio_metadata")
+        audio_metadata = self.get_item(index, "audio_metadata")
         sr = audio_metadata.sample_rate
         return sr
+
+
+def _is_index(index: Any) -> TypeGuard[IndexType]:
+    return pw.isinstance_generic(
+        index,
+        (
+            int,
+            Iterable[int],
+            Iterable[bool],
+            slice,
+            pw.NoneType,
+            IntegralTensor0D,
+            IntegralTensor1D,
+        ),
+    )
+
+
+def _is_column(column: Any) -> TypeGuard[ColumnType]:
+    return pw.isinstance_generic(column, (Iterable[str], pw.NoneType))
 
 
 def _flat_raw_data(

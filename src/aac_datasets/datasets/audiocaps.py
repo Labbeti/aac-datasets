@@ -4,18 +4,12 @@
 import logging
 import os.path as osp
 from pathlib import Path
-from typing import Any, Callable, ClassVar, Dict, List, Optional, Union
+from typing import Any, Callable, ClassVar, Dict, Iterable, List, Optional, Union
 
 import torch
 import torchaudio
 from torch import Tensor
 from typing_extensions import NotRequired, TypedDict
-
-try:
-    # To support torchaudio >= 2.1.0
-    from torchaudio import AudioMetaData  # type: ignore
-except ImportError:
-    from torchaudio.backend.common import AudioMetaData
 
 from aac_datasets.datasets.base import AACDataset
 from aac_datasets.datasets.functional.audiocaps import (
@@ -27,8 +21,9 @@ from aac_datasets.datasets.functional.audiocaps import (
     load_audiocaps_dataset,
 )
 from aac_datasets.utils.globals import _get_ffmpeg_path, _get_root, _get_ytdlp_path
+from aac_datasets.utils.typing import AudioMetaData
 
-pylog = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class AudioCapsItem(TypedDict):
@@ -58,9 +53,16 @@ class AudioCaps(AACDataset[AudioCapsItem]):
     Audio is a waveform tensor of shape (1, n_times) of 10 seconds max, sampled at 32kHz by default.
     Target is a list of strings containing the captions.
     The 'train' subset has only 1 caption per sample and 'val' and 'test' have 5 captions.
-    Download requires 'yt-dlp' and 'ffmpeg' commands.
+    Download from YouTube requires 'yt-dlp' and 'ffmpeg' commands.
 
-    AudioCaps paper : https://www.aclweb.org/anthology/N19-1011.pdf
+    /!\ YouTube website can sometimes block your IP when downloading audio with the error:
+        Sign in to confirm you’re not a bot. Use --cookies-from-browser or --cookies for the authentication.
+        See https://github.com/yt-dlp/yt-dlp/wiki/FAQ#how-do-i-pass-cookies-to-yt-dlp for how to manually pass cookies.
+        Also see https://github.com/yt-dlp/yt-dlp/wiki/Extractors#exporting-youtube-cookies for tips on effectively exporting YouTube cookies.
+
+    You can pass yt-dlp args with `ytdlp_opts` argument, e.g. `AudioCaps(ytdlp_opts=["--cookies-from-browser", "firefox"])`.
+
+    See also: AudioCaps paper : https://www.aclweb.org/anthology/N19-1011.pdf
 
     .. code-block:: text
         :caption:  Dataset folder tree (for version v1)
@@ -108,7 +110,9 @@ class AudioCaps(AACDataset[AudioCapsItem]):
         sr: int = 32_000,
         with_tags: bool = False,
         ytdlp_path: Union[str, Path, None] = None,
+        ytdlp_opts: Iterable[str] = (),
         version: AudioCapsVersion = AudioCapsCard.DEFAULT_VERSION,
+        num_dl_attempts: int = 2,
     ) -> None:
         """
         :param root: Dataset root directory.
@@ -156,8 +160,12 @@ class AudioCaps(AACDataset[AudioCapsItem]):
             defaults to False.
         :param ytdlp_path: Path to yt-dlp or ytdlp executable.
             defaults to "yt-dlp".
+        :param ytdlp_opts: yt-dlp optional arguments.
+            defaults to ().
         :param version: The version of the dataset. Can be one of :attr:`~AudioCapsCard.VERSIONS`.
             defaults to 'v1'.
+        :param num_dl_attempts: Number of download attempts.
+            defaults to 2.
         """
         if subset not in AudioCapsCard.SUBSETS:
             msg = f"Invalid argument {subset=} for AudioCaps. (expected one of {AudioCapsCard.SUBSETS})"
@@ -183,7 +191,9 @@ class AudioCaps(AACDataset[AudioCapsItem]):
                 sr=sr,
                 with_tags=with_tags,
                 ytdlp_path=ytdlp_path,
+                ytdlp_opts=ytdlp_opts,
                 version=version,
+                num_dl_attempts=num_dl_attempts,
             )
 
         raw_data, index_to_name = load_audiocaps_dataset(
@@ -289,24 +299,22 @@ class AudioCaps(AACDataset[AudioCapsItem]):
         if not self._raw_data["is_on_disk"][index]:
             return torch.empty((0,))
 
-        fpath = self.at(index, "fpath")
+        fpath = self.get_item(index, "fpath")
         audio, sr = torchaudio.load(fpath)  # type: ignore
 
         # Sanity check
         if audio.nelement() == 0:
-            raise RuntimeError(
-                f"Invalid audio number of elements in {fpath}. (expected {audio.nelement()=} > 0)"
-            )
+            msg = f"Invalid number of elements ({audio.nelement()}) for audio '{fpath}'. (expected > 0)"
+            raise RuntimeError(msg)
 
         if self._sr is not None and (self._sr != sr):
-            raise RuntimeError(
-                f"Invalid sample rate {sr}Hz for audio {fpath}. (expected {self._sr}Hz)"
-            )
+            msg = f"Invalid sample rate {sr}Hz for audio '{fpath}'. (expected {self._sr}Hz)"
+            raise RuntimeError(msg)
         return audio
 
     def _load_audio_metadata(self, index: int) -> AudioMetaData:
         if not self._raw_data["is_on_disk"][index]:
             return AudioMetaData(-1, -1, -1, -1, "unknown_encoding")
-        fpath = self.at(index, "fpath")
+        fpath = self.get_item(index, "fpath")
         audio_metadata = torchaudio.info(fpath)  # type: ignore
         return audio_metadata

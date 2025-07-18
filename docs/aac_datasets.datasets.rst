@@ -3,8 +3,8 @@ aac\_datasets.datasets package
 
 .. automodule:: aac_datasets.datasets
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 Subpackages
 -----------
@@ -23,5 +23,6 @@ Submodules
    aac_datasets.datasets.audiocaps
    aac_datasets.datasets.base
    aac_datasets.datasets.clotho
+   aac_datasets.datasets.interface
    aac_datasets.datasets.macs
    aac_datasets.datasets.wavcaps

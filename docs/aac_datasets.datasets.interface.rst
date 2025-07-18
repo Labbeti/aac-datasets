@@ -1,7 +1,7 @@
-aac\_datasets.datasets.audiocaps module
+aac\_datasets.datasets.interface module
 =======================================
 
-.. automodule:: aac_datasets.datasets.audiocaps
+.. automodule:: aac_datasets.datasets.interface
    :members:
    :show-inheritance:
    :undoc-members:

@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.7.0] 2024-07-19
+### Added
+- `ytdlp_opts` argument to AudioCaps download.
+- `num_dl_attempts` argument to AudioCaps download.
+- `load_dataset` function to load a dataset from name.
+- `list_datasets_names` function to get dataset names.
+- `to_hf_dataset` method to convert to HuggingFace `Dataset` instance.
+
 ## [0.6.0] 2025-05-26
 ### Added
 - AudioCaps support for version `v2`.

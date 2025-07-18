@@ -8,16 +8,16 @@ import os.path as osp
 import shutil
 import zipfile
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Tuple, Union
+from typing import Any, Dict, Iterable, List, Tuple, Union, get_args
 
 import yaml
+from torchwrench.hub.download import download_file, hash_file
 from typing_extensions import Literal
 
 from aac_datasets.datasets.functional.common import DatasetCard, LinkInfoHash
-from aac_datasets.utils.download import download_file, hash_file
 from aac_datasets.utils.globals import _get_root
 
-pylog = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 MACSSubset = Literal["full"]
@@ -52,7 +52,7 @@ class MACSCard(DatasetCard):
     PRETTY_NAME: str = "MACS"
     SAMPLE_RATE: int = 48_000  # Hz
     SIZE_CATEGORIES: Tuple[str, ...] = ("1K<n<10K",)
-    SUBSETS: Tuple[MACSSubset, ...] = ("full",)
+    SUBSETS: Tuple[MACSSubset, ...] = get_args(MACSSubset)
     TASK_CATEGORIES: Tuple[str, ...] = ("audio-to-text", "text-to-audio")
 
 
@@ -75,9 +75,8 @@ def load_macs_dataset(
 
     root = _get_root(root)
     if not _is_prepared_macs(root):
-        raise RuntimeError(
-            f"Cannot load data: macs is not prepared in data {root=}. Please use download=True in dataset constructor."
-        )
+        msg = f"Cannot load data: macs is not prepared in data {root=}. Please use download=True in dataset constructor."
+        raise RuntimeError(msg)
 
     macs_dpath = _get_macs_root(root)
     tau_meta_dpath = _get_tau_meta_dpath(root)
@@ -86,7 +85,7 @@ def load_macs_dataset(
     captions_fname = MACS_FILES["captions"]["fname"]
     captions_fpath = osp.join(macs_dpath, captions_fname)
     if verbose >= 2:
-        pylog.debug(f"Reading captions file {captions_fname}...")
+        logger.debug(f"Reading captions file {captions_fname}...")
 
     with open(captions_fpath, "r") as file:
         caps_data = yaml.safe_load(file)
@@ -94,7 +93,7 @@ def load_macs_dataset(
     tau_meta_fname = "meta.csv"
     tau_meta_fpath = osp.join(tau_meta_dpath, tau_meta_fname)
     if verbose >= 2:
-        pylog.debug(f"Reading Tau Urban acoustic scene meta file {tau_meta_fname}...")
+        logger.debug(f"Reading Tau Urban acoustic scene meta file {tau_meta_fname}...")
 
     with open(tau_meta_fpath, "r") as file:
         reader = csv.DictReader(file, delimiter="\t")
@@ -103,7 +102,7 @@ def load_macs_dataset(
     competence_fname = MACS_FILES["annotators_competences"]["fname"]
     competence_fpath = osp.join(macs_dpath, competence_fname)
     if verbose >= 2:
-        pylog.debug(f"Reading file {competence_fname}...")
+        logger.debug(f"Reading file {competence_fname}...")
 
     with open(competence_fpath, "r") as file:
         reader = csv.DictReader(file, delimiter="\t")
@@ -156,7 +155,7 @@ def load_macs_dataset(
 
     if verbose >= 1:
         msg = f"Dataset {MACSCard.PRETTY_NAME} ({subset}) has been loaded. {len(next(iter(raw_data.values())))=})"
-        pylog.info(msg)
+        logger.info(msg)
 
     return raw_data, annotator_id_to_competence
 
@@ -208,7 +207,7 @@ def download_macs_dataset(
 
         if not osp.isfile(fpath) or force:
             if verbose >= 1:
-                pylog.info(f"Downloading captions file '{fname}'...")
+                logger.info(f"Downloading captions file '{fname}'...")
 
             url = file_info["url"]
             download_file(url, fpath, verbose=verbose)
@@ -222,7 +221,7 @@ def download_macs_dataset(
                     f"Please try to remove manually the file '{fpath}' and rerun {MACSCard.PRETTY_NAME} download."
                 )
             elif verbose >= 2:
-                pylog.debug(f"File '{fname}' has a valid checksum.")
+                logger.debug(f"File '{fname}' has a valid checksum.")
 
     captions_fpath = osp.join(macs_dpath, MACS_FILES["captions"]["fname"])
     with open(captions_fpath, "r") as file:
@@ -236,9 +235,8 @@ def download_macs_dataset(
 
         if not osp.isfile(zip_fpath) or force:
             if verbose >= 1:
-                pylog.info(
-                    f"Downloading audio zip file '{zip_fpath}'... ({i+1}/{len(MACS_ARCHIVES_FILES)})"
-                )
+                msg = f"Downloading audio zip file '{zip_fpath}'... ({i + 1}/{len(MACS_ARCHIVES_FILES)})"
+                logger.info(msg)
 
             url = file_info["url"]
             download_file(url, zip_fpath, verbose=verbose)
@@ -252,7 +250,7 @@ def download_macs_dataset(
                     f"Please try to remove manually the file '{zip_fpath}' and rerun {MACSCard.PRETTY_NAME} download."
                 )
             elif verbose >= 2:
-                pylog.debug(f"File '{zip_fname}' has a valid checksum.")
+                logger.debug(f"File '{zip_fname}' has a valid checksum.")
 
     # Extract files from TAU Urban Sound archives
     macs_fnames = dict.fromkeys(data["filename"] for data in captions_data)
@@ -261,9 +259,8 @@ def download_macs_dataset(
         zip_fpath = osp.join(archives_dpath, zip_fname)
 
         if verbose >= 2:
-            pylog.debug(
-                f"Check to extract TAU Urban acoustic scenes archive {zip_fname=}..."
-            )
+            msg = f"Check to extract TAU Urban acoustic scenes archive {zip_fname=}..."
+            logger.debug(msg)
 
         is_audio_archive = name.startswith("audio")
         if is_audio_archive:
@@ -283,9 +280,8 @@ def download_macs_dataset(
             ]
 
             if verbose >= 1:
-                pylog.info(
-                    f"Extracting {len(members_to_extract)}/{len(file.namelist())} audio files from ZIP file '{zip_fname}'... ({i+1}/{len(MACS_ARCHIVES_FILES)})"
-                )
+                msg = f"Extracting {len(members_to_extract)}/{len(file.namelist())} audio files from ZIP file '{zip_fname}'... ({i + 1}/{len(MACS_ARCHIVES_FILES)})"
+                logger.info(msg)
 
             if len(members_to_extract) > 0:
                 file.extractall(archives_dpath, members_to_extract)
@@ -296,14 +292,14 @@ def download_macs_dataset(
 
     if clean_archives:
         if verbose >= 1:
-            pylog.info(f"Removing archives files in {archives_dpath}...")
+            logger.info(f"Removing archives files in {archives_dpath}...")
         shutil.rmtree(archives_dpath, ignore_errors=True)
 
     audio_fnames = [name for name in os.listdir(audio_dpath) if name.endswith(".wav")]
     assert len(audio_fnames) == len(macs_fnames)
 
     if verbose >= 2:
-        pylog.debug(f"Dataset {MACSCard.PRETTY_NAME} ({subset}) has been prepared.")
+        logger.debug(f"Dataset {MACSCard.PRETTY_NAME} ({subset}) has been prepared.")
 
 
 def download_macs_datasets(

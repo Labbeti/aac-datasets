@@ -7,18 +7,18 @@ import logging
 import os
 import os.path as osp
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
+from typing import Any, Dict, Iterable, List, Optional, Tuple, Union, get_args
 from zipfile import ZipFile
 
+import pythonwrench as pw
 from py7zr import SevenZipFile
+from torchwrench.hub.download import download_file, hash_file
 from typing_extensions import Literal
 
 from aac_datasets.datasets.functional.common import DatasetCard, LinkInfoHash
-from aac_datasets.utils.collections import union_dicts
-from aac_datasets.utils.download import download_file, hash_file
 from aac_datasets.utils.globals import _get_root
 
-pylog = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 ClothoSubset = Literal[
@@ -64,9 +64,9 @@ class ClothoCard(DatasetCard):
     PRETTY_NAME: str = "Clotho"
     SAMPLE_RATE: int = 44_100  # Hz
     SIZE_CATEGORIES: Tuple[str, ...] = ("1K<n<10K",)
-    SUBSETS: Tuple[ClothoSubset, ...] = tuple(CAPTIONS_PER_AUDIO.keys())
+    SUBSETS: Tuple[ClothoSubset, ...] = get_args(ClothoSubset)
     TASK_CATEGORIES: Tuple[str, ...] = ("audio-to-text", "text-to-audio")
-    VERSIONS: Tuple[ClothoVersion, ...] = ("v1", "v2", "v2.1")
+    VERSIONS: Tuple[ClothoVersion, ...] = get_args(ClothoVersion)
 
 
 def load_clotho_dataset(
@@ -93,9 +93,8 @@ def load_clotho_dataset(
     """
     root = _get_root(root)
     if not _is_prepared_clotho(root, version, subset):
-        raise RuntimeError(
-            f"Cannot load data: clotho_{subset} is not prepared in data {root=}. Please use download=True in dataset constructor."
-        )
+        msg = f"Cannot load data: clotho_{subset} is not prepared in data {root=}. Please use download=True in dataset constructor."
+        raise RuntimeError(msg)
 
     # Read fpath of .wav audio files
     links = _CLOTHO_LINKS[version][subset]
@@ -113,7 +112,7 @@ def load_clotho_dataset(
 
         if subset == "dcase_t2a_captions":
             captions_data = [
-                union_dicts(data, {"file_name": f"no_fname_{i}"})
+                pw.union_dicts([data, {"file_name": f"no_fname_{i}"}])
                 for i, data in enumerate(captions_data)
             ]
 
@@ -148,9 +147,8 @@ def load_clotho_dataset(
         # note 2: force sorted list to have the same order on all OS
         audio_subset_dpath = _get_audio_subset_dpath(root, version, subset)
         if audio_subset_dpath is None:
-            raise RuntimeError(
-                f"INTERNAL ERROR: Invalid audio subset dirpath. (found audio_subset_dpath={audio_subset_dpath}, with {subset=})"
-            )
+            msg = f"INTERNAL ERROR: Invalid audio subset dirpath. (found audio_subset_dpath={audio_subset_dpath}, with {subset=})"
+            raise RuntimeError(msg)
         fnames_lst = list(sorted(os.listdir(audio_subset_dpath)))
 
     idx_to_fname = {i: fname for i, fname in enumerate(fnames_lst)}
@@ -181,9 +179,8 @@ def load_clotho_dataset(
     for line in metadata:
         fname = line["file_name"]
         if fname not in fname_to_idx:
-            raise KeyError(
-                f"Cannot find metadata fname={fname} in captions file. {subset=})"
-            )
+            msg = f"Cannot find metadata fname={fname} in captions file. {subset=})"
+            raise KeyError(msg)
         index = fname_to_idx[fname]
         for key in subset_metadata_keys:
             # The test subset does not have keywords in metadata, but has sound_id, sound_link, etc.
@@ -214,9 +211,8 @@ def load_clotho_dataset(
         raw_data["fname"] = [replaces.get(fname, fname) for fname in raw_data["fname"]]
 
     if verbose >= 1:
-        pylog.info(
-            f"Dataset {ClothoCard.PRETTY_NAME} ({subset}) has been loaded. {len(next(iter(raw_data.values())))=})"
-        )
+        msg = f"Dataset {ClothoCard.PRETTY_NAME} ({subset}) has been loaded. {len(next(iter(raw_data.values())))=})"
+        logger.info(msg)
     return raw_data
 
 
@@ -251,7 +247,7 @@ def download_clotho_dataset(
         defaults to 'v2.1'.
     """
     if subset == "val" and version == "v1":
-        pylog.error(
+        logger.error(
             f"Clotho version '{version}' does not have '{subset}' subset. It will be ignored."
         )
         return None
@@ -268,7 +264,7 @@ def download_clotho_dataset(
         os.makedirs(dpath, exist_ok=True)
 
     if verbose >= 1:
-        pylog.info(f"Start to download files for clotho_{subset}...")
+        logger.info(f"Start to download files for clotho_{subset}...")
 
     links = copy.deepcopy(_CLOTHO_LINKS[version][subset])
     EXTENSIONS = ("7z", "csv", "zip")
@@ -287,19 +283,18 @@ def download_clotho_dataset(
         elif extension == "csv":
             dpath = csv_dpath
         else:
-            raise RuntimeError(
-                f"Found invalid {extension=}. Must be one of {EXTENSIONS}."
-            )
+            msg = f"Found invalid {extension=}. Must be one of {EXTENSIONS}."
+            raise RuntimeError(msg)
 
         fpath = osp.join(dpath, fname)
         if not osp.isfile(fpath) or force:
             if verbose >= 1:
-                pylog.info(f"Download and check file '{fname}' from {url=}...")
+                logger.info(f"Download and check file '{fname}' from {url=}...")
 
             download_file(url, fpath, verbose=verbose)
 
         elif verbose >= 1:
-            pylog.info(f"File '{fname}' is already downloaded.")
+            logger.info(f"File '{fname}' is already downloaded.")
 
         if verify_files:
             hash_value = file_info["hash_value"]
@@ -310,7 +305,7 @@ def download_clotho_dataset(
                     f"Please try to remove manually the file '{fpath}' and rerun {ClothoCard.PRETTY_NAME} download."
                 )
             elif verbose >= 2:
-                pylog.debug(f"File '{fname}' has a valid checksum.")
+                logger.debug(f"File '{fname}' has a valid checksum.")
 
     # Extract audio files from archives
     audio_subset_dpath = _get_audio_subset_dpath(root, version, subset)
@@ -323,7 +318,7 @@ def download_clotho_dataset(
                 continue
 
             if extension not in ("7z", "zip"):
-                pylog.error(
+                logger.error(
                     f"Found unexpected {extension=} for downloaded file '{fname}'. Expected one of {EXTENSIONS}."
                 )
                 continue
@@ -331,7 +326,7 @@ def download_clotho_dataset(
             fpath = osp.join(archives_dpath, fname)
 
             if verbose >= 1:
-                pylog.info(f"Extract archive file {fname=}...")
+                logger.info(f"Extract archive file {fname=}...")
 
             if extension == "7z":
                 archive_file = SevenZipFile(fpath)
@@ -399,11 +394,11 @@ def download_clotho_dataset(
 
             fpath = osp.join(archives_dpath, fname)
             if verbose >= 1:
-                pylog.info(f"Removing archive file {osp.basename(fpath)}...")
+                logger.info(f"Removing archive file {osp.basename(fpath)}...")
             os.remove(fpath)
 
     if verbose >= 2:
-        pylog.debug(f"Dataset {ClothoCard.PRETTY_NAME} ({subset}) has been prepared.")
+        logger.debug(f"Dataset {ClothoCard.PRETTY_NAME} ({subset}) has been prepared.")
 
 
 def download_clotho_datasets(
@@ -497,9 +492,8 @@ def _is_prepared_clotho(
     if "audio_archive" in links:
         audio_subset_dpath = _get_audio_subset_dpath(root, version, subset)
         if audio_subset_dpath is None:
-            raise RuntimeError(
-                f"INTERNAL ERROR: Invalid audio subset dirpath. (found audio_subset_dpath={audio_subset_dpath}, with {subset=})"
-            )
+            msg = f"INTERNAL ERROR: Invalid audio subset dirpath. (found audio_subset_dpath={audio_subset_dpath}, with {subset=})"
+            raise RuntimeError(msg)
         if not osp.isdir(audio_subset_dpath):
             return False
 

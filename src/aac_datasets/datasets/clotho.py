@@ -4,10 +4,21 @@
 import logging
 import os.path as osp
 from pathlib import Path
-from typing import Any, Callable, ClassVar, List, Optional, Union
+from typing import (
+    Any,
+    Callable,
+    ClassVar,
+    Generic,
+    List,
+    Literal,
+    Mapping,
+    Optional,
+    Union,
+    overload,
+)
 
 from torch import Tensor
-from typing_extensions import NotRequired, TypedDict
+from typing_extensions import NotRequired, TypedDict, TypeVar
 
 from aac_datasets.datasets.base import AACDataset
 from aac_datasets.datasets.functional.clotho import (
@@ -20,7 +31,88 @@ from aac_datasets.datasets.functional.clotho import (
 )
 from aac_datasets.utils.globals import _get_root
 
-pylog = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
+
+
+class ClothoDevValEvalItem(TypedDict):
+    r"""Class representing a single Clotho item."""
+
+    # Common attributes
+    audio: Tensor
+    captions: List[str]
+    dataset: str
+    fname: str
+    index: int
+    subset: ClothoSubset
+    sr: int
+    duration: float
+    # Clotho-specific attributes
+    keywords: List[str]
+    sound_id: str  # warning: some files contains "Not found"
+    sound_link: str  # warning: some files contains "NA"
+    start_end_samples: str  # warning: some files contains ""
+    manufacturer: str
+    license: str
+
+
+class ClothoDCASEAACTestItem(TypedDict):
+    r"""Class representing a single Clotho item."""
+
+    # Common attributes
+    audio: Tensor
+    dataset: str
+    fname: str
+    index: int
+    subset: ClothoSubset
+    sr: int
+    duration: float
+    # Clotho-specific attributes
+    start_end_samples: str  # warning: some files contains ""
+    manufacturer: str
+    license: str
+
+
+class ClothoDCASEAACAnalysisItem(TypedDict):
+    r"""Class representing a single Clotho item."""
+
+    # Common attributes
+    audio: Tensor
+    dataset: str
+    fname: str
+    index: int
+    subset: ClothoSubset
+    sr: int
+    duration: float
+
+
+class ClothoDCASET2AAudioItem(TypedDict):
+    r"""Class representing a single Clotho item."""
+
+    # Common attributes
+    audio: Tensor
+    dataset: str
+    fname: str
+    index: int
+    subset: ClothoSubset
+    sr: int
+    duration: float
+    # Clotho-specific attributes
+    keywords: List[str]
+    sound_id: str  # warning: some files contains "Not found"
+    sound_link: str  # warning: some files contains "NA"
+    start_end_samples: str  # warning: some files contains ""
+    manufacturer: str
+    license: str
+
+
+class ClothoDCASET2ACaptionsItem(TypedDict):
+    r"""Class representing a single Clotho item."""
+
+    # Common attributes
+    captions: List[str]
+    dataset: str
+    index: int
+    subset: ClothoSubset
 
 
 class ClothoItem(TypedDict):
@@ -44,7 +136,12 @@ class ClothoItem(TypedDict):
     license: NotRequired[str]
 
 
-class Clotho(AACDataset[ClothoItem]):
+T_ClothoItem = TypeVar(
+    "T_ClothoItem", bound=Mapping, covariant=True, default=ClothoItem
+)
+
+
+class Clotho(Generic[T_ClothoItem], AACDataset[T_ClothoItem]):
     r"""Unofficial Clotho PyTorch dataset.
 
     Subsets available are 'train', 'val', 'eval', 'dcase_aac_test', 'dcase_aac_analysis', 'dcase_t2a_audio' and 'dcase_t2a_captions'.
@@ -53,7 +150,7 @@ class Clotho(AACDataset[ClothoItem]):
     Target is a list of 5 different sentences strings describing an audio sample.
     The maximal number of words in captions is 20.
 
-    Clotho V1 Paper : https://arxiv.org/pdf/1910.09387.pdf
+    Clotho V1 Paper: https://arxiv.org/pdf/1910.09387.pdf
 
     .. code-block:: text
         :caption:  Dataset folder tree for version 'v2.1', with all subsets
@@ -96,8 +193,98 @@ class Clotho(AACDataset[ClothoItem]):
     INVALID_START_END_SAMPLES: ClassVar[str] = ""
 
     # Initialization
+    @overload
     def __init__(
-        self,
+        self: "Clotho[ClothoDevValEvalItem]",
+        # Common args
+        root: Union[str, Path, None] = None,
+        subset: Literal["dev", "val", "eval"] = "dev",
+        download: bool = False,
+        transform: Optional[Callable[[ClothoItem], Any]] = None,
+        verbose: int = 0,
+        force_download: bool = False,
+        verify_files: bool = False,
+        *,
+        # Clotho-specific args
+        clean_archives: bool = True,
+        flat_captions: bool = False,
+        version: ClothoVersion = ClothoCard.DEFAULT_VERSION,
+    ) -> None: ...
+
+    @overload
+    def __init__(
+        self: "Clotho[ClothoDCASEAACTestItem]",
+        # Common args
+        root: Union[str, Path, None] = None,
+        *,
+        subset: Literal["dcase_aac_test"],
+        download: bool = False,
+        transform: Optional[Callable[[ClothoItem], Any]] = None,
+        verbose: int = 0,
+        force_download: bool = False,
+        verify_files: bool = False,
+        # Clotho-specific args
+        clean_archives: bool = True,
+        flat_captions: bool = False,
+        version: ClothoVersion = ClothoCard.DEFAULT_VERSION,
+    ) -> None: ...
+
+    @overload
+    def __init__(
+        self: "Clotho[ClothoDCASEAACAnalysisItem]",
+        # Common args
+        root: Union[str, Path, None] = None,
+        *,
+        subset: Literal["dcase_aac_analysis"],
+        download: bool = False,
+        transform: Optional[Callable[[ClothoItem], Any]] = None,
+        verbose: int = 0,
+        force_download: bool = False,
+        verify_files: bool = False,
+        # Clotho-specific args
+        clean_archives: bool = True,
+        flat_captions: bool = False,
+        version: ClothoVersion = ClothoCard.DEFAULT_VERSION,
+    ) -> None: ...
+
+    @overload
+    def __init__(
+        self: "Clotho[ClothoDCASET2AAudioItem]",
+        # Common args
+        root: Union[str, Path, None] = None,
+        *,
+        subset: Literal["dcase_t2a_audio"],
+        download: bool = False,
+        transform: Optional[Callable[[ClothoItem], Any]] = None,
+        verbose: int = 0,
+        force_download: bool = False,
+        verify_files: bool = False,
+        # Clotho-specific args
+        clean_archives: bool = True,
+        flat_captions: bool = False,
+        version: ClothoVersion = ClothoCard.DEFAULT_VERSION,
+    ) -> None: ...
+
+    @overload
+    def __init__(
+        self: "Clotho[ClothoDCASET2ACaptionsItem]",
+        # Common args
+        root: Union[str, Path, None] = None,
+        *,
+        subset: Literal["dcase_t2a_captions"],
+        download: bool = False,
+        transform: Optional[Callable[[ClothoItem], Any]] = None,
+        verbose: int = 0,
+        force_download: bool = False,
+        verify_files: bool = False,
+        # Clotho-specific args
+        clean_archives: bool = True,
+        flat_captions: bool = False,
+        version: ClothoVersion = ClothoCard.DEFAULT_VERSION,
+    ) -> None: ...
+
+    def __init__(
+        self: "Clotho[ClothoItem]",
         # Common args
         root: Union[str, Path, None] = None,
         subset: ClothoSubset = ClothoCard.DEFAULT_SUBSET,
@@ -145,7 +332,7 @@ class Clotho(AACDataset[ClothoItem]):
                 f"The version '{version}' of the Clotho dataset contains minor some errors in file names and few corrupted files."
                 f"Please consider using the fixed version 'v2.1'."
             )
-            pylog.warning(msg)
+            logger.warning(msg)
 
         if subset not in ClothoCard.SUBSETS:
             msg = f"Invalid Clotho argument subset={subset} for {version=}. Must be one of {ClothoCard.SUBSETS}."
@@ -215,9 +402,9 @@ class Clotho(AACDataset[ClothoItem]):
 
         if "audio" not in removed_columns:
             audio_subset_dpath = _get_audio_subset_dpath(root, version, subset)
-            assert (
-                audio_subset_dpath is not None
-            ), "Internal error. (expected audio column but audio dname is None)"
+            assert audio_subset_dpath is not None, (
+                "Internal error. (expected audio column but audio dname is None)"
+            )
             raw_data["fpath"] = [
                 osp.join(audio_subset_dpath, fname) for fname in raw_data["fname"]
             ]

@@ -20,7 +20,7 @@ from aac_datasets.datasets.functional.wavcaps import (
 )
 from aac_datasets.utils.globals import _get_root, _get_zip_path
 
-pylog = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class WavCapsItem(TypedDict):

@@ -4,6 +4,7 @@
 import logging
 from argparse import ArgumentParser, Namespace
 
+import pythonwrench as pw
 import yaml
 
 from aac_datasets.datasets.functional.audiocaps import (
@@ -16,16 +17,14 @@ from aac_datasets.datasets.functional.wavcaps import (
     WavCapsCard,
     download_wavcaps_datasets,
 )
-from aac_datasets.utils.cmdline import _str_to_bool, _str_to_opt_int, _str_to_opt_str
 from aac_datasets.utils.globals import (
     get_default_ffmpeg_path,
     get_default_root,
     get_default_ytdlp_path,
     get_default_zip_path,
 )
-from aac_datasets.utils.log_utils import setup_logging_verbose
 
-pylog = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 def _get_main_download_args() -> Namespace:
@@ -41,7 +40,7 @@ def _get_main_download_args() -> Namespace:
     )
     parser.add_argument(
         "--force",
-        type=_str_to_bool,
+        type=pw.str_to_bool,
         default=False,
         help="Force download of files, even if they are already downloaded.",
     )
@@ -72,8 +71,15 @@ def _get_main_download_args() -> Namespace:
         help="Path to yt-dl program used to extract metadata from a youtube video.",
     )
     audiocaps_subparser.add_argument(
+        "--ytdlp_opts",
+        type=str,
+        nargs="+",
+        default=[],
+        help="yt-dlp optional arguments.",
+    )
+    audiocaps_subparser.add_argument(
         "--with_tags",
-        type=_str_to_bool,
+        type=pw.str_to_bool,
         default=True,
         help="Download additional audioset tags corresponding to audiocaps audio.",
     )
@@ -87,7 +93,7 @@ def _get_main_download_args() -> Namespace:
     )
     audiocaps_subparser.add_argument(
         "--max_workers",
-        type=_str_to_opt_int,
+        type=pw.str_to_optional_int,
         default=1,
         help="Number of workers used for downloading multiple files in parallel.",
     )
@@ -97,6 +103,12 @@ def _get_main_download_args() -> Namespace:
         default=AudioCapsCard.DEFAULT_VERSION,
         choices=AudioCapsCard.VERSIONS,
         help="The version of the AudioCaps dataset.",
+    )
+    audiocaps_subparser.add_argument(
+        "--num_dl_attempts",
+        type=int,
+        default=2,
+        help="Number of download attempts.",
     )
 
     clotho_subparser = subparsers.add_parser(ClothoCard.NAME)
@@ -109,7 +121,7 @@ def _get_main_download_args() -> Namespace:
     )
     clotho_subparser.add_argument(
         "--clean_archives",
-        type=_str_to_bool,
+        type=pw.str_to_bool,
         default=False,
         help="Remove archives files after extraction.",
     )
@@ -126,13 +138,13 @@ def _get_main_download_args() -> Namespace:
     # Note : MACS only have 1 subset, so we do not add MACS subsets arg
     macs_subparser.add_argument(
         "--clean_archives",
-        type=_str_to_bool,
+        type=pw.str_to_bool,
         default=False,
         help="Remove archives files after extraction.",
     )
     macs_subparser.add_argument(
         "--verify_files",
-        type=_str_to_bool,
+        type=pw.str_to_bool,
         default=True,
         help="Verify if downloaded files have a valid checksum.",
     )
@@ -140,7 +152,7 @@ def _get_main_download_args() -> Namespace:
     wavcaps_subparser = subparsers.add_parser(WavCapsCard.NAME)
     wavcaps_subparser.add_argument(
         "--clean_archives",
-        type=_str_to_bool,
+        type=pw.str_to_bool,
         default=False,
         help="Remove archives files after extraction.",
     )
@@ -154,7 +166,7 @@ def _get_main_download_args() -> Namespace:
     )
     wavcaps_subparser.add_argument(
         "--hf_cache_dir",
-        type=_str_to_opt_str,
+        type=pw.str_to_optional_str,
         default=None,
         help="Hugging face cache dir.",
     )
@@ -177,10 +189,10 @@ def _get_main_download_args() -> Namespace:
 
 def _main_download() -> None:
     args = _get_main_download_args()
-    setup_logging_verbose("aac_datasets", args.verbose)
+    pw.setup_logging_verbose("aac_datasets", args.verbose)
 
     if args.verbose >= 2:
-        pylog.debug(yaml.dump({"Arguments": args.__dict__}, sort_keys=False))
+        logger.debug(yaml.dump({"Arguments": args.__dict__}, sort_keys=False))
 
     if args.dataset == AudioCapsCard.NAME:
         download_audiocaps_datasets(
@@ -192,7 +204,9 @@ def _main_download() -> None:
             max_workers=args.max_workers,
             with_tags=args.with_tags,
             ytdlp_path=args.ytdlp_path,
+            ytdlp_opts=args.ytdlp_opts,
             version=args.version,
+            num_dl_attempts=args.num_dl_attempts,
         )
 
     elif args.dataset == ClothoCard.NAME:
@@ -226,15 +240,14 @@ def _main_download() -> None:
         )
 
     else:
-        DATASETS = (
+        DATASET_NAMES = (
             AudioCapsCard.NAME,
             ClothoCard.NAME,
             MACSCard.NAME,
             WavCapsCard.NAME,
         )
-        raise ValueError(
-            f"Invalid argument {args.dataset}. (expected one of {DATASETS})"
-        )
+        msg = f"Invalid argument {args.dataset}. (expected one of {DATASET_NAMES})"
+        raise ValueError(msg)
 
 
 if __name__ == "__main__":
