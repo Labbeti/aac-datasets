@@ -68,7 +68,7 @@ version = {attr = "aac_datasets.__version__"}
 
 [tool.pyright]
 include = ["src"]
-exclude = ["**/__pycache__"]
+exclude = ["**/__pycache__", '**/node_modules', '**/.*', '.venv']
 pythonVersion = "3.8"
 
 [tool.pytest.ini_options]
@@ -90,8 +90,8 @@ dev = [
     "jupyter>=1.1.1",
     "pre-commit>=3.5.0",
     "pytest>=6.2.5",
-    "sphinx>=7.1.2",
-    "sphinx-press-theme>=0.8.0",
+    "sphinx>=7.1.2,<9.0.0",
+    "sphinx-immaterial>=0.11.14",
     "twine>=4.0.0",
     "ruff>=0.12.2",
 ]
