@@ -10,10 +10,10 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-import os
 import sys
+from pathlib import Path
 
-sys.path.insert(0, os.path.abspath(".."))
+sys.path.insert(0, str(Path("..", "src").resolve()))
 
 import aac_datasets
 
@@ -37,11 +37,13 @@ release = f"{aac_datasets.__status__}-{aac_datasets.__version__}"
 # ones.
 extensions = [
     "sphinx.ext.autodoc",
-    "sphinx.ext.viewcode",
-    "sphinx.ext.todo",
-    "sphinx.ext.autosummary",
     "sphinx.ext.coverage",
+    "sphinx.ext.githubpages",
     "sphinx.ext.intersphinx",
+    "sphinx.ext.mathjax",
+    "sphinx.ext.todo",
+    "sphinx.ext.viewcode",
+    "sphinx_immaterial",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -65,20 +67,19 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = "press"
+html_theme = "sphinx_immaterial"
 
 html_theme_options = {
-    "external_links": [
-        ("Github", "https://github.com/Labbeti/aac-datasets"),
-        ("PyPI", "https://pypi.org/project/aac-datasets/"),
-    ],
+    "repo_url": "https://github.com/Labbeti/aac-datasets",
+    "site_url": "https://pypi.org/project/aac-datasets",
 }
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ["_static"]
+html_static_path = []
 
+html_css_files = []
 
 # -- Extension configuration -------------------------------------------------
 
@@ -91,8 +92,7 @@ add_module_names = False
 
 intersphinx_mapping = {
     "python": ("https://docs.python.org/", None),
-    # "torch": ("https://pytorch.org/docs/master/", None),
-    # "torchaudio": ("https://pytorch.org/audio/stable/", None),
+    "torch": ("https://pytorch.org/docs/main/", None),
 }
 
 # Only works with sphinx>=7.1

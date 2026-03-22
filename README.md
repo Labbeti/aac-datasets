@@ -161,6 +161,19 @@ dataset = AudioCaps(
 )
 ```
 
+### Download AudioCaps after 2025
+YouTube now bans machines that tries to download hundred of youtube videos and audio, which makes AudioCaps hard to download.
+You can add these options to slow down download to avoid that, like:
+
+```python
+dataset = AudioCaps(
+    root=root,
+    subset="train",
+    download=True,
+    ytdlp_opts=["--sleep-requests", "5", "--sleep-interval", "60", "--random-wait"],
+)
+```
+
 ## References
 #### AudioCaps
 [1] C. D. Kim, B. Kim, H. Lee, and G. Kim, “Audiocaps: Generating captions for audios in the wild,” in NAACL-HLT, 2019. Available: https://aclanthology.org/N19-1011/
