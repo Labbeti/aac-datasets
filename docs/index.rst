@@ -6,7 +6,7 @@
 aac-datasets's documentation
 ========================================
 
-Audio Captioning unofficial datasets source code for **AudioCaps**, **Clotho**, and **MACS**, designed for PyTorch.
+Audio Captioning unofficial datasets source code for **AudioCaps**, **Clotho**, **MACS** and **WavCaps**, designed for PyTorch.
 
 .. toctree::
    :maxdepth: 2
