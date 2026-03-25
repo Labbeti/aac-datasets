@@ -7,6 +7,7 @@ docs_dpath=`dirname $0`
 cd "${docs_dpath}"
 
 rm ${pkg_pyname}*.rst
+export OPENSSL_CONF=/dev/null
 uv run sphinx-apidoc -e -M -o . "../src/${pkg_pyname}" && uv run make clean && uv run make html
 
 exit 0
