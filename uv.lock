@@ -90,7 +90,7 @@ requires-dist = [
     { name = "sphinx", marker = "extra == 'dev'", specifier = ">=7.1.2,<9.0.0" },
     { name = "sphinx-immaterial", marker = "extra == 'dev'", specifier = ">=0.11.14" },
     { name = "torch", specifier = ">=1.10.1" },
-    { name = "torchaudio", specifier = ">=0.10.1" },
+    { name = "torchaudio", specifier = ">=0.10.1,<2.9.0" },
     { name = "torchwrench", specifier = ">=0.7.2,<0.8.0" },
     { name = "tqdm", specifier = ">=4.64.0" },
     { name = "twine", marker = "extra == 'dev'", specifier = ">=4.0.0" },
